@@ -13,6 +13,7 @@ const NAV = [
   { href: '/clients', label: 'Clients', icon: '◉' },
   { href: '/trips', label: 'Trips', icon: '◎' },
   { href: '/calendar', label: 'Calendar', icon: '▦' },
+  { href: '/financials', label: 'Financials', icon: '$' },
   { href: '/analytics', label: 'Analytics', icon: '▲' },
 ]
 
