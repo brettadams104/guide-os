@@ -6,6 +6,7 @@ import { scheduleTrip, logTripDetails } from '@/lib/actions/trips'
 import { createClientRecord } from '@/lib/actions/clients'
 import { createClient } from '@/lib/supabase/client'
 import { ClientSearch } from '@/components/client-search'
+import { CategoryCombobox } from '@/components/category-combobox'
 
 const TABS = ["Today's Trip", 'Schedule', 'Upcoming', 'Log Details', 'Completed'] as const
 type Tab = typeof TABS[number]
@@ -238,20 +239,17 @@ function ScheduleTab() {
           </div>
         )}
 
-        {/* Trip detail categories */}
+        {/* Trip detail categories — combobox with inline add */}
         {categories.map(cat => (
           <div key={cat.id}>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">{cat.name}</label>
-            <select
+            <CategoryCombobox
+              categoryId={cat.id}
+              categoryName={cat.name}
+              options={cat.guide_trip_options}
               value={categorySelections[cat.id] ?? ''}
-              onChange={e => setCategorySelections(prev => ({ ...prev, [cat.id]: e.target.value }))}
-              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-            >
-              <option value="">Select {cat.name.toLowerCase()}...</option>
-              {cat.guide_trip_options.map(opt => (
-                <option key={opt.id} value={opt.id}>{opt.label}</option>
-              ))}
-            </select>
+              onChange={optId => setCategorySelections(prev => ({ ...prev, [cat.id]: optId }))}
+            />
           </div>
         ))}
 

@@ -51,6 +51,18 @@ export async function deleteTripOption(id: string) {
   revalidatePath('/settings')
 }
 
+export async function createTripOptionInline(categoryId: string, label: string): Promise<string> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data, error } = await supabase
+    .from('guide_trip_options')
+    .insert({ category_id: categoryId, guide_id: user!.id, label })
+    .select('id')
+    .single()
+  if (error) throw new Error(error.message)
+  return data.id
+}
+
 export async function saveTripTypeSelections(tripId: string, optionIds: string[]) {
   const supabase = await createClient()
   await supabase.from('trip_type_selections').delete().eq('trip_id', tripId)
