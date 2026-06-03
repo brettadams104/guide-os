@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { scheduleTrip, logTripDetails } from '@/lib/actions/trips'
+import { createClient } from '@/lib/supabase/client'
 
 const TABS = ['Schedule', 'Upcoming', 'Log Details'] as const
 type Tab = typeof TABS[number]
@@ -46,7 +48,6 @@ function ScheduleTab() {
     setSuccess(false)
     const form = new FormData(e.currentTarget)
     try {
-      const { scheduleTrip } = await import('@/lib/actions/trips')
       await scheduleTrip({
         client_id: (form.get('client_id') as string) || null,
         trip_date: form.get('trip_date') as string,
@@ -115,7 +116,7 @@ function UpcomingTab() {
   const [trips, setTrips] = useState<any[] | null>(null)
 
   if (trips === null) {
-    import('@/lib/supabase/client').then(({ createClient }) => {
+    Promise.resolve().then(() => {
       createClient()
         .from('trips')
         .select('*, clients(name)')
@@ -166,7 +167,7 @@ function LogDetailsTab() {
   const [success, setSuccess] = useState(false)
 
   if (trips === null) {
-    import('@/lib/supabase/client').then(({ createClient }) => {
+    Promise.resolve().then(() => {
       createClient()
         .from('trips')
         .select('*, clients(name)')
@@ -190,7 +191,6 @@ function LogDetailsTab() {
     setError(null)
     const form = new FormData(e.currentTarget)
     try {
-      const { logTripDetails } = await import('@/lib/actions/trips')
       await logTripDetails(selected.id, {
         catches: catches.filter(c => c.species.trim()),
         amount_collected: Number(form.get('amount_collected') || 0),
