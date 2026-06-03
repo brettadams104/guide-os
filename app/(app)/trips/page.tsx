@@ -7,7 +7,7 @@ import { createClientRecord } from '@/lib/actions/clients'
 import { createClient } from '@/lib/supabase/client'
 import { ClientSearch } from '@/components/client-search'
 
-const TABS = ['Schedule', 'Upcoming', 'Log Details'] as const
+const TABS = ['Schedule', 'Upcoming', 'Log Details', 'Completed'] as const
 type Tab = typeof TABS[number]
 
 export default function TripsPage() {
@@ -17,7 +17,7 @@ export default function TripsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">Manage Trips</h1>
 
-      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit flex-wrap">
         {TABS.map(t => (
           <button
             key={t}
@@ -34,6 +34,7 @@ export default function TripsPage() {
       {tab === 'Schedule' && <ScheduleTab />}
       {tab === 'Upcoming' && <UpcomingTab />}
       {tab === 'Log Details' && <LogDetailsTab />}
+      {tab === 'Completed' && <CompletedTab />}
     </div>
   )
 }
@@ -365,5 +366,60 @@ function LogDetailsTab() {
         {loading ? 'Saving & fetching conditions...' : 'Save Trip Details'}
       </button>
     </form>
+  )
+}
+
+function CompletedTab() {
+  const [trips, setTrips] = useState<any[] | null>(null)
+
+  if (trips === null) {
+    Promise.resolve().then(() => {
+      createClient()
+        .from('trips')
+        .select('*, clients(name), trip_catches(species, count)')
+        .eq('status', 'completed')
+        .order('trip_date', { ascending: false })
+        .then(({ data }) => setTrips(data ?? []))
+    })
+    return <p className="text-slate-400 text-sm py-8 text-center">Loading...</p>
+  }
+
+  return (
+    <div className="space-y-4">
+      {!trips.length ? (
+        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+          <p className="text-slate-400 text-sm">No completed trips yet.</p>
+          <p className="text-slate-400 text-xs mt-1">Use Log Details to mark a trip as complete.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <ul className="divide-y divide-slate-100">
+            {trips.map((trip: any) => {
+              const totalFish = (trip.trip_catches as { count: number }[])?.reduce((s: number, c: { count: number }) => s + c.count, 0) ?? 0
+              return (
+                <li key={trip.id}>
+                  <Link href={`/trips/${trip.id}`} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors">
+                    <div>
+                      <p className="font-semibold text-slate-900 text-sm">
+                        {new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                      </p>
+                      <p className="text-slate-500 text-xs mt-0.5">
+                        {trip.clients?.name ?? 'No client'}{trip.location ? ` · ${trip.location}` : ''} · {totalFish} fish
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {trip.amount_collected > 0 && (
+                        <p className="text-sm font-semibold text-slate-900">${trip.amount_collected.toFixed(0)}</p>
+                      )}
+                      <span className="text-xs bg-green-100 text-green-700 font-medium px-2.5 py-1 rounded-full">Completed</span>
+                    </div>
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
   )
 }
