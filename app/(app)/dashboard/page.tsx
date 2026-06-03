@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { StatCard } from '@/components/stat-card'
+import { CalendarClient } from '../calendar/calendar-client'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -9,17 +10,25 @@ export default async function DashboardPage() {
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
 
-  const [{ count: totalClients }, { data: monthTrips }, { data: allTrips }, { data: upcomingTrips }] = await Promise.all([
+  const [{ count: totalClients }, { data: monthTrips }, { data: allTrips }, { data: upcomingTrips }, { data: allTripEvents }] = await Promise.all([
     supabase.from('clients').select('*', { count: 'exact', head: true }).eq('guide_id', user!.id),
     supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id).gte('trip_date', monthStart),
     supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id),
     supabase.from('trips').select('*, clients(name)').eq('guide_id', user!.id)
       .gte('trip_date', new Date().toISOString().split('T')[0])
       .order('trip_date', { ascending: true }).limit(5),
+    supabase.from('trips').select('id, trip_date, location, clients(name)').eq('guide_id', user!.id).order('trip_date'),
   ])
 
   const monthRevenue = (monthTrips ?? []).reduce((sum, t) => sum + (t.amount_collected ?? 0), 0)
   const outstanding = (allTrips ?? []).reduce((sum, t) => sum + Math.max(0, (t.price ?? 0) - (t.amount_collected ?? 0)), 0)
+
+  const calendarEvents = (allTripEvents ?? []).map(t => ({
+    id: t.id,
+    trip_date: t.trip_date,
+    client_name: (t.clients as unknown as { name: string } | null)?.name ?? null,
+    location: t.location,
+  }))
 
   return (
     <div className="space-y-8">
@@ -65,6 +74,14 @@ export default async function DashboardPage() {
             ))}
           </ul>
         )}
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-slate-900">Calendar</h2>
+          <Link href="/calendar" className="text-sky-500 text-sm hover:text-sky-400">Full view →</Link>
+        </div>
+        <CalendarClient events={calendarEvents} />
       </div>
     </div>
   )
