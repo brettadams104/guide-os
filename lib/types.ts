@@ -21,6 +21,8 @@ export interface Client {
 export type PaymentMethod = 'cash' | 'card' | 'venmo' | 'zelle' | 'check' | 'other'
 export type PressureTrend = 'rising' | 'falling' | 'steady'
 
+export type TripStatus = 'scheduled' | 'completed'
+
 export interface Trip {
   id: string
   guide_id: string
@@ -32,6 +34,7 @@ export interface Trip {
   deposit_paid: number
   amount_collected: number
   payment_method: PaymentMethod | null
+  status: TripStatus
   created_at: string
 }
 

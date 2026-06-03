@@ -38,7 +38,7 @@ export default async function DashboardPage() {
           <p className="text-slate-500 text-sm mt-0.5">{now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
         </div>
         <Link href="/trips/new" className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
-          + Log Trip
+          Manage Trips
         </Link>
       </div>
 
