@@ -13,6 +13,9 @@ export async function scheduleTrip(input: {
   price: number | null
   deposit_paid: number
   payment_method: PaymentMethod | null
+  time_slot_id: string | null
+  trip_type_id: string | null
+  assigned_staff_id: string | null
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -27,6 +30,9 @@ export async function scheduleTrip(input: {
     amount_collected: 0,
     payment_method: input.payment_method,
     status: 'scheduled',
+    time_slot_id: input.time_slot_id || null,
+    trip_type_id: input.trip_type_id || null,
+    assigned_staff_id: input.assigned_staff_id || null,
   }).select('id').single()
   if (error) throw new Error(error.message)
   revalidatePath('/trips')

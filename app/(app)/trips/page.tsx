@@ -109,16 +109,27 @@ function ScheduleTab() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [clients, setClients] = useState<{ id: string; name: string; phone: string | null; email: string | null }[]>([])
+  const [timeSlots, setTimeSlots] = useState<{ id: string; label: string; start_time: string | null; end_time: string | null }[]>([])
+  const [tripTypes, setTripTypes] = useState<{ id: string; label: string }[]>([])
+  const [staff, setStaff] = useState<{ id: string; name: string }[]>([])
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
   const [newClientName, setNewClientName] = useState<string | null>(null)
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null)
   const isNewClient = !!newClientName && !selectedClientId
 
   useEffect(() => {
-    createClient()
-      .from('clients')
-      .select('id, name, phone, email')
-      .order('name')
-      .then(({ data }) => setClients(data ?? []))
+    const db = createClient()
+    Promise.all([
+      db.from('clients').select('id, name, phone, email').order('name'),
+      db.from('guide_time_slots').select('id, label, start_time, end_time').order('sort_order').order('created_at'),
+      db.from('guide_trip_types').select('id, label').order('sort_order').order('created_at'),
+      db.from('guide_staff').select('id, name').order('name'),
+    ]).then(([c, ts, tt, st]) => {
+      setClients(c.data ?? [])
+      setTimeSlots(ts.data ?? [])
+      setTripTypes(tt.data ?? [])
+      setStaff(st.data ?? [])
+    })
   }, [])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -158,10 +169,14 @@ function ScheduleTab() {
         price: form.get('price') ? Number(form.get('price')) : null,
         deposit_paid: Number(form.get('deposit_paid') || 0),
         payment_method: (form.get('payment_method') as any) || null,
+        time_slot_id: (form.get('time_slot_id') as string) || null,
+        trip_type_id: (form.get('trip_type_id') as string) || null,
+        assigned_staff_id: selectedStaffId,
       })
       setSuccess(true)
       setSelectedClientId(null)
       setNewClientName(null)
+      setSelectedStaffId(null)
       ;(e.target as HTMLFormElement).reset()
     } catch (err) {
       setError((err as Error).message)
@@ -203,6 +218,54 @@ function ScheduleTab() {
                 <input name={f.name} type={f.type} placeholder={f.placeholder} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white" />
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Time slot */}
+        {timeSlots.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Time Slot</label>
+            <select name="time_slot_id" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+              <option value="">Select a time slot...</option>
+              {timeSlots.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.label}{s.start_time && s.end_time ? ` (${s.start_time} – ${s.end_time})` : s.start_time ? ` (${s.start_time})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Trip type */}
+        {tripTypes.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Trip Type</label>
+            <select name="trip_type_id" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+              <option value="">Select a trip type...</option>
+              {tripTypes.map(t => (
+                <option key={t.id} value={t.id}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Assign guide */}
+        {staff.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Assign Guide</label>
+            <div className="space-y-2">
+              {staff.map(s => (
+                <label key={s.id} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedStaffId === s.id}
+                    onChange={() => setSelectedStaffId(selectedStaffId === s.id ? null : s.id)}
+                    className="w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-sky-500"
+                  />
+                  <span className="text-sm text-slate-700">{s.name}</span>
+                </label>
+              ))}
+            </div>
           </div>
         )}
 
