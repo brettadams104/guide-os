@@ -328,8 +328,19 @@ function LogDetailsTab() {
         <h2 className="font-semibold text-slate-900">Fish Caught</h2>
         {catches.map((c, i) => (
           <div key={i} className="flex gap-3 items-center">
-            <input value={c.species} onChange={e => updateCatch(i, 'species', e.target.value)} placeholder="Species" className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
-            <input type="number" min="1" value={c.count} onChange={e => updateCatch(i, 'count', Number(e.target.value))} className="w-20 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 text-center" />
+            <input
+              value={c.species}
+              onChange={e => updateCatch(i, 'species', e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  if (c.species.trim()) addCatch()
+                }
+              }}
+              placeholder="Species (press Enter to add another)"
+              className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+            />
+            <input type="number" min="1" value={c.count} onChange={e => updateCatch(i, 'count', Number(e.target.value))} onKeyDown={e => { if (e.key === 'Enter') e.preventDefault() }} className="w-20 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 text-center" />
             {catches.length > 1 && <button type="button" onClick={() => removeCatch(i)} className="text-slate-400 hover:text-red-400 text-lg">✕</button>}
           </div>
         ))}
