@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+:root {
+  --sidebar-bg: #0f1f35;
+  --accent: #0ea5e9;
+  --accent-hover: #0284c7;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  background-color: #f8fafc;
+}
