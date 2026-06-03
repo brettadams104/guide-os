@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { scheduleTrip, logTripDetails } from '@/lib/actions/trips'
+import { createClientRecord } from '@/lib/actions/clients'
 import { createClient } from '@/lib/supabase/client'
+import { ClientSearch } from '@/components/client-search'
 
 const TABS = ['Schedule', 'Upcoming', 'Log Details'] as const
 type Tab = typeof TABS[number]
@@ -40,6 +42,18 @@ function ScheduleTab() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [clients, setClients] = useState<{ id: string; name: string; phone: string | null; email: string | null }[]>([])
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
+  const [newClientName, setNewClientName] = useState<string | null>(null)
+  const isNewClient = !!newClientName && !selectedClientId
+
+  useEffect(() => {
+    createClient()
+      .from('clients')
+      .select('id, name, phone, email')
+      .order('name')
+      .then(({ data }) => setClients(data ?? []))
+  }, [])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -48,8 +62,30 @@ function ScheduleTab() {
     setSuccess(false)
     const form = new FormData(e.currentTarget)
     try {
+      let clientId = selectedClientId
+
+      // Create new client if needed
+      if (isNewClient && newClientName) {
+        await createClientRecord({
+          name: newClientName,
+          email: (form.get('new_email') as string) || null,
+          phone: (form.get('new_phone') as string) || null,
+          address: (form.get('new_address') as string) || null,
+          notes: null,
+        })
+        // Get the newly created client's ID
+        const { data } = await createClient()
+          .from('clients')
+          .select('id')
+          .eq('name', newClientName)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+        clientId = data?.id ?? null
+      }
+
       await scheduleTrip({
-        client_id: (form.get('client_id') as string) || null,
+        client_id: clientId,
         trip_date: form.get('trip_date') as string,
         location: (form.get('location') as string) || null,
         notes: (form.get('notes') as string) || null,
@@ -58,6 +94,8 @@ function ScheduleTab() {
         payment_method: (form.get('payment_method') as any) || null,
       })
       setSuccess(true)
+      setSelectedClientId(null)
+      setNewClientName(null)
       ;(e.target as HTMLFormElement).reset()
     } catch (err) {
       setError((err as Error).message)
@@ -75,6 +113,33 @@ function ScheduleTab() {
       )}
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
         <h2 className="font-semibold text-slate-900">Schedule a Trip</h2>
+
+        {/* Client search */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Client <span className="text-slate-400 font-normal">(optional)</span></label>
+          <ClientSearch
+            clients={clients}
+            onSelect={(id, name) => { setSelectedClientId(id); setNewClientName(name) }}
+          />
+        </div>
+
+        {/* New client fields — expands automatically */}
+        {isNewClient && (
+          <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 space-y-3">
+            <p className="text-xs font-semibold text-sky-700 uppercase tracking-wide">New Client Details</p>
+            {[
+              { name: 'new_phone', label: 'Phone', type: 'tel', placeholder: '(555) 000-0000' },
+              { name: 'new_email', label: 'Email', type: 'email', placeholder: 'email@example.com' },
+              { name: 'new_address', label: 'Address', type: 'text', placeholder: 'City, State' },
+            ].map(f => (
+              <div key={f.name}>
+                <label className="block text-xs font-medium text-slate-600 mb-1">{f.label} <span className="text-slate-400">(optional)</span></label>
+                <input name={f.name} type={f.type} placeholder={f.placeholder} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white" />
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Date</label>
