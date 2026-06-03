@@ -21,20 +21,44 @@ export async function deleteTimeSlot(id: string) {
   revalidatePath('/settings')
 }
 
-// ── Trip Types ────────────────────────────────────────────────────────────────
+// ── Trip Categories + Options ─────────────────────────────────────────────────
 
-export async function addTripType(label: string) {
+export async function addTripCategory(name: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { error } = await supabase.from('guide_trip_types').insert({ guide_id: user!.id, label })
+  const { error } = await supabase.from('guide_trip_categories').insert({ guide_id: user!.id, name })
   if (error) throw new Error(error.message)
   revalidatePath('/settings')
 }
 
-export async function deleteTripType(id: string) {
+export async function deleteTripCategory(id: string) {
   const supabase = await createClient()
-  await supabase.from('guide_trip_types').delete().eq('id', id)
+  await supabase.from('guide_trip_categories').delete().eq('id', id)
   revalidatePath('/settings')
+}
+
+export async function addTripOption(categoryId: string, label: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { error } = await supabase.from('guide_trip_options').insert({ category_id: categoryId, guide_id: user!.id, label })
+  if (error) throw new Error(error.message)
+  revalidatePath('/settings')
+}
+
+export async function deleteTripOption(id: string) {
+  const supabase = await createClient()
+  await supabase.from('guide_trip_options').delete().eq('id', id)
+  revalidatePath('/settings')
+}
+
+export async function saveTripTypeSelections(tripId: string, optionIds: string[]) {
+  const supabase = await createClient()
+  await supabase.from('trip_type_selections').delete().eq('trip_id', tripId)
+  if (optionIds.length > 0) {
+    await supabase.from('trip_type_selections').insert(
+      optionIds.map(option_id => ({ trip_id: tripId, option_id }))
+    )
+  }
 }
 
 // ── Staff / Guides ────────────────────────────────────────────────────────────

@@ -1,15 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { addTimeSlot, deleteTimeSlot, addTripType, deleteTripType, addStaff, deleteStaff } from '@/lib/actions/trip-options'
+import { addTimeSlot, deleteTimeSlot, addTripCategory, deleteTripCategory, addTripOption, deleteTripOption, addStaff, deleteStaff } from '@/lib/actions/trip-options'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: guide } = await supabase.from('guides').select('*').eq('id', user!.id).single()
 
-  const [{ data: timeSlots }, { data: tripTypes }, { data: staff }] = await Promise.all([
+  const [{ data: timeSlots }, { data: categories }, { data: staff }] = await Promise.all([
     supabase.from('guide_time_slots').select('*').eq('guide_id', user!.id).order('sort_order').order('created_at'),
-    supabase.from('guide_trip_types').select('*').eq('guide_id', user!.id).order('sort_order').order('created_at'),
+    supabase.from('guide_trip_categories').select('*, guide_trip_options(*)').eq('guide_id', user!.id).order('sort_order').order('created_at'),
     supabase.from('guide_staff').select('*').eq('guide_id', user!.id).order('name'),
   ])
 
@@ -33,10 +33,17 @@ export default async function SettingsPage() {
     if (label?.trim()) await addTimeSlot(label.trim(), start, end)
   }
 
-  async function handleAddTripType(formData: FormData) {
+  async function handleAddCategory(formData: FormData) {
     'use server'
-    const label = formData.get('type_label') as string
-    if (label?.trim()) await addTripType(label.trim())
+    const name = formData.get('cat_name') as string
+    if (name?.trim()) await addTripCategory(name.trim())
+  }
+
+  async function handleAddOption(formData: FormData) {
+    'use server'
+    const categoryId = formData.get('category_id') as string
+    const label = formData.get('label') as string
+    if (categoryId && label?.trim()) await addTripOption(categoryId, label.trim())
   }
 
   async function handleAddStaff(formData: FormData) {
@@ -92,7 +99,7 @@ export default async function SettingsPage() {
         )}
         <form action={handleAddTimeSlot} className="space-y-3 pt-2 border-t border-slate-100">
           <p className="text-xs font-medium text-slate-600">Add Time Slot</p>
-          <input name="slot_label" type="text" placeholder='Label (e.g. "Half Day", "Full Day")' required className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          <input name="slot_label" type="text" placeholder='e.g. "Half Day", "Full Day"' required className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-slate-500 mb-1">Start Time <span className="text-slate-300">(optional)</span></label>
@@ -107,28 +114,46 @@ export default async function SettingsPage() {
         </form>
       </div>
 
-      {/* Trip Types */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+      {/* Trip Categories */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
         <div>
-          <h2 className="font-semibold text-slate-900">Trip Types</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Define what kinds of trips you offer (e.g. Bass Fishing, Walleye, Fly Fishing)</p>
+          <h2 className="font-semibold text-slate-900">Trip Details</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Create categories for your trips — e.g. Species Targeted, Gear Type, Boat or Wade, etc.</p>
         </div>
-        {tripTypes?.length ? (
-          <ul className="space-y-2">
-            {tripTypes.map(type => (
-              <li key={type.id} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
-                <p className="text-sm font-medium text-slate-900">{type.label}</p>
-                <form action={deleteTripType.bind(null, type.id)}>
-                  <button type="submit" className="text-xs text-red-400 hover:text-red-600">Remove</button>
+
+        {categories?.map((cat: any) => {
+          const options = cat.guide_trip_options as { id: string; label: string }[]
+          return (
+            <div key={cat.id} className="border border-slate-100 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-slate-900 text-sm">{cat.name}</p>
+                <form action={deleteTripCategory.bind(null, cat.id)}>
+                  <button type="submit" className="text-xs text-red-400 hover:text-red-600">Remove category</button>
                 </form>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-slate-400">No trip types yet — add your first below.</p>
-        )}
-        <form action={handleAddTripType} className="flex gap-3 pt-2 border-t border-slate-100">
-          <input name="type_label" type="text" placeholder='e.g. "Bass Fishing"' required className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+              </div>
+              {options?.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {options.map(opt => (
+                    <div key={opt.id} className="flex items-center gap-1 bg-slate-100 rounded-full pl-3 pr-1.5 py-1">
+                      <span className="text-xs font-medium text-slate-700">{opt.label}</span>
+                      <form action={deleteTripOption.bind(null, opt.id)}>
+                        <button type="submit" className="text-slate-400 hover:text-red-400 text-xs leading-none">✕</button>
+                      </form>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <form action={handleAddOption} className="flex gap-2">
+                <input type="hidden" name="category_id" value={cat.id} />
+                <input name="label" type="text" placeholder={`Add ${cat.name} option...`} required className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500" />
+                <button type="submit" className="border border-sky-300 text-sky-600 hover:bg-sky-50 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">+ Add</button>
+              </form>
+            </div>
+          )
+        })}
+
+        <form action={handleAddCategory} className="flex gap-3 pt-2 border-t border-slate-100">
+          <input name="cat_name" type="text" placeholder='e.g. "Species Targeted", "Gear Type", "Boat or Wade"' required className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
           <button type="submit" className="border border-sky-300 text-sky-600 hover:bg-sky-50 font-medium px-4 py-2 rounded-xl transition-colors text-sm whitespace-nowrap">+ Add</button>
         </form>
       </div>

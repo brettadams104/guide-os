@@ -110,11 +110,12 @@ function ScheduleTab() {
   const [success, setSuccess] = useState(false)
   const [clients, setClients] = useState<{ id: string; name: string; phone: string | null; email: string | null }[]>([])
   const [timeSlots, setTimeSlots] = useState<{ id: string; label: string; start_time: string | null; end_time: string | null }[]>([])
-  const [tripTypes, setTripTypes] = useState<{ id: string; label: string }[]>([])
+  const [categories, setCategories] = useState<{ id: string; name: string; guide_trip_options: { id: string; label: string }[] }[]>([])
   const [staff, setStaff] = useState<{ id: string; name: string }[]>([])
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
   const [newClientName, setNewClientName] = useState<string | null>(null)
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null)
+  const [categorySelections, setCategorySelections] = useState<Record<string, string>>({})
   const isNewClient = !!newClientName && !selectedClientId
 
   useEffect(() => {
@@ -122,12 +123,12 @@ function ScheduleTab() {
     Promise.all([
       db.from('clients').select('id, name, phone, email').order('name'),
       db.from('guide_time_slots').select('id, label, start_time, end_time').order('sort_order').order('created_at'),
-      db.from('guide_trip_types').select('id, label').order('sort_order').order('created_at'),
+      db.from('guide_trip_categories').select('id, name, guide_trip_options(id, label)').order('sort_order').order('created_at'),
       db.from('guide_staff').select('id, name').order('name'),
-    ]).then(([c, ts, tt, st]) => {
+    ]).then(([c, ts, cats, st]) => {
       setClients(c.data ?? [])
       setTimeSlots(ts.data ?? [])
-      setTripTypes(tt.data ?? [])
+      setCategories((cats.data ?? []) as any)
       setStaff(st.data ?? [])
     })
   }, [])
@@ -170,13 +171,14 @@ function ScheduleTab() {
         deposit_paid: Number(form.get('deposit_paid') || 0),
         payment_method: (form.get('payment_method') as any) || null,
         time_slot_id: (form.get('time_slot_id') as string) || null,
-        trip_type_id: (form.get('trip_type_id') as string) || null,
+        trip_type_id: null,
         assigned_staff_id: selectedStaffId,
       })
       setSuccess(true)
       setSelectedClientId(null)
       setNewClientName(null)
       setSelectedStaffId(null)
+      setCategorySelections({})
       ;(e.target as HTMLFormElement).reset()
     } catch (err) {
       setError((err as Error).message)
@@ -236,18 +238,22 @@ function ScheduleTab() {
           </div>
         )}
 
-        {/* Trip type */}
-        {tripTypes.length > 0 && (
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Trip Type</label>
-            <select name="trip_type_id" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-              <option value="">Select a trip type...</option>
-              {tripTypes.map(t => (
-                <option key={t.id} value={t.id}>{t.label}</option>
+        {/* Trip detail categories */}
+        {categories.map(cat => (
+          <div key={cat.id}>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">{cat.name}</label>
+            <select
+              value={categorySelections[cat.id] ?? ''}
+              onChange={e => setCategorySelections(prev => ({ ...prev, [cat.id]: e.target.value }))}
+              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+            >
+              <option value="">Select {cat.name.toLowerCase()}...</option>
+              {cat.guide_trip_options.map(opt => (
+                <option key={opt.id} value={opt.id}>{opt.label}</option>
               ))}
             </select>
           </div>
-        )}
+        ))}
 
         {/* Assign guide */}
         {staff.length > 0 && (
