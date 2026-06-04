@@ -11,6 +11,38 @@ interface Slot {
   end_time: string | null
 }
 
+// Generate time options from 4am to 9pm in 30-min increments
+const TIME_OPTIONS: { label: string; value: string }[] = (() => {
+  const opts = [{ label: '—', value: '' }]
+  for (let h = 4; h <= 21; h++) {
+    for (const m of [0, 30]) {
+      if (h === 21 && m === 30) break
+      const hh = String(h).padStart(2, '0')
+      const mm = String(m).padStart(2, '0')
+      const value = `${hh}:${mm}`
+      const ampm = h >= 12 ? 'PM' : 'AM'
+      const h12 = h % 12 || 12
+      const label = `${h12}:${mm} ${ampm}`
+      opts.push({ label, value })
+    }
+  }
+  return opts
+})()
+
+function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+    >
+      {TIME_OPTIONS.map(opt => (
+        <option key={opt.value} value={opt.value}>{opt.label}</option>
+      ))}
+    </select>
+  )
+}
+
 export function TimeSlotManager({ slots }: { slots: Slot[] }) {
   const router = useRouter()
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -26,14 +58,20 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
   function startEdit(slot: Slot) {
     setEditingId(slot.id)
     setEditLabel(slot.label)
-    setEditStart(slot.start_time ?? '')
-    setEditEnd(slot.end_time ?? '')
+    // Normalize stored time to match dropdown values (HH:MM)
+    setEditStart(normalizeTime(slot.start_time))
+    setEditEnd(normalizeTime(slot.end_time))
     setError(null)
   }
 
-  function cancelEdit() {
-    setEditingId(null)
-    setError(null)
+  function normalizeTime(t: string | null): string {
+    if (!t) return ''
+    const parts = t.trim().split(':')
+    if (parts.length < 2) return ''
+    const h = parseInt(parts[0], 10)
+    const m = parseInt(parts[1], 10)
+    if (isNaN(h) || isNaN(m)) return ''
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
   }
 
   async function handleUpdate(id: string) {
@@ -66,9 +104,14 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
     router.refresh()
   }
 
+  function displayTime(t: string | null) {
+    const norm = normalizeTime(t)
+    const found = TIME_OPTIONS.find(o => o.value === norm)
+    return found?.label ?? t ?? ''
+  }
+
   return (
     <div className="space-y-3">
-      {/* Existing slots */}
       {slots.length > 0 && (
         <ul className="space-y-2">
           {slots.map(slot => (
@@ -84,32 +127,24 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs text-slate-500 mb-1">Start (e.g. 06:00)</label>
-                      <input
-                        type="text"
-                        value={editStart}
-                        onChange={e => setEditStart(e.target.value)}
-                        placeholder="06:00"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                      />
+                      <label className="block text-xs text-slate-500 mb-1">Start Time</label>
+                      <TimeSelect value={editStart} onChange={setEditStart} />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-500 mb-1">End (e.g. 12:00)</label>
-                      <input
-                        type="text"
-                        value={editEnd}
-                        onChange={e => setEditEnd(e.target.value)}
-                        placeholder="12:00"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                      />
+                      <label className="block text-xs text-slate-500 mb-1">End Time</label>
+                      <TimeSelect value={editEnd} onChange={setEditEnd} />
                     </div>
                   </div>
                   {error && <p className="text-red-500 text-xs">{error}</p>}
                   <div className="flex gap-2">
-                    <button onClick={() => handleUpdate(slot.id)} disabled={saving} className="flex-1 bg-sky-500 text-white text-xs font-semibold py-2 rounded-lg disabled:opacity-50">
+                    <button onClick={() => handleUpdate(slot.id)} disabled={saving}
+                      className="flex-1 bg-sky-500 text-white text-xs font-semibold py-2 rounded-lg disabled:opacity-50">
                       {saving ? 'Saving...' : 'Save'}
                     </button>
-                    <button onClick={cancelEdit} className="flex-1 border text-xs font-medium py-2 rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button onClick={() => setEditingId(null)}
+                      className="flex-1 border text-xs font-medium py-2 rounded-lg hover:bg-slate-50">
+                      Cancel
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -117,7 +152,9 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
                   <div>
                     <p className="text-sm font-medium text-slate-900">{slot.label}</p>
                     {(slot.start_time || slot.end_time) && (
-                      <p className="text-xs text-slate-400">{slot.start_time}{slot.start_time && slot.end_time ? ' – ' : ''}{slot.end_time}</p>
+                      <p className="text-xs text-slate-400">
+                        {displayTime(slot.start_time)}{slot.start_time && slot.end_time ? ' – ' : ''}{displayTime(slot.end_time)}
+                      </p>
                     )}
                   </div>
                   <div className="flex items-center gap-3">
@@ -131,7 +168,6 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
         </ul>
       )}
 
-      {/* Add new */}
       <div className="space-y-2 pt-2 border-t border-slate-100">
         <p className="text-xs font-medium text-slate-600">Add Time Slot</p>
         <input
@@ -143,28 +179,17 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
         />
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Start (e.g. 06:00)</label>
-            <input
-              type="text"
-              value={newStart}
-              onChange={e => setNewStart(e.target.value)}
-              placeholder="06:00"
-              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-            />
+            <label className="block text-xs text-slate-500 mb-1">Start Time</label>
+            <TimeSelect value={newStart} onChange={setNewStart} />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">End (e.g. 12:00)</label>
-            <input
-              type="text"
-              value={newEnd}
-              onChange={e => setNewEnd(e.target.value)}
-              placeholder="12:00"
-              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-            />
+            <label className="block text-xs text-slate-500 mb-1">End Time</label>
+            <TimeSelect value={newEnd} onChange={setNewEnd} />
           </div>
         </div>
-        {error && !editingId && <p className="text-red-500 text-xs">{error}</p>}
-        <button onClick={handleAdd} disabled={saving} className="w-full border border-sky-300 text-sky-600 hover:bg-sky-50 font-medium py-2 rounded-xl transition-colors text-sm disabled:opacity-50">
+        {error && <p className="text-red-500 text-xs">{error}</p>}
+        <button onClick={handleAdd} disabled={saving}
+          className="w-full border border-sky-300 text-sky-600 hover:bg-sky-50 font-medium py-2 rounded-xl transition-colors text-sm disabled:opacity-50">
           {saving ? 'Saving...' : '+ Add Time Slot'}
         </button>
       </div>
