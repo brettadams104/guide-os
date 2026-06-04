@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { addTripCategory, deleteTripCategory, addTripOption, deleteTripOption, addStaff, deleteStaff } from '@/lib/actions/trip-options'
+import { addStaff, deleteStaff } from '@/lib/actions/trip-options'
 import { TimeSlotManager } from '@/components/time-slot-manager'
 
 export default async function SettingsPage() {
@@ -8,9 +8,8 @@ export default async function SettingsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   const { data: guide } = await supabase.from('guides').select('*').eq('id', user!.id).single()
 
-  const [{ data: timeSlots }, { data: categories }, { data: staff }] = await Promise.all([
-    supabase.from('guide_time_slots').select('*').eq('guide_id', user!.id).order('sort_order').order('created_at'),
-    supabase.from('guide_trip_categories').select('*, guide_trip_options(*)').eq('guide_id', user!.id).order('sort_order').order('created_at'),
+  const [{ data: timeSlots }, { data: staff }] = await Promise.all([
+    supabase.from('guide_time_slots').select('id, label, start_time, end_time, duration_days').eq('guide_id', user!.id).order('sort_order').order('created_at'),
     supabase.from('guide_staff').select('*').eq('guide_id', user!.id).order('name'),
   ])
 
@@ -26,19 +25,6 @@ export default async function SettingsPage() {
     revalidatePath('/settings')
   }
 
-
-  async function handleAddCategory(formData: FormData) {
-    'use server'
-    const name = formData.get('cat_name') as string
-    if (name?.trim()) await addTripCategory(name.trim())
-  }
-
-  async function handleAddOption(formData: FormData) {
-    'use server'
-    const categoryId = formData.get('category_id') as string
-    const label = formData.get('label') as string
-    if (categoryId && label?.trim()) await addTripOption(categoryId, label.trim())
-  }
 
   async function handleAddStaff(formData: FormData) {
     'use server'
@@ -66,57 +52,13 @@ export default async function SettingsPage() {
         <button type="submit" className="w-full bg-sky-500 hover:bg-sky-400 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Save Changes</button>
       </form>
 
-      {/* Time Slots */}
+      {/* Offered Packages */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
         <div>
-          <h2 className="font-semibold text-slate-900">Time Slots</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Create the trip durations you offer (e.g. Half Day, Full Day)</p>
+          <h2 className="font-semibold text-slate-900">Offered Packages</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Add the packages you offer — single day with times (Half Day, Full Day) or multi-day trips (3-Day Float)</p>
         </div>
-        <TimeSlotManager slots={timeSlots ?? []} />
-      </div>
-
-      {/* Trip Categories */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
-        <div>
-          <h2 className="font-semibold text-slate-900">Trip Details</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Create categories for your trips — e.g. Species Targeted, Gear Type, Boat or Wade, etc.</p>
-        </div>
-
-        {categories?.map((cat: any) => {
-          const options = cat.guide_trip_options as { id: string; label: string }[]
-          return (
-            <div key={cat.id} className="border border-slate-100 rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="font-medium text-slate-900 text-sm">{cat.name}</p>
-                <form action={deleteTripCategory.bind(null, cat.id)}>
-                  <button type="submit" className="text-xs text-red-400 hover:text-red-600">Remove category</button>
-                </form>
-              </div>
-              {options?.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {options.map(opt => (
-                    <div key={opt.id} className="flex items-center gap-1 bg-slate-100 rounded-full pl-3 pr-1.5 py-1">
-                      <span className="text-xs font-medium text-slate-700">{opt.label}</span>
-                      <form action={deleteTripOption.bind(null, opt.id)}>
-                        <button type="submit" className="text-slate-400 hover:text-red-400 text-xs leading-none">✕</button>
-                      </form>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <form action={handleAddOption} className="flex gap-2">
-                <input type="hidden" name="category_id" value={cat.id} />
-                <input name="label" type="text" placeholder={`Add ${cat.name} option...`} required className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500" />
-                <button type="submit" className="border border-sky-300 text-sky-600 hover:bg-sky-50 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">+ Add</button>
-              </form>
-            </div>
-          )
-        })}
-
-        <form action={handleAddCategory} className="flex gap-3 pt-2 border-t border-slate-100">
-          <input name="cat_name" type="text" placeholder='e.g. "Species Targeted", "Gear Type", "Boat or Wade"' required className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
-          <button type="submit" className="border border-sky-300 text-sky-600 hover:bg-sky-50 font-medium px-4 py-2 rounded-xl transition-colors text-sm whitespace-nowrap">+ Add</button>
-        </form>
+        <TimeSlotManager slots={(timeSlots ?? []) as any} />
       </div>
 
       {/* Guides / Staff */}
