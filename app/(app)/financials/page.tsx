@@ -1,10 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
+import { Suspense } from 'react'
 import { FinancialsBar } from '@/components/charts/financials-bar'
 import { RevenueAreaChart } from '@/components/charts/revenue-area-chart'
 import { RevenueByPackage } from '@/components/charts/revenue-by-package'
 import { TopClientsChart } from '@/components/charts/top-clients-chart'
+import { YoYChart } from '@/components/charts/yoy-chart'
+import { YearSelector } from './year-selector'
 
-export default async function FinancialsPage() {
+export default async function FinancialsPage({ searchParams }: { searchParams: Promise<{ year?: string }> }) {
+  const { year: yearParam } = await searchParams
+  const selectedYear = yearParam ? parseInt(yearParam) : null
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -15,15 +21,32 @@ export default async function FinancialsPage() {
     .eq('status', 'completed')
     .order('trip_date', { ascending: false })
 
-  const totalRevenue = (trips ?? []).reduce((s, t) => s + (t.amount_collected ?? 0), 0)
-  const totalBilled = (trips ?? []).reduce((s, t) => s + (t.price ?? 0), 0)
+  // Available years for selector
+  const allYears = [...new Set((trips ?? []).map(t => parseInt(t.trip_date.slice(0, 4))))].sort((a, b) => b - a)
+
+  // Filter trips by selected year
+  const filtered = selectedYear
+    ? (trips ?? []).filter(t => t.trip_date.startsWith(String(selectedYear)))
+    : (trips ?? [])
+
+  // YoY data — all trips grouped by year then month
+  const yoyData: Record<number, number[]> = {}
+  ;(trips ?? []).forEach(t => {
+    const year = parseInt(t.trip_date.slice(0, 4))
+    const monthIdx = parseInt(t.trip_date.slice(5, 7)) - 1
+    if (!yoyData[year]) yoyData[year] = Array(12).fill(0)
+    yoyData[year][monthIdx] += t.amount_collected ?? 0
+  })
+
+  const totalRevenue = filtered.reduce((s, t) => s + (t.amount_collected ?? 0), 0)
+  const totalBilled = filtered.reduce((s, t) => s + (t.price ?? 0), 0)
   const totalOutstanding = Math.max(0, totalBilled - totalRevenue)
-  const totalTrips = (trips ?? []).length
+  const totalTrips = filtered.length
   const avgPerTrip = totalTrips > 0 ? totalRevenue / totalTrips : 0
 
   // Best month
   const monthRevMap: Record<string, number> = {}
-  ;(trips ?? []).forEach(t => {
+  ;filtered.forEach(t => {
     const m = t.trip_date.slice(0, 7)
     monthRevMap[m] = (monthRevMap[m] ?? 0) + (t.amount_collected ?? 0)
   })
@@ -44,7 +67,7 @@ export default async function FinancialsPage() {
 
   // Monthly collected vs outstanding
   const monthBilledMap: Record<string, number> = {}
-  ;(trips ?? []).forEach(t => {
+  ;filtered.forEach(t => {
     const m = t.trip_date.slice(0, 7)
     monthBilledMap[m] = (monthBilledMap[m] ?? 0) + (t.price ?? 0)
   })
@@ -58,7 +81,7 @@ export default async function FinancialsPage() {
 
   // Revenue by package
   const packageMap: Record<string, number> = {}
-  ;(trips ?? []).forEach(t => {
+  ;filtered.forEach(t => {
     const label = (t.guide_time_slots as unknown as { label: string } | null)?.label ?? 'No Package'
     packageMap[label] = (packageMap[label] ?? 0) + (t.amount_collected ?? 0)
   })
@@ -68,7 +91,7 @@ export default async function FinancialsPage() {
 
   // Top clients
   const clientMap: Record<string, { name: string; revenue: number }> = {}
-  ;(trips ?? []).forEach(t => {
+  ;filtered.forEach(t => {
     const id = t.client_id ?? 'unknown'
     const name = (t.clients as unknown as { name: string } | null)?.name ?? 'No client'
     if (!clientMap[id]) clientMap[id] = { name, revenue: 0 }
@@ -88,7 +111,7 @@ export default async function FinancialsPage() {
   })
 
   // Outstanding trips
-  const outstanding = (trips ?? [])
+  const outstanding = filtered
     .filter(t => (t.price ?? 0) > (t.amount_collected ?? 0))
     .map(t => ({
       id: t.id,
@@ -99,7 +122,12 @@ export default async function FinancialsPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-slate-900">Financials</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 className="text-2xl font-bold text-slate-900">Financials</h1>
+        <Suspense>
+          <YearSelector years={allYears} selected={selectedYear} />
+        </Suspense>
+      </div>
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -143,6 +171,15 @@ export default async function FinancialsPage() {
           <p className="text-xs text-slate-400 mb-4">Total collected by month</p>
           <RevenueAreaChart data={revenueData} />
         </div>
+
+        {/* Year over year */}
+        {Object.keys(yoyData).length > 1 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:col-span-2">
+            <h2 className="font-bold text-slate-900 mb-1">Year-Over-Year Revenue</h2>
+            <p className="text-xs text-slate-400 mb-4">Compare monthly revenue across years — see if your business is growing</p>
+            <YoYChart data={yoyData} />
+          </div>
+        )}
 
         {/* Collected vs Outstanding */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:col-span-2">
