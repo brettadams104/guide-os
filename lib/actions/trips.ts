@@ -140,9 +140,27 @@ export async function deleteTrip(id: string) {
   revalidatePath('/dashboard')
 }
 
-export async function cancelTrip(id: string): Promise<{ error?: string }> {
+export async function updateTrip(id: string, input: {
+  trip_date: string
+  location: string | null
+  notes: string | null
+  price: number | null
+  deposit_paid: number
+  payment_method: PaymentMethod | null
+  time_slot_id: string | null
+  assigned_staff_id: string | null
+}): Promise<{ error?: string }> {
   const supabase = await createClient()
-  const { error } = await supabase.from('trips').update({ status: 'cancelled' }).eq('id', id)
+  const { error } = await supabase.from('trips').update({
+    trip_date: input.trip_date,
+    location: input.location,
+    notes: input.notes,
+    price: input.price,
+    deposit_paid: input.deposit_paid,
+    payment_method: input.payment_method,
+    time_slot_id: input.time_slot_id || null,
+    assigned_staff_id: input.assigned_staff_id || null,
+  }).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath(`/trips/${id}`)
   revalidatePath('/trips')
