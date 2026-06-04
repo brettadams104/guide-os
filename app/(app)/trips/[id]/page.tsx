@@ -12,7 +12,7 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
 
   const { data: trip } = await supabase
     .from('trips')
-    .select('*, clients(name), trip_catches(*), trip_photos(*), trip_conditions(*)')
+    .select('*, clients(name, phone, email), trip_catches(*), trip_photos(*), trip_conditions(*)')
     .eq('id', id)
     .single()
 
@@ -23,6 +23,7 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
   const photos = trip.trip_photos as { id: string; url: string }[]
   const totalFish = catches.reduce((s, c) => s + c.count, 0)
   const balance = Math.max(0, (trip.price ?? 0) - (trip.amount_collected ?? 0))
+  const client = trip.clients as { name: string; phone: string | null; email: string | null } | null
 
   return (
     <div className="space-y-6">
@@ -41,7 +42,7 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <p className="text-xs text-slate-500 uppercase tracking-wide">Client</p>
-          <p className="font-bold text-slate-900 mt-1">{(trip.clients as { name: string } | null)?.name ?? '—'}</p>
+          <p className="font-bold text-slate-900 mt-1">{client?.name ?? '—'}</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <p className="text-xs text-slate-500 uppercase tracking-wide">Fish Caught</p>
@@ -54,6 +55,27 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
           amountCollected={trip.amount_collected ?? 0}
         />
       </div>
+
+      {/* Client contact */}
+      {client && (client.phone || client.email) && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+          <h2 className="font-semibold text-slate-900 mb-3">Client Contact</h2>
+          <div className="space-y-2">
+            {client.phone && (
+              <a href={`tel:${client.phone}`} className="flex items-center gap-3 text-sm">
+                <span className="text-slate-400">📞</span>
+                <span className="text-sky-600 font-medium hover:text-sky-500">{client.phone}</span>
+              </a>
+            )}
+            {client.email && (
+              <a href={`mailto:${client.email}`} className="flex items-center gap-3 text-sm">
+                <span className="text-slate-400">✉️</span>
+                <span className="text-sky-600 font-medium hover:text-sky-500">{client.email}</span>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       {conditions && (
         <div className="space-y-3">
