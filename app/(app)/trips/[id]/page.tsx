@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ConditionsDisplay } from '@/components/conditions-display'
+import { TripActions } from './trip-actions'
 import type { TripConditions } from '@/lib/types'
 
 export default async function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -98,6 +99,8 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
           </div>
         </div>
       )}
+
+      <TripActions tripId={id} currentStatus={trip.status ?? 'scheduled'} />
     </div>
   )
 }

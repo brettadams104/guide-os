@@ -140,6 +140,26 @@ export async function deleteTrip(id: string) {
   revalidatePath('/dashboard')
 }
 
+export async function cancelTrip(id: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { error } = await supabase.from('trips').update({ status: 'cancelled' }).eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath(`/trips/${id}`)
+  revalidatePath('/trips')
+  revalidatePath('/dashboard')
+  return {}
+}
+
+export async function rescheduleTrip(id: string, newDate: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { error } = await supabase.from('trips').update({ trip_date: newDate, status: 'scheduled' }).eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath(`/trips/${id}`)
+  revalidatePath('/trips')
+  revalidatePath('/dashboard')
+  return {}
+}
+
 export async function uploadTripPhoto(tripId: string, file: File) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
