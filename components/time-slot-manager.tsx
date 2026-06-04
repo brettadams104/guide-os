@@ -10,6 +10,7 @@ interface Slot {
   start_time: string | null
   end_time: string | null
   duration_days: number | null
+  base_slot_id: string | null
 }
 
 const TIME_OPTIONS: { label: string; value: string }[] = (() => {
@@ -64,10 +65,11 @@ interface FormState {
   startTime: string
   endTime: string
   durationDays: string
+  baseSlotId: string
 }
 
-function PackageForm({ initial, onSave, onCancel, saving, error }:
-  { initial: FormState; onSave: (s: FormState) => void; onCancel: () => void; saving: boolean; error: string | null }) {
+function PackageForm({ initial, onSave, onCancel, saving, error, singleDaySlots }:
+  { initial: FormState; onSave: (s: FormState) => void; onCancel: () => void; saving: boolean; error: string | null; singleDaySlots: Slot[] }) {
   const [state, setState] = useState(initial)
   const set = (k: keyof FormState, v: string) => setState(p => ({ ...p, [k]: v }))
 
@@ -101,12 +103,33 @@ function PackageForm({ initial, onSave, onCancel, saving, error }:
           </div>
         </div>
       ) : (
-        <div>
-          <label className="block text-xs text-slate-500 mb-1">Number of Days</label>
-          <input type="number" min="2" max="30" value={state.durationDays}
-            onChange={e => set('durationDays', e.target.value)}
-            placeholder="e.g. 3"
-            className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">Number of Days</label>
+            <input type="number" min="2" max="30" value={state.durationDays}
+              onChange={e => set('durationDays', e.target.value)}
+              placeholder="e.g. 3"
+              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          </div>
+          {singleDaySlots.length > 0 && (
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">Base Package (repeated each day)</label>
+              <select value={state.baseSlotId} onChange={e => set('baseSlotId', e.target.value)}
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
+                <option value="">No base package</option>
+                {singleDaySlots.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}{displaySlot(s) ? ` (${displaySlot(s)})` : ''}
+                  </option>
+                ))}
+              </select>
+              {state.baseSlotId && state.durationDays && (
+                <p className="text-xs text-sky-600 mt-1.5">
+                  📅 {state.durationDays} consecutive days of {singleDaySlots.find(s => s.id === state.baseSlotId)?.label}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -131,7 +154,10 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const emptyForm: FormState = { label: '', packageType: 'single', startTime: '', endTime: '', durationDays: '' }
+  // Only single-day packages can be used as a base
+  const singleDaySlots = slots.filter(s => !s.duration_days || s.duration_days <= 1)
+
+  const emptyForm: FormState = { label: '', packageType: 'single', startTime: '', endTime: '', durationDays: '', baseSlotId: '' }
 
   function slotToForm(slot: Slot): FormState {
     return {
@@ -140,6 +166,7 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
       startTime: normalizeTime(slot.start_time),
       endTime: normalizeTime(slot.end_time),
       durationDays: slot.duration_days ? String(slot.duration_days) : '',
+      baseSlotId: slot.base_slot_id ?? '',
     }
   }
 
@@ -148,8 +175,13 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
     setSaving(true); setError(null)
     try {
       const days = state.packageType === 'multi' ? parseInt(state.durationDays) || null : null
-      await addTimeSlot(state.label.trim(), state.packageType === 'single' ? state.startTime || null : null,
-        state.packageType === 'single' ? state.endTime || null : null, days)
+      await addTimeSlot(
+        state.label.trim(),
+        state.packageType === 'single' ? state.startTime || null : null,
+        state.packageType === 'single' ? state.endTime || null : null,
+        days,
+        state.packageType === 'multi' ? state.baseSlotId || null : null,
+      )
       setShowAdd(false)
       router.refresh()
     } catch { setError('Could not save') } finally { setSaving(false) }
@@ -160,8 +192,13 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
     setSaving(true); setError(null)
     try {
       const days = state.packageType === 'multi' ? parseInt(state.durationDays) || null : null
-      const result = await updateTimeSlot(id, state.label, state.packageType === 'single' ? state.startTime || null : null,
-        state.packageType === 'single' ? state.endTime || null : null, days)
+      const result = await updateTimeSlot(
+        id, state.label,
+        state.packageType === 'single' ? state.startTime || null : null,
+        state.packageType === 'single' ? state.endTime || null : null,
+        days,
+        state.packageType === 'multi' ? state.baseSlotId || null : null,
+      )
       if (result?.error) { setError(result.error); return }
       setEditingId(null)
       router.refresh()
@@ -187,6 +224,7 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
                     onCancel={() => { setEditingId(null); setError(null) }}
                     saving={saving}
                     error={editingId === slot.id ? error : null}
+                    singleDaySlots={singleDaySlots.filter(s => s.id !== slot.id)}
                   />
                 </div>
               ) : (
@@ -217,6 +255,7 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
             onCancel={() => { setShowAdd(false); setError(null) }}
             saving={saving}
             error={!editingId ? error : null}
+            singleDaySlots={singleDaySlots}
           />
         </div>
       ) : (
