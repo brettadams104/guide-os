@@ -15,13 +15,16 @@ export async function addTimeSlot(label: string, startTime: string | null, endTi
   revalidatePath('/settings')
 }
 
-export async function updateTimeSlot(id: string, label: string, startTime: string | null, endTime: string | null) {
+export async function updateTimeSlot(id: string, label: string, startTime: string | null, endTime: string | null): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { error } = await supabase.from('guide_time_slots').update({
-    label, start_time: startTime || null, end_time: endTime || null
+    label: label.trim(),
+    start_time: startTime || null,
+    end_time: endTime || null,
   }).eq('id', id)
-  if (error) throw new Error(error.message)
+  if (error) return { error: error.message }
   revalidatePath('/settings')
+  return {}
 }
 
 export async function deleteTimeSlot(id: string) {
