@@ -28,6 +28,12 @@ export default async function DashboardPage() {
     trip_date: t.trip_date,
     client_name: (t.clients as unknown as { name: string } | null)?.name ?? null,
     location: t.location,
+    status: 'scheduled',
+    notes: null,
+    time_label: null,
+    start_time: null,
+    end_time: null,
+    guide_name: null,
   }))
 
   return (

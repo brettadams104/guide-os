@@ -8,16 +8,25 @@ export default async function CalendarPage() {
 
   const { data: trips } = await supabase
     .from('trips')
-    .select('id, trip_date, location, clients(name)')
+    .select('id, trip_date, location, status, notes, clients(name), guide_time_slots(label, start_time, end_time), guide_staff(name)')
     .eq('guide_id', user!.id)
     .order('trip_date')
 
-  const events = (trips ?? []).map(t => ({
-    id: t.id,
-    trip_date: t.trip_date,
-    client_name: (t.clients as unknown as { name: string } | null)?.name ?? null,
-    location: t.location,
-  }))
+  const events = (trips ?? []).map(t => {
+    const slot = t.guide_time_slots as unknown as { label: string; start_time: string | null; end_time: string | null } | null
+    return {
+      id: t.id,
+      trip_date: t.trip_date,
+      client_name: (t.clients as unknown as { name: string } | null)?.name ?? null,
+      location: t.location,
+      status: t.status,
+      notes: t.notes,
+      time_label: slot?.label ?? null,
+      start_time: slot?.start_time ?? null,
+      end_time: slot?.end_time ?? null,
+      guide_name: (t.guide_staff as unknown as { name: string } | null)?.name ?? null,
+    }
+  })
 
   return (
     <div className="space-y-6">
