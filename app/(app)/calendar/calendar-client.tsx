@@ -254,9 +254,11 @@ function DayTimeline({ events, onClose }: { events: TripEvent[]; onClose: () => 
         {/* Trip blocks */}
         {timed.map(e => {
           const startMin = timeToMinutes(e.start_time!)
-          const endMin = e.end_time ? timeToMinutes(e.end_time) : startMin + 60
-          const top = minutesToPx(Math.max(startMin, DAY_START * 60))
-          const height = Math.max(minutesToPx(endMin) - minutesToPx(Math.max(startMin, DAY_START * 60)), HOUR_HEIGHT * 0.75)
+          const endMin = e.end_time ? timeToMinutes(e.end_time) : startMin + 120
+          const clampedStart = Math.max(startMin, DAY_START * 60)
+          const clampedEnd = Math.min(endMin, DAY_END * 60)
+          const top = minutesToPx(clampedStart)
+          const height = Math.max(minutesToPx(clampedEnd) - minutesToPx(clampedStart), HOUR_HEIGHT)
           const isScheduled = e.status === 'scheduled'
 
           return (

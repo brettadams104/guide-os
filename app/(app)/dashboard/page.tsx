@@ -17,23 +17,36 @@ export default async function DashboardPage() {
     supabase.from('trips').select('*, clients(name)').eq('guide_id', user!.id)
       .gte('trip_date', new Date().toISOString().split('T')[0])
       .order('trip_date', { ascending: true }).limit(5),
-    supabase.from('trips').select('id, trip_date, location, clients(name)').eq('guide_id', user!.id).order('trip_date'),
+    supabase.from('trips').select('id, trip_date, location, status, notes, clients(name)').eq('guide_id', user!.id).order('trip_date'),
   ])
 
   const monthRevenue = (monthTrips ?? []).reduce((sum, t) => sum + (t.amount_collected ?? 0), 0)
   const outstanding = (allTrips ?? []).reduce((sum, t) => sum + Math.max(0, (t.price ?? 0) - (t.amount_collected ?? 0)), 0)
+
+  // Fetch time slot + staff data separately (safe if migration not run)
+  const slotResult = await supabase
+    .from('trips')
+    .select('id, guide_time_slots(label, start_time, end_time), guide_staff(name)')
+    .eq('guide_id', user!.id)
+  const slotMap: Record<string, { time_label: string | null; start_time: string | null; end_time: string | null; guide_name: string | null }> = {}
+  ;(slotResult.error ? [] : slotResult.data ?? []).forEach((d: any) => {
+    const slot = d.guide_time_slots
+    slotMap[d.id] = {
+      time_label: slot?.label ?? null,
+      start_time: slot?.start_time ?? null,
+      end_time: slot?.end_time ?? null,
+      guide_name: d.guide_staff?.name ?? null,
+    }
+  })
 
   const calendarEvents = (allTripEvents ?? []).map(t => ({
     id: t.id,
     trip_date: t.trip_date,
     client_name: (t.clients as unknown as { name: string } | null)?.name ?? null,
     location: t.location,
-    status: 'scheduled',
-    notes: null,
-    time_label: null,
-    start_time: null,
-    end_time: null,
-    guide_name: null,
+    status: (t.status as string) ?? 'scheduled',
+    notes: t.notes ?? null,
+    ...(slotMap[t.id] ?? { time_label: null, start_time: null, end_time: null, guide_name: null }),
   }))
 
   return (
