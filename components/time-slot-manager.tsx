@@ -11,6 +11,7 @@ interface Slot {
   end_time: string | null
   duration_days: number | null
   base_slot_id: string | null
+  price: number | null
 }
 
 const TIME_OPTIONS: { label: string; value: string }[] = (() => {
@@ -66,6 +67,7 @@ interface FormState {
   endTime: string
   durationDays: string
   baseSlotId: string
+  price: string
 }
 
 function PackageForm({ initial, onSave, onCancel, saving, error, singleDaySlots }:
@@ -78,6 +80,15 @@ function PackageForm({ initial, onSave, onCancel, saving, error, singleDaySlots 
       <input type="text" value={state.label} onChange={e => set('label', e.target.value)}
         placeholder='Package name (e.g. "Half Day", "3-Day Float")'
         className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+      <div>
+        <label className="block text-xs text-slate-500 mb-1">Default Price <span className="text-slate-300">(optional)</span></label>
+        <div className="relative">
+          <span className="absolute left-3 top-2 text-slate-400 text-sm">$</span>
+          <input type="number" min="0" step="0.01" value={state.price} onChange={e => set('price', e.target.value)}
+            placeholder="0.00"
+            className="w-full border border-slate-200 rounded-xl pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+      </div>
 
       {/* Package type toggle */}
       <div className="flex gap-2">
@@ -157,7 +168,7 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
   // Only single-day packages can be used as a base
   const singleDaySlots = slots.filter(s => !s.duration_days || s.duration_days <= 1)
 
-  const emptyForm: FormState = { label: '', packageType: 'single', startTime: '', endTime: '', durationDays: '', baseSlotId: '' }
+  const emptyForm: FormState = { label: '', packageType: 'single', startTime: '', endTime: '', durationDays: '', baseSlotId: '', price: '' }
 
   function slotToForm(slot: Slot): FormState {
     return {
@@ -167,6 +178,7 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
       endTime: normalizeTime(slot.end_time),
       durationDays: slot.duration_days ? String(slot.duration_days) : '',
       baseSlotId: slot.base_slot_id ?? '',
+      price: slot.price ? String(slot.price) : '',
     }
   }
 
@@ -175,12 +187,14 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
     setSaving(true); setError(null)
     try {
       const days = state.packageType === 'multi' ? parseInt(state.durationDays) || null : null
+      const price = state.price ? parseFloat(state.price) || null : null
       await addTimeSlot(
         state.label.trim(),
         state.packageType === 'single' ? state.startTime || null : null,
         state.packageType === 'single' ? state.endTime || null : null,
         days,
         state.packageType === 'multi' ? state.baseSlotId || null : null,
+        price,
       )
       setShowAdd(false)
       router.refresh()
@@ -192,12 +206,14 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
     setSaving(true); setError(null)
     try {
       const days = state.packageType === 'multi' ? parseInt(state.durationDays) || null : null
+      const price = state.price ? parseFloat(state.price) || null : null
       const result = await updateTimeSlot(
         id, state.label,
         state.packageType === 'single' ? state.startTime || null : null,
         state.packageType === 'single' ? state.endTime || null : null,
         days,
         state.packageType === 'multi' ? state.baseSlotId || null : null,
+        price,
       )
       if (result?.error) { setError(result.error); return }
       setEditingId(null)
@@ -231,7 +247,9 @@ export function TimeSlotManager({ slots }: { slots: Slot[] }) {
                 <div className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
                   <div>
                     <p className="text-sm font-medium text-slate-900">{slot.label}</p>
-                    {displaySlot(slot) && <p className="text-xs text-slate-400">{displaySlot(slot)}</p>}
+                    <p className="text-xs text-slate-400">
+                      {[displaySlot(slot), slot.price ? `$${slot.price.toFixed(0)}` : null].filter(Boolean).join(' · ')}
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <button onClick={() => { setEditingId(slot.id); setError(null) }}

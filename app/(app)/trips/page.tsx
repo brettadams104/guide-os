@@ -128,12 +128,13 @@ function ScheduleTab() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [clients, setClients] = useState<{ id: string; name: string; phone: string | null; email: string | null }[]>([])
-  const [timeSlots, setTimeSlots] = useState<{ id: string; label: string; start_time: string | null; end_time: string | null }[]>([])
+  const [timeSlots, setTimeSlots] = useState<{ id: string; label: string; start_time: string | null; end_time: string | null; price: number | null }[]>([])
   const [categories, setCategories] = useState<{ id: string; name: string; guide_trip_options: { id: string; label: string }[] }[]>([])
   const [staff, setStaff] = useState<{ id: string; name: string }[]>([])
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
   const [newClientName, setNewClientName] = useState<string | null>(null)
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null)
+  const [autoPrice, setAutoPrice] = useState<string>('')
   const [categorySelections, setCategorySelections] = useState<Record<string, string>>({})
   const isNewClient = !!newClientName && !selectedClientId
 
@@ -141,7 +142,7 @@ function ScheduleTab() {
     const db = createClient()
     Promise.all([
       db.from('clients').select('id, name, phone, email').order('name'),
-      db.from('guide_time_slots').select('id, label, start_time, end_time').order('sort_order').order('created_at'),
+      db.from('guide_time_slots').select('id, label, start_time, end_time, price').order('sort_order').order('created_at'),
       db.from('guide_trip_categories').select('id, name, guide_trip_options(id, label)').order('sort_order').order('created_at'),
       db.from('guide_staff').select('id, name').order('name'),
     ]).then(([c, ts, cats, st]) => {
@@ -198,6 +199,7 @@ function ScheduleTab() {
       setNewClientName(null)
       setSelectedStaffId(null)
       setCategorySelections({})
+      setAutoPrice('')
       ;(e.target as HTMLFormElement).reset()
     } catch (err) {
       setError((err as Error).message)
@@ -245,12 +247,20 @@ function ScheduleTab() {
         {/* Time slot */}
         {timeSlots.length > 0 && (
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Time Slot</label>
-            <select name="time_slot_id" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-              <option value="">Select a time slot...</option>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Package</label>
+            <select
+              name="time_slot_id"
+              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+              onChange={e => {
+                const slot = timeSlots.find(s => s.id === e.target.value)
+                if (slot?.price) setAutoPrice(String(slot.price))
+                else setAutoPrice('')
+              }}
+            >
+              <option value="">Select a package...</option>
               {timeSlots.map(s => (
                 <option key={s.id} value={s.id}>
-                  {s.label}{s.start_time && s.end_time ? ` (${s.start_time} – ${s.end_time})` : s.start_time ? ` (${s.start_time})` : ''}
+                  {s.label}{s.price ? ` — $${s.price.toFixed(0)}` : ''}{s.start_time && s.end_time ? ` (${s.start_time} – ${s.end_time})` : ''}
                 </option>
               ))}
             </select>
@@ -309,7 +319,7 @@ function ScheduleTab() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Trip Price <span className="text-slate-400 font-normal">(optional)</span></label>
             <div className="relative"><span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
-              <input name="price" type="number" min="0" step="0.01" placeholder="0.00" className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+              <input name="price" type="number" min="0" step="0.01" placeholder="0.00" value={autoPrice} onChange={e => setAutoPrice(e.target.value)} className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
           </div>
           <div>

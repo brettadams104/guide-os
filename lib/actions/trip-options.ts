@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 
 // ── Time Slots ────────────────────────────────────────────────────────────────
 
-export async function addTimeSlot(label: string, startTime: string | null, endTime: string | null, durationDays: number | null, baseSlotId: string | null = null) {
+export async function addTimeSlot(label: string, startTime: string | null, endTime: string | null, durationDays: number | null, baseSlotId: string | null = null, price: number | null = null) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { error } = await supabase.from('guide_time_slots').insert({
@@ -14,12 +14,13 @@ export async function addTimeSlot(label: string, startTime: string | null, endTi
     end_time: endTime || null,
     duration_days: durationDays || null,
     base_slot_id: baseSlotId || null,
+    price: price || null,
   })
   if (error) throw new Error(error.message)
   revalidatePath('/settings')
 }
 
-export async function updateTimeSlot(id: string, label: string, startTime: string | null, endTime: string | null, durationDays: number | null, baseSlotId: string | null = null): Promise<{ error?: string }> {
+export async function updateTimeSlot(id: string, label: string, startTime: string | null, endTime: string | null, durationDays: number | null, baseSlotId: string | null = null, price: number | null = null): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { error } = await supabase.from('guide_time_slots').update({
     label: label.trim(),
@@ -27,6 +28,7 @@ export async function updateTimeSlot(id: string, label: string, startTime: strin
     end_time: endTime || null,
     duration_days: durationDays || null,
     base_slot_id: baseSlotId || null,
+    price: price || null,
   }).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/settings')
