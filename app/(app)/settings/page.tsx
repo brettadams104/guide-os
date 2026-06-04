@@ -1,8 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { deleteTimeSlot, addTripCategory, deleteTripCategory, addTripOption, deleteTripOption, addStaff, deleteStaff } from '@/lib/actions/trip-options'
-import { TimeSlotEditor } from '@/components/time-slot-editor'
-import { AddTimeSlotForm } from '@/components/add-time-slot-form'
+import { addTripCategory, deleteTripCategory, addTripOption, deleteTripOption, addStaff, deleteStaff } from '@/lib/actions/trip-options'
+import { TimeSlotManager } from '@/components/time-slot-manager'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -73,23 +72,7 @@ export default async function SettingsPage() {
           <h2 className="font-semibold text-slate-900">Time Slots</h2>
           <p className="text-xs text-slate-400 mt-0.5">Create the trip durations you offer (e.g. Half Day, Full Day)</p>
         </div>
-        {timeSlots?.length ? (
-          <ul className="space-y-2">
-            {timeSlots.map(slot => (
-              <TimeSlotEditor
-                key={slot.id}
-                id={slot.id}
-                label={slot.label}
-                startTime={slot.start_time}
-                endTime={slot.end_time}
-                onDelete={deleteTimeSlot.bind(null, slot.id) as any}
-              />
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-slate-400">No time slots yet — add your first below.</p>
-        )}
-        <AddTimeSlotForm />
+        <TimeSlotManager slots={timeSlots ?? []} />
       </div>
 
       {/* Trip Categories */}
