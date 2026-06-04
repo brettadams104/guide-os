@@ -27,7 +27,7 @@ export async function scheduleTrip(input: {
     notes: input.notes,
     price: input.price,
     deposit_paid: input.deposit_paid,
-    amount_collected: 0,
+    amount_collected: input.deposit_paid,
     payment_method: input.payment_method,
     status: 'scheduled',
     time_slot_id: input.time_slot_id || null,
