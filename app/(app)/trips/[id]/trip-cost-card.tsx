@@ -16,9 +16,23 @@ export function TripCostCard({ tripId, price, depositPaid, amountCollected }: Pr
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(String(amountCollected))
   const [saving, setSaving] = useState(false)
+  const [paymentAmount, setPaymentAmount] = useState('')
+  const [payingSaving, setPayingSaving] = useState(false)
 
   const outstanding = Math.max(0, (price ?? 0) - amountCollected)
   const isPaid = price != null && outstanding === 0
+
+  async function handlePayment() {
+    const amount = parseFloat(paymentAmount)
+    if (!amount || amount <= 0) return
+    setPayingSaving(true)
+    const db = createClient()
+    const newCollected = Math.min(amountCollected + amount, price ?? amountCollected + amount)
+    await db.from('trips').update({ amount_collected: newCollected }).eq('id', tripId)
+    setPaymentAmount('')
+    setPayingSaving(false)
+    router.refresh()
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -80,10 +94,38 @@ export function TripCostCard({ tripId, price, depositPaid, amountCollected }: Pr
             )}
           </div>
           {outstanding > 0 && (
-            <div className="flex justify-between text-sm font-semibold pt-0.5">
-              <span className="text-amber-600">Outstanding</span>
-              <span className="text-amber-600">${outstanding.toFixed(0)}</span>
-            </div>
+            <>
+              <div className="flex justify-between text-sm font-semibold pt-0.5">
+                <span className="text-amber-600">Outstanding</span>
+                <span className="text-amber-600">${outstanding.toFixed(0)}</span>
+              </div>
+              <div className="pt-2 border-t border-amber-100 space-y-2">
+                <p className="text-xs text-slate-500">Log a payment</p>
+                <div className="flex gap-2 items-center">
+                  <div className="relative flex-1">
+                    <span className="absolute left-2.5 top-1.5 text-slate-400 text-xs">$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      max={outstanding}
+                      value={paymentAmount}
+                      onChange={e => setPaymentAmount(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handlePayment() }}
+                      placeholder="0.00"
+                      className="w-full border border-slate-200 rounded-lg pl-6 pr-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                  </div>
+                  <button
+                    onClick={handlePayment}
+                    disabled={payingSaving || !paymentAmount || parseFloat(paymentAmount) <= 0}
+                    className="bg-green-600 hover:bg-green-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap"
+                  >
+                    {payingSaving ? '…' : 'Record'}
+                  </button>
+                </div>
+              </div>
+            </>
           )}
           {isPaid && (
             <p className="text-xs text-green-600 font-medium">Paid in full ✓</p>
