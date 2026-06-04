@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { addStaff, deleteStaff } from '@/lib/actions/trip-options'
 import { TimeSlotManager } from '@/components/time-slot-manager'
+import { AccountSettings } from '@/components/account-settings'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -20,6 +21,8 @@ export default async function SettingsPage() {
     await supabase.from('guides').update({
       name: formData.get('name') as string,
       business_name: (formData.get('business_name') as string) || null,
+      phone: (formData.get('phone') as string) || null,
+      address: (formData.get('address') as string) || null,
       location: (formData.get('location') as string) || null,
     }).eq('id', user!.id)
     revalidatePath('/settings')
@@ -42,7 +45,9 @@ export default async function SettingsPage() {
         {[
           { name: 'name', label: 'Your Name', defaultValue: guide?.name },
           { name: 'business_name', label: 'Business Name', defaultValue: guide?.business_name },
-          { name: 'location', label: 'Location', defaultValue: guide?.location },
+          { name: 'phone', label: 'Phone', defaultValue: (guide as any)?.phone },
+          { name: 'address', label: 'Address', defaultValue: (guide as any)?.address },
+          { name: 'location', label: 'Default Location (for weather)', defaultValue: guide?.location },
         ].map(f => (
           <div key={f.name}>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">{f.label}</label>
@@ -51,6 +56,9 @@ export default async function SettingsPage() {
         ))}
         <button type="submit" className="w-full bg-sky-500 hover:bg-sky-400 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Save Changes</button>
       </form>
+
+      {/* Account */}
+      <AccountSettings currentEmail={user!.email ?? ''} />
 
       {/* Offered Packages */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
