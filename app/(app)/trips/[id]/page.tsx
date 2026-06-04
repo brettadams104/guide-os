@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ConditionsDisplay } from '@/components/conditions-display'
 import { TripActions } from './trip-actions'
+import { TripCostCard } from './trip-cost-card'
 import type { TripConditions } from '@/lib/types'
 
 export default async function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,11 +47,12 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
           <p className="text-xs text-slate-500 uppercase tracking-wide">Fish Caught</p>
           <p className="font-bold text-slate-900 text-2xl mt-1">{totalFish}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Revenue</p>
-          <p className="font-bold text-slate-900 text-2xl mt-1">${(trip.amount_collected ?? 0).toFixed(0)}</p>
-          {balance > 0 && <p className="text-xs text-orange-500">${balance.toFixed(0)} owed</p>}
-        </div>
+        <TripCostCard
+          tripId={id}
+          price={trip.price}
+          depositPaid={trip.deposit_paid ?? 0}
+          amountCollected={trip.amount_collected ?? 0}
+        />
       </div>
 
       {conditions && (
