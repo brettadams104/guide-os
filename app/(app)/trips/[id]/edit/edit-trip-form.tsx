@@ -38,6 +38,7 @@ export function EditTripForm({ trip, timeSlots, staff }: Props) {
         notes: (form.get('notes') as string) || null,
         price: form.get('price') ? Number(form.get('price')) : null,
         deposit_paid: Number(form.get('deposit_paid') || 0),
+        amount_collected: Number(form.get('amount_collected') || 0),
         payment_method: (form.get('payment_method') as any) || null,
         time_slot_id: (form.get('time_slot_id') as string) || null,
         assigned_staff_id: selectedStaffId,
@@ -130,6 +131,14 @@ export function EditTripForm({ trip, timeSlots, staff }: Props) {
             <div className="relative">
               <span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
               <input name="deposit_paid" type="number" min="0" step="0.01" defaultValue={trip.deposit_paid ?? 0}
+                className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Amount Collected</label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
+              <input name="amount_collected" type="number" min="0" step="0.01" defaultValue={trip.amount_collected ?? 0}
                 className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
           </div>

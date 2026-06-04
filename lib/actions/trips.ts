@@ -146,6 +146,7 @@ export async function updateTrip(id: string, input: {
   notes: string | null
   price: number | null
   deposit_paid: number
+  amount_collected: number
   payment_method: PaymentMethod | null
   time_slot_id: string | null
   assigned_staff_id: string | null
@@ -157,6 +158,7 @@ export async function updateTrip(id: string, input: {
     notes: input.notes,
     price: input.price,
     deposit_paid: input.deposit_paid,
+    amount_collected: input.amount_collected,
     payment_method: input.payment_method,
     time_slot_id: input.time_slot_id || null,
     assigned_staff_id: input.assigned_staff_id || null,
