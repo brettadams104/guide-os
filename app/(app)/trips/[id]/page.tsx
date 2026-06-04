@@ -39,14 +39,10 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <p className="text-xs text-slate-500 uppercase tracking-wide">Client</p>
           <p className="font-bold text-slate-900 mt-1">{client?.name ?? '—'}</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Fish Caught</p>
-          <p className="font-bold text-slate-900 text-2xl mt-1">{totalFish}</p>
         </div>
         <TripCostCard
           tripId={id}
