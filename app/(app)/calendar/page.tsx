@@ -8,25 +8,38 @@ export default async function CalendarPage() {
 
   const { data: trips } = await supabase
     .from('trips')
-    .select('id, trip_date, location, status, notes, clients(name), guide_time_slots(label, start_time, end_time), guide_staff(name)')
+    .select('id, trip_date, location, status, notes, clients(name)')
     .eq('guide_id', user!.id)
     .order('trip_date')
 
-  const events = (trips ?? []).map(t => {
-    const slot = t.guide_time_slots as unknown as { label: string; start_time: string | null; end_time: string | null } | null
-    return {
-      id: t.id,
-      trip_date: t.trip_date,
-      client_name: (t.clients as unknown as { name: string } | null)?.name ?? null,
-      location: t.location,
-      status: t.status,
-      notes: t.notes,
+  // Try to fetch time slot + staff info separately (safe — won't break if columns don't exist)
+  const detailResult = await supabase
+    .from('trips')
+    .select('id, guide_time_slots(label, start_time, end_time), guide_staff(name)')
+    .eq('guide_id', user!.id)
+    .order('trip_date')
+  const tripDetails = detailResult.error ? null : detailResult.data
+
+  const detailMap: Record<string, { time_label: string | null; start_time: string | null; end_time: string | null; guide_name: string | null }> = {}
+  ;(tripDetails ?? []).forEach((d: any) => {
+    const slot = d.guide_time_slots as { label: string; start_time: string | null; end_time: string | null } | null
+    detailMap[d.id] = {
       time_label: slot?.label ?? null,
       start_time: slot?.start_time ?? null,
       end_time: slot?.end_time ?? null,
-      guide_name: (t.guide_staff as unknown as { name: string } | null)?.name ?? null,
+      guide_name: (d.guide_staff as { name: string } | null)?.name ?? null,
     }
   })
+
+  const events = (trips ?? []).map(t => ({
+    id: t.id,
+    trip_date: t.trip_date,
+    client_name: (t.clients as unknown as { name: string } | null)?.name ?? null,
+    location: t.location,
+    status: t.status as string ?? 'scheduled',
+    notes: t.notes,
+    ...(detailMap[t.id] ?? { time_label: null, start_time: null, end_time: null, guide_name: null }),
+  }))
 
   return (
     <div className="space-y-6">
