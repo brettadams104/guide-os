@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { addTimeSlot, deleteTimeSlot, addTripCategory, deleteTripCategory, addTripOption, deleteTripOption, addStaff, deleteStaff } from '@/lib/actions/trip-options'
+import { TimeSlotEditor } from '@/components/time-slot-editor'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -81,17 +82,14 @@ export default async function SettingsPage() {
         {timeSlots?.length ? (
           <ul className="space-y-2">
             {timeSlots.map(slot => (
-              <li key={slot.id} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{slot.label}</p>
-                  {(slot.start_time || slot.end_time) && (
-                    <p className="text-xs text-slate-400">{slot.start_time}{slot.start_time && slot.end_time ? ' – ' : ''}{slot.end_time}</p>
-                  )}
-                </div>
-                <form action={deleteTimeSlot.bind(null, slot.id)}>
-                  <button type="submit" className="text-xs text-red-400 hover:text-red-600">Remove</button>
-                </form>
-              </li>
+              <TimeSlotEditor
+                key={slot.id}
+                id={slot.id}
+                label={slot.label}
+                startTime={slot.start_time}
+                endTime={slot.end_time}
+                onDelete={deleteTimeSlot.bind(null, slot.id) as any}
+              />
             ))}
           </ul>
         ) : (
