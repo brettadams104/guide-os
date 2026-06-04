@@ -167,54 +167,14 @@ export function CalendarClient({ events }: { events: TripEvent[] }) {
               </button>
             </div>
 
-            {/* Trip list */}
+            {/* Timeline body */}
             <div className="overflow-y-auto flex-1">
               {!sortedSelected.length ? (
                 <div className="px-6 py-10 text-center">
                   <p className="text-slate-400 text-sm">No trips scheduled for this day.</p>
                 </div>
               ) : (
-                <ul className="divide-y divide-slate-100">
-                  {sortedSelected.map(e => (
-                    <li key={e.id} className="px-6 py-4">
-                      {/* Time slot */}
-                      {(e.time_label || e.start_time) && (
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
-                          <p className="text-xs font-semibold text-sky-600 uppercase tracking-wide">
-                            {e.time_label ?? ''}
-                            {e.start_time && (
-                              <span className="ml-1 font-normal text-slate-400 normal-case">
-                                {fmt12(e.start_time)}{e.end_time ? ` – ${fmt12(e.end_time)}` : ''}
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-0.5 min-w-0">
-                          <p className="font-bold text-slate-900">{e.client_name ?? 'No client'}</p>
-                          {e.location && <p className="text-sm text-slate-500">{e.location}</p>}
-                          {e.guide_name && <p className="text-xs text-slate-400">Guide: {e.guide_name}</p>}
-                          {e.notes && <p className="text-xs text-slate-400 italic mt-1">{e.notes}</p>}
-                        </div>
-                        <div className="flex flex-col items-end gap-2 shrink-0">
-                          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${e.status === 'scheduled' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                            {e.status === 'scheduled' ? 'Scheduled' : 'Completed'}
-                          </span>
-                          <Link
-                            href={`/trips/${e.id}`}
-                            onClick={() => setSelectedDate(null)}
-                            className="text-xs text-sky-500 hover:text-sky-400 font-medium"
-                          >
-                            View →
-                          </Link>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <DayTimeline events={sortedSelected} onClose={() => setSelectedDate(null)} />
               )}
             </div>
 
@@ -232,5 +192,95 @@ export function CalendarClient({ events }: { events: TripEvent[] }) {
         </div>
       )}
     </>
+  )
+}
+
+// ── Hour-by-hour timeline ─────────────────────────────────────────────────────
+
+const HOUR_HEIGHT = 56  // px per hour
+const DAY_START = 4     // 4am
+const DAY_END = 21      // 9pm
+
+function timeToMinutes(t: string): number {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + m
+}
+
+function minutesToPx(minutes: number): number {
+  return ((minutes - DAY_START * 60) / 60) * HOUR_HEIGHT
+}
+
+function DayTimeline({ events, onClose }: { events: TripEvent[]; onClose: () => void }) {
+  const hours = Array.from({ length: DAY_END - DAY_START }, (_, i) => DAY_START + i)
+  const totalHeight = hours.length * HOUR_HEIGHT
+
+  // Split: timed events vs untimed
+  const timed = events.filter(e => e.start_time)
+  const untimed = events.filter(e => !e.start_time)
+
+  return (
+    <div>
+      {/* Untimed trips at top */}
+      {untimed.length > 0 && (
+        <div className="px-4 pt-3 pb-2 border-b border-slate-100 space-y-2">
+          <p className="text-xs text-slate-400 uppercase tracking-wide font-medium px-1">No time set</p>
+          {untimed.map(e => (
+            <Link key={e.id} href={`/trips/${e.id}`} onClick={onClose}
+              className="flex items-center justify-between bg-slate-50 rounded-xl px-3 py-2 hover:bg-slate-100 transition-colors">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">{e.client_name ?? 'No client'}</p>
+                {e.location && <p className="text-xs text-slate-500">{e.location}</p>}
+              </div>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${e.status === 'scheduled' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                {e.status === 'scheduled' ? 'Scheduled' : 'Done'}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Hour timeline */}
+      <div className="relative" style={{ height: totalHeight }}>
+        {/* Hour rows */}
+        {hours.map(h => (
+          <div key={h} className="absolute w-full flex items-start border-t border-slate-100"
+            style={{ top: (h - DAY_START) * HOUR_HEIGHT, height: HOUR_HEIGHT }}>
+            <span className="text-xs text-slate-300 w-14 pl-3 pt-1 shrink-0 select-none">
+              {h === 12 ? '12 PM' : h > 12 ? `${h - 12} PM` : `${h} AM`}
+            </span>
+          </div>
+        ))}
+
+        {/* Trip blocks */}
+        {timed.map(e => {
+          const startMin = timeToMinutes(e.start_time!)
+          const endMin = e.end_time ? timeToMinutes(e.end_time) : startMin + 60
+          const top = minutesToPx(Math.max(startMin, DAY_START * 60))
+          const height = Math.max(minutesToPx(endMin) - minutesToPx(Math.max(startMin, DAY_START * 60)), HOUR_HEIGHT * 0.75)
+          const isScheduled = e.status === 'scheduled'
+
+          return (
+            <Link
+              key={e.id}
+              href={`/trips/${e.id}`}
+              onClick={onClose}
+              className={`absolute left-14 right-3 rounded-xl px-3 py-2 flex flex-col justify-between overflow-hidden hover:opacity-90 transition-opacity ${isScheduled ? 'bg-sky-500' : 'bg-emerald-500'}`}
+              style={{ top, height: Math.max(height, 40) }}
+            >
+              <div>
+                <p className="text-white font-bold text-sm leading-tight truncate">{e.client_name ?? 'No client'}</p>
+                {e.time_label && <p className="text-white/80 text-xs truncate">{e.time_label}</p>}
+                {e.location && <p className="text-white/70 text-xs truncate">{e.location}</p>}
+              </div>
+              {height >= HOUR_HEIGHT && e.start_time && (
+                <p className="text-white/60 text-xs mt-1">
+                  {fmt12(e.start_time)}{e.end_time ? ` – ${fmt12(e.end_time)}` : ''}
+                </p>
+              )}
+            </Link>
+          )
+        })}
+      </div>
+    </div>
   )
 }
