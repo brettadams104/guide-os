@@ -202,7 +202,10 @@ const DAY_START = 4     // 4am
 const DAY_END = 21      // 9pm
 
 function timeToMinutes(t: string): number {
-  const [h, m] = t.split(':').map(Number)
+  const parts = t.trim().split(':').map(Number)
+  const h = parts[0] ?? 0
+  const m = parts[1] ?? 0
+  if (isNaN(h) || isNaN(m)) return 0
   return h * 60 + m
 }
 
