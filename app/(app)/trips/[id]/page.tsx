@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { ConditionsDisplay } from '@/components/conditions-display'
 import { TripActions } from './trip-actions'
 import { TripCostCard } from './trip-cost-card'
 import type { TripConditions } from '@/lib/types'
+import { startTrip } from '@/lib/actions/trip-mode'
 
 export default async function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -24,6 +25,13 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
   const totalFish = catches.reduce((s, c) => s + c.count, 0)
   const balance = Math.max(0, (trip.price ?? 0) - (trip.amount_collected ?? 0))
   const client = trip.clients as { name: string; phone: string | null; email: string | null } | null
+  const isLive = !!(trip as any).started_at && !(trip as any).ended_at
+
+  async function handleStart() {
+    'use server'
+    await startTrip(id)
+    redirect(`/trips/${id}/live`)
+  }
 
   return (
     <div className="space-y-6">
@@ -38,6 +46,36 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
           </div>
         </div>
       </div>
+
+      {/* Start / Resume Trip */}
+      {trip.status === 'scheduled' && !(trip as any).ended_at && (
+        <div className={`rounded-2xl p-4 ${isLive ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200'}`}>
+          {isLive ? (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-amber-800 text-sm">Trip in progress</p>
+                <p className="text-amber-600 text-xs mt-0.5">Tap to return to live mode</p>
+              </div>
+              <Link href={`/trips/${id}/live`}
+                className="bg-amber-500 hover:bg-amber-400 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">
+                Resume Trip →
+              </Link>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-green-800 text-sm">Ready to go?</p>
+                <p className="text-green-600 text-xs mt-0.5">Start live trip tracking</p>
+              </div>
+              <form action={handleStart}>
+                <button type="submit" className="bg-green-600 hover:bg-green-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">
+                  Start Trip 🎣
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white rounded-2xl border border-slate-200 p-5">
