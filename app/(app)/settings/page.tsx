@@ -9,7 +9,7 @@ export default async function SettingsPage() {
   const { data: guide } = await supabase.from('guides').select('*').eq('id', user!.id).single()
 
   const [{ data: timeSlots }, { data: staff }] = await Promise.all([
-    supabase.from('guide_time_slots').select('id, label, start_time, end_time, duration_days').eq('guide_id', user!.id).order('sort_order').order('created_at'),
+    supabase.from('guide_time_slots').select('id, label, start_time, end_time').eq('guide_id', user!.id).order('sort_order').order('created_at'),
     supabase.from('guide_staff').select('*').eq('guide_id', user!.id).order('name'),
   ])
 
