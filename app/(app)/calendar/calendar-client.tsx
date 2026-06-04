@@ -181,7 +181,7 @@ export function CalendarClient({ events }: { events: TripEvent[] }) {
             {/* Footer */}
             <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 rounded-b-2xl">
               <Link
-                href="/trips"
+                href="/trips?tab=schedule"
                 onClick={() => setSelectedDate(null)}
                 className="block text-center text-sm text-sky-500 hover:text-sky-400 font-medium"
               >

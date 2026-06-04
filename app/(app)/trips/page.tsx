@@ -7,17 +7,27 @@ function localDateStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { scheduleTrip, logTripDetails } from '@/lib/actions/trips'
 import { createClientRecord } from '@/lib/actions/clients'
 import { createClient } from '@/lib/supabase/client'
 import { ClientSearch } from '@/components/client-search'
 import { CategoryCombobox } from '@/components/category-combobox'
 
-const TABS = ['Upcoming', 'Schedule', 'Log Details', 'Completed'] as const
+const TABS = ['Current Trips', 'Schedule', 'Log Details', 'Completed'] as const
 type Tab = typeof TABS[number]
 
+const TAB_PARAM: Record<string, Tab> = {
+  'current': 'Current Trips',
+  'schedule': 'Schedule',
+  'log': 'Log Details',
+  'completed': 'Completed',
+}
+
 export default function TripsPage() {
-  const [tab, setTab] = useState<Tab>('Upcoming')
+  const searchParams = useSearchParams()
+  const initialTab = TAB_PARAM[searchParams.get('tab') ?? ''] ?? 'Current Trips'
+  const [tab, setTab] = useState<Tab>(initialTab)
 
   return (
     <div className="space-y-6">
@@ -37,7 +47,7 @@ export default function TripsPage() {
         ))}
       </div>
 
-      {tab === 'Upcoming' && <UpcomingTab />}
+      {tab === 'Current Trips' && <UpcomingTab />}
       {tab === 'Schedule' && <ScheduleTab />}
       {tab === 'Log Details' && <LogDetailsTab />}
       {tab === 'Completed' && <CompletedTab />}
