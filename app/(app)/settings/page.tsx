@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { addTimeSlot, deleteTimeSlot, addTripCategory, deleteTripCategory, addTripOption, deleteTripOption, addStaff, deleteStaff } from '@/lib/actions/trip-options'
+import { deleteTimeSlot, addTripCategory, deleteTripCategory, addTripOption, deleteTripOption, addStaff, deleteStaff } from '@/lib/actions/trip-options'
 import { TimeSlotEditor } from '@/components/time-slot-editor'
+import { AddTimeSlotForm } from '@/components/add-time-slot-form'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -26,13 +27,6 @@ export default async function SettingsPage() {
     revalidatePath('/settings')
   }
 
-  async function handleAddTimeSlot(formData: FormData) {
-    'use server'
-    const label = formData.get('slot_label') as string
-    const start = (formData.get('slot_start') as string) || null
-    const end = (formData.get('slot_end') as string) || null
-    if (label?.trim()) await addTimeSlot(label.trim(), start, end)
-  }
 
   async function handleAddCategory(formData: FormData) {
     'use server'
@@ -95,21 +89,7 @@ export default async function SettingsPage() {
         ) : (
           <p className="text-sm text-slate-400">No time slots yet — add your first below.</p>
         )}
-        <form action={handleAddTimeSlot} className="space-y-3 pt-2 border-t border-slate-100">
-          <p className="text-xs font-medium text-slate-600">Add Time Slot</p>
-          <input name="slot_label" type="text" placeholder='e.g. "Half Day", "Full Day"' required className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">Start Time <span className="text-slate-300">(optional)</span></label>
-              <input name="slot_start" type="time" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">End Time <span className="text-slate-300">(optional)</span></label>
-              <input name="slot_end" type="time" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
-            </div>
-          </div>
-          <button type="submit" className="w-full border border-sky-300 text-sky-600 hover:bg-sky-50 font-medium py-2 rounded-xl transition-colors text-sm">+ Add Time Slot</button>
-        </form>
+        <AddTimeSlotForm />
       </div>
 
       {/* Trip Categories */}
