@@ -1,6 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+
+function localDateStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 import Link from 'next/link'
 import { scheduleTrip, logTripDetails } from '@/lib/actions/trips'
 import { createClientRecord } from '@/lib/actions/clients'
@@ -43,7 +48,7 @@ export default function TripsPage() {
 
 function TodayTab() {
   const [trips, setTrips] = useState<any[] | null>(null)
-  const today = new Date().toISOString().split('T')[0]
+  const today = localDateStr()
 
   if (trips === null) {
     Promise.resolve().then(() => {
@@ -276,7 +281,7 @@ function ScheduleTab() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Date</label>
-            <input name="trip_date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            <input name="trip_date" type="date" required defaultValue={localDateStr()} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
@@ -319,7 +324,7 @@ function UpcomingTab() {
         .from('trips')
         .select('*, clients(name)')
         .eq('status', 'scheduled')
-        .gte('trip_date', new Date().toISOString().split('T')[0])
+        .gte('trip_date', localDateStr())
         .order('trip_date', { ascending: true })
         .then(({ data }) => setTrips(data ?? []))
     })
