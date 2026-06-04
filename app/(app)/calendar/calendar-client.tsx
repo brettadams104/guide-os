@@ -172,13 +172,6 @@ export function CalendarClient({ events }: { events: TripEvent[] }) {
               {!sortedSelected.length ? (
                 <div className="px-6 py-10 text-center">
                   <p className="text-slate-400 text-sm">No trips scheduled for this day.</p>
-                  <Link
-                    href="/trips"
-                    onClick={() => setSelectedDate(null)}
-                    className="text-sky-500 text-sm mt-2 inline-block hover:text-sky-400"
-                  >
-                    Schedule a trip →
-                  </Link>
                 </div>
               ) : (
                 <ul className="divide-y divide-slate-100">
