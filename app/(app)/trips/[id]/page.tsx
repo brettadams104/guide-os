@@ -66,19 +66,6 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
         </div>
       )}
 
-      {catches.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900 mb-4">Catch Breakdown</h2>
-          <ul className="space-y-2">
-            {catches.map(c => (
-              <li key={c.id} className="flex justify-between text-sm">
-                <span className="text-slate-700">{c.species}</span>
-                <span className="font-semibold text-slate-900">{c.count}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {trip.notes && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6">

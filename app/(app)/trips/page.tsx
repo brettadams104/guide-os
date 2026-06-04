@@ -13,7 +13,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ClientSearch } from '@/components/client-search'
 import { CategoryCombobox } from '@/components/category-combobox'
 
-const TABS = ["Today's Trip", 'Schedule', 'Upcoming', 'Log Details', 'Completed'] as const
+const TABS = ['Upcoming', 'Schedule', 'Log Details', 'Completed'] as const
 type Tab = typeof TABS[number]
 
 export default function TripsPage() {
@@ -37,16 +37,15 @@ export default function TripsPage() {
         ))}
       </div>
 
-      {tab === "Today's Trip" && <TodayTab />}
-      {tab === 'Schedule' && <ScheduleTab />}
       {tab === 'Upcoming' && <UpcomingTab />}
+      {tab === 'Schedule' && <ScheduleTab />}
       {tab === 'Log Details' && <LogDetailsTab />}
       {tab === 'Completed' && <CompletedTab />}
     </div>
   )
 }
 
-function TodayTab() {
+function UpcomingTab() {
   const [trips, setTrips] = useState<any[] | null>(null)
   const today = localDateStr()
 
@@ -54,58 +53,62 @@ function TodayTab() {
     Promise.resolve().then(() => {
       createClient()
         .from('trips')
-        .select('*, clients(name), trip_catches(species, count)')
-        .eq('trip_date', today)
-        .order('created_at', { ascending: true })
+        .select('*, clients(name)')
+        .eq('status', 'scheduled')
+        .gte('trip_date', today)
+        .order('trip_date', { ascending: true })
         .then(({ data }) => setTrips(data ?? []))
     })
     return <p className="text-slate-400 text-sm py-8 text-center">Loading...</p>
   }
 
-  const dateLabel = new Date(today + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+  if (!trips.length) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+        <p className="text-slate-400 text-sm">No upcoming trips scheduled.</p>
+        <p className="text-slate-400 text-xs mt-1">Use the Schedule tab to book your next trip.</p>
+      </div>
+    )
+  }
+
+  // Group trips by date
+  const grouped: Record<string, any[]> = {}
+  trips.forEach((trip: any) => {
+    if (!grouped[trip.trip_date]) grouped[trip.trip_date] = []
+    grouped[trip.trip_date].push(trip)
+  })
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-slate-500 font-medium">{dateLabel}</p>
-      {!trips.length ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <p className="text-slate-400 text-sm">No trips scheduled for today.</p>
-          <p className="text-slate-400 text-xs mt-1">Use the Schedule tab to add one.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {trips.map((trip: any) => {
-            const totalFish = (trip.trip_catches as { count: number }[])?.reduce((s: number, c: { count: number }) => s + c.count, 0) ?? 0
-            const isScheduled = trip.status === 'scheduled'
-            return (
-              <Link key={trip.id} href={`/trips/${trip.id}`} className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-sky-300 transition-colors shadow-sm">
+    <div className="space-y-6">
+      {Object.entries(grouped).map(([date, dayTrips]) => {
+        const isToday = date === today
+        const dateLabel = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+        return (
+          <div key={date} className="space-y-3">
+            <p className="font-bold text-slate-900 text-base">
+              {isToday ? `Today · ${dateLabel}` : dateLabel}
+            </p>
+            {dayTrips.map((trip: any) => (
+              <Link key={trip.id} href={`/trips/${trip.id}`}
+                className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-sky-300 transition-colors shadow-sm">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-bold text-slate-900 text-lg">{trip.clients?.name ?? 'No client'}</p>
+                    <p className="font-bold text-slate-900 text-base">{trip.clients?.name ?? 'No client'}</p>
                     {trip.location && <p className="text-slate-500 text-sm mt-0.5">{trip.location}</p>}
+                    {trip.price != null && (
+                      <p className="text-sm text-slate-500 mt-1">
+                        ${trip.price.toFixed(0)}{trip.deposit_paid > 0 ? ` · Deposit: $${trip.deposit_paid.toFixed(0)}` : ''}
+                      </p>
+                    )}
+                    {trip.notes && <p className="mt-1 text-xs text-slate-400 italic">{trip.notes}</p>}
                   </div>
-                  <span className={`text-xs font-semibold px-3 py-1 rounded-full ${isScheduled ? 'bg-sky-100 text-sky-700' : 'bg-green-100 text-green-700'}`}>
-                    {isScheduled ? 'Scheduled' : 'Completed'}
-                  </span>
+                  <span className="text-xs bg-sky-100 text-sky-700 font-medium px-2.5 py-1 rounded-full shrink-0 ml-3">Scheduled</span>
                 </div>
-                {totalFish > 0 && (
-                  <div className="mt-3 flex items-center gap-4 text-sm text-slate-600">
-                    <span>🎣 {totalFish} fish</span>
-                    {trip.amount_collected > 0 && <span>💵 ${trip.amount_collected.toFixed(0)}</span>}
-                  </div>
-                )}
-                {trip.price && isScheduled && (
-                  <div className="mt-3 text-sm text-slate-500">
-                    Trip price: ${trip.price.toFixed(0)}
-                    {trip.deposit_paid > 0 && ` · Deposit: $${trip.deposit_paid.toFixed(0)}`}
-                  </div>
-                )}
-                {trip.notes && <p className="mt-2 text-xs text-slate-400 italic">{trip.notes}</p>}
               </Link>
-            )
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -315,51 +318,6 @@ function ScheduleTab() {
   )
 }
 
-function UpcomingTab() {
-  const [trips, setTrips] = useState<any[] | null>(null)
-
-  if (trips === null) {
-    Promise.resolve().then(() => {
-      createClient()
-        .from('trips')
-        .select('*, clients(name)')
-        .eq('status', 'scheduled')
-        .gte('trip_date', localDateStr())
-        .order('trip_date', { ascending: true })
-        .then(({ data }) => setTrips(data ?? []))
-    })
-    return <p className="text-slate-400 text-sm py-8 text-center">Loading...</p>
-  }
-
-  return (
-    <div className="space-y-4">
-      {!trips.length ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <p className="text-slate-400 text-sm">No upcoming trips scheduled.</p>
-          <p className="text-slate-400 text-xs mt-1">Use the Schedule tab to book your next trip.</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-          <ul className="divide-y divide-slate-100">
-            {trips.map((trip: any) => (
-              <li key={trip.id}>
-                <Link href={`/trips/${trip.id}`} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors">
-                  <div>
-                    <p className="font-semibold text-slate-900 text-sm">
-                      {new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                    </p>
-                    <p className="text-slate-500 text-xs mt-0.5">{trip.clients?.name ?? 'No client'}{trip.location ? ` · ${trip.location}` : ''}</p>
-                  </div>
-                  <span className="text-xs bg-sky-100 text-sky-700 font-medium px-2.5 py-1 rounded-full">Scheduled</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  )
-}
 
 function LogDetailsTab() {
   const [trips, setTrips] = useState<any[] | null>(null)
