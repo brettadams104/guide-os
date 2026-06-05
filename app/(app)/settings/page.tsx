@@ -4,6 +4,7 @@ import { addStaff, deleteStaff } from '@/lib/actions/trip-options'
 import { TimeSlotManager } from '@/components/time-slot-manager'
 import { AccountSettings } from '@/components/account-settings'
 import { SpeciesPresetManager } from '@/components/species-preset-manager'
+import { LurePresetManager } from '@/components/lure-preset-manager'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -15,6 +16,7 @@ export default async function SettingsPage() {
     supabase.from('guide_staff').select('*').eq('guide_id', user!.id).order('name'),
   ])
   const speciesPresets: string[] = (guide as any)?.species_presets ?? []
+  const lurePresets: string[] = (guide as any)?.lure_presets ?? []
 
   async function updateProfile(formData: FormData) {
     'use server'
@@ -69,6 +71,15 @@ export default async function SettingsPage() {
           <p className="text-xs text-slate-400 mt-0.5">These appear as one-tap buttons in Trip Mode when logging a catch</p>
         </div>
         <SpeciesPresetManager presets={speciesPresets} />
+      </div>
+
+      {/* Quick Lure / Bait Presets */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold text-slate-900">Caught On Presets</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Lures and baits that appear as one-tap buttons when logging a catch in Trip Mode</p>
+        </div>
+        <LurePresetManager presets={lurePresets} />
       </div>
 
       {/* Offered Packages */}

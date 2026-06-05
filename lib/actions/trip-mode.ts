@@ -61,11 +61,23 @@ export async function finishTrip(tripId: string): Promise<{ error?: string }> {
   return {}
 }
 
-export async function logCatch(tripId: string, species: string, count: number): Promise<{ error?: string; id?: string }> {
+export async function logCatch(
+  tripId: string,
+  species: string,
+  count: number,
+  opts?: { sizeInches?: number; weightLbs?: number; caughtOn?: string }
+): Promise<{ error?: string; id?: string }> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('trip_live_catches')
-    .insert({ trip_id: tripId, species: species.trim(), count })
+    .insert({
+      trip_id: tripId,
+      species: species.trim(),
+      count,
+      size_inches: opts?.sizeInches ?? null,
+      weight_lbs: opts?.weightLbs ?? null,
+      caught_on: opts?.caughtOn?.trim() || null,
+    })
     .select('id')
     .single()
   if (error) return { error: error.message }
@@ -100,6 +112,25 @@ export async function removeSpeciesPreset(species: string): Promise<void> {
   const { data: guide } = await supabase.from('guides').select('species_presets').eq('id', user!.id).single()
   const current: string[] = (guide as any)?.species_presets ?? []
   await supabase.from('guides').update({ species_presets: current.filter(s => s !== species) }).eq('id', user!.id)
+  revalidatePath('/settings')
+}
+
+export async function addLurePreset(lure: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: guide } = await supabase.from('guides').select('lure_presets').eq('id', user!.id).single()
+  const current: string[] = (guide as any)?.lure_presets ?? []
+  if (current.some(s => s.toLowerCase() === lure.toLowerCase())) return
+  await supabase.from('guides').update({ lure_presets: [...current, lure] }).eq('id', user!.id)
+  revalidatePath('/settings')
+}
+
+export async function removeLurePreset(lure: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: guide } = await supabase.from('guides').select('lure_presets').eq('id', user!.id).single()
+  const current: string[] = (guide as any)?.lure_presets ?? []
+  await supabase.from('guides').update({ lure_presets: current.filter(s => s !== lure) }).eq('id', user!.id)
   revalidatePath('/settings')
 }
 
