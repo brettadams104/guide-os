@@ -2,11 +2,16 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { StatCard } from '@/components/stat-card'
 import { CalendarClient } from '../calendar/calendar-client'
+import { TodayDate } from '@/components/today-date'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Subtract 12h from UTC to get a safe floor that covers all US timezones.
+  // This ensures we never accidentally filter out today's trips when the server
+  // clock is ahead of the guide's local time.
+  const safeToday = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString().split('T')[0]
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
 
@@ -15,7 +20,7 @@ export default async function DashboardPage() {
     supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id).gte('trip_date', monthStart),
     supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id),
     supabase.from('trips').select('*, clients(name)').eq('guide_id', user!.id)
-      .gte('trip_date', new Date().toISOString().split('T')[0])
+      .gte('trip_date', safeToday)
       .order('trip_date', { ascending: true }).limit(5),
     supabase.from('trips').select('id, trip_date, location, status, notes, clients(name)').eq('guide_id', user!.id).order('trip_date'),
   ])
@@ -54,7 +59,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-slate-500 text-sm mt-0.5">{now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <p className="text-slate-500 text-sm mt-0.5"><TodayDate /></p>
         </div>
         <Link href="/trips" className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
           Manage Trips
