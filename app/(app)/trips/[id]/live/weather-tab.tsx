@@ -1,32 +1,36 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import SunCalc from 'suncalc'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine, ComposedChart } from 'recharts'
 
 interface HourlyWeather {
-  time: string
+  hour: number
+  label: string
   temp: number
   weatherCode: number
   windSpeed: number
-  pressure: number
+  windDir: number
+  pressure: number     // hPa from API
+  precipitation: number // inches
+  cloudCover: number
 }
 
-function weatherIcon(code: number): string {
-  if (code === 0) return '☀️'
-  if (code <= 3) return '⛅'
-  if (code <= 48) return '🌫️'
-  if (code <= 67) return '🌧️'
-  if (code <= 77) return '❄️'
-  if (code <= 82) return '🌦️'
-  return '⛈️'
+function degToCompass(deg: number): string {
+  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+  return dirs[Math.round(deg / 45) % 8]
 }
 
-function fmt12(isoTime: string): string {
-  const d = new Date(isoTime)
-  const h = d.getHours()
-  const ampm = h >= 12 ? 'PM' : 'AM'
-  return `${h % 12 || 12} ${ampm}`
+function fmt12(hour: number): string {
+  const ampm = hour >= 12 ? 'PM' : 'AM'
+  return `${hour % 12 || 12}${ampm}`
 }
+
+function hpaToInHg(hpa: number): number {
+  return hpa * 0.02953
+}
+
+const CHART_WIDTH = 900
 
 export function WeatherTab() {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
@@ -37,6 +41,10 @@ export function WeatherTab() {
   const [sunset, setSunset] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const currentHour = new Date().getHours()
+  const currentData = weather.find(w => w.hour === currentHour)
 
   useEffect(() => {
     if ('geolocation' in navigator) {
@@ -54,22 +62,35 @@ export function WeatherTab() {
     fetchWeather(location.lat, location.lon)
   }, [location])
 
+  useEffect(() => {
+    if (weather.length === 0 || !scrollRef.current) return
+    const pxPerHour = CHART_WIDTH / 24
+    scrollRef.current.scrollLeft = Math.max(0, (currentHour - 3) * pxPerHour)
+  }, [weather, currentHour])
+
   async function fetchWeather(lat: number, lon: number) {
     setLoading(true)
     setError(null)
     try {
       const today = new Date().toISOString().split('T')[0]
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode,windspeed_10m,surface_pressure&timezone=auto&start_date=${today}&end_date=${today}&temperature_unit=fahrenheit&windspeed_unit=mph`
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode,windspeed_10m,winddirection_10m,surface_pressure,precipitation,cloudcover&timezone=auto&start_date=${today}&end_date=${today}&temperature_unit=fahrenheit&windspeed_unit=mph`
       const res = await fetch(url)
       const data = await res.json()
 
-      const hours: HourlyWeather[] = data.hourly.time.map((t: string, i: number) => ({
-        time: t,
-        temp: Math.round(data.hourly.temperature_2m[i]),
-        weatherCode: data.hourly.weathercode[i],
-        windSpeed: Math.round(data.hourly.windspeed_10m[i]),
-        pressure: Math.round(data.hourly.surface_pressure[i]),
-      }))
+      const hours: HourlyWeather[] = data.hourly.time.map((t: string, i: number) => {
+        const h = new Date(t).getHours()
+        return {
+          hour: h,
+          label: h === currentHour ? 'Now' : fmt12(h),
+          temp: Math.round(data.hourly.temperature_2m[i]),
+          weatherCode: data.hourly.weathercode[i],
+          windSpeed: Math.round(data.hourly.windspeed_10m[i]),
+          windDir: Math.round(data.hourly.winddirection_10m[i]),
+          pressure: data.hourly.surface_pressure[i],
+          precipitation: parseFloat((data.hourly.precipitation[i] * 0.0394).toFixed(2)),
+          cloudCover: Math.round(data.hourly.cloudcover[i]),
+        }
+      })
       setWeather(hours)
 
       const now = new Date()
@@ -115,12 +136,14 @@ export function WeatherTab() {
     }
   }
 
-  const now = new Date()
-  const currentHour = now.getHours()
+  const pressureMin = weather.length ? Math.min(...weather.map(w => w.pressure)) - 1 : 1010
+  const pressureMax = weather.length ? Math.max(...weather.map(w => w.pressure)) + 1 : 1016
+  const avgHigh = weather.length ? Math.max(...weather.map(w => w.temp)) : 0
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      <div className="flex gap-2">
+    <div className="flex-1 overflow-y-auto">
+      {/* Location search */}
+      <div className="p-4 flex gap-2">
         <input
           type="text"
           value={manualLocation}
@@ -134,8 +157,9 @@ export function WeatherTab() {
         </button>
       </div>
 
+      {/* Moon + Sun */}
       {moonPhase && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 flex justify-between">
+        <div className="mx-4 mb-4 bg-white rounded-2xl border border-slate-200 p-4 flex justify-between">
           <div className="text-center">
             <p className="text-xs text-slate-500">Moon</p>
             <p className="font-semibold text-sm mt-0.5">{moonPhase}</p>
@@ -152,35 +176,98 @@ export function WeatherTab() {
       )}
 
       {loading && <p className="text-slate-400 text-sm text-center py-8">Loading weather...</p>}
-      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+      {error && <p className="text-red-500 text-sm text-center px-4">{error}</p>}
 
       {!loading && weather.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-slate-100">
-            <p className="font-semibold text-slate-900 text-sm">Hourly Forecast</p>
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto border-t border-slate-200"
+          style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+        >
+          <div style={{ width: CHART_WIDTH, minWidth: CHART_WIDTH }}>
+
+            {/* Pressure stats bar */}
+            {currentData && (
+              <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex gap-5 text-xs font-medium text-slate-500">
+                <span>Bar: <span className="text-slate-800 font-bold">{hpaToInHg(currentData.pressure).toFixed(2)}&quot;</span></span>
+                <span>Rain: <span className="text-slate-800 font-bold">{currentData.precipitation}&quot;</span></span>
+                <span>Clouds: <span className="text-slate-800 font-bold">{currentData.cloudCover}%</span></span>
+              </div>
+            )}
+
+            {/* Pressure chart */}
+            <div className="bg-white pt-2">
+              <LineChart width={CHART_WIDTH} height={110} data={weather} margin={{ top: 4, right: 12, bottom: 0, left: 44 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={2}
+                />
+                <YAxis
+                  domain={[pressureMin, pressureMax]}
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={v => hpaToInHg(v).toFixed(2)}
+                  width={42}
+                />
+                <ReferenceLine x="Now" stroke="#f97316" strokeWidth={2} />
+                <Line type="monotone" dataKey="pressure" stroke="#22c55e" strokeWidth={2} dot={false} activeDot={false} />
+              </LineChart>
+            </div>
+
+            {/* Temp stats bar */}
+            {currentData && (
+              <div className="px-4 py-2.5 bg-slate-50 border-y border-slate-200 flex gap-5 text-xs font-medium text-slate-500">
+                <span>Temp: <span className="text-slate-800 font-bold">{currentData.temp}°F</span></span>
+                <span>Wind: <span className="text-slate-800 font-bold">{degToCompass(currentData.windDir)}@{currentData.windSpeed}</span></span>
+                <span>Avg High: <span className="text-slate-800 font-bold">{avgHigh}°F</span></span>
+              </div>
+            )}
+
+            {/* Temperature + Wind combo chart */}
+            <div className="bg-white pt-2 pb-4">
+              <ComposedChart width={CHART_WIDTH} height={130} data={weather} margin={{ top: 4, right: 52, bottom: 8, left: 44 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={2}
+                />
+                <YAxis
+                  yAxisId="temp"
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={v => `${v}°`}
+                  width={42}
+                />
+                <YAxis
+                  yAxisId="wind"
+                  orientation="right"
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={v => `${v}mph`}
+                  width={46}
+                />
+                <ReferenceLine yAxisId="temp" x="Now" stroke="#f97316" strokeWidth={2} />
+                <Line yAxisId="temp" type="monotone" dataKey="temp" stroke="#f97316" strokeWidth={2} dot={false} activeDot={false} />
+                <Line yAxisId="wind" type="monotone" dataKey="windSpeed" stroke="#3b82f6" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={false} />
+              </ComposedChart>
+            </div>
+
           </div>
-          <ul className="divide-y divide-slate-100">
-            {weather.map((h, i) => {
-              const hourNum = new Date(h.time).getHours()
-              const isCurrent = hourNum === currentHour
-              return (
-                <li key={i} className={`flex items-center justify-between px-4 py-3 ${isCurrent ? 'bg-sky-50' : ''}`}>
-                  <span className={`text-sm font-medium w-14 ${isCurrent ? 'text-sky-600 font-bold' : 'text-slate-600'}`}>
-                    {isCurrent ? 'Now' : fmt12(h.time)}
-                  </span>
-                  <span className="text-lg">{weatherIcon(h.weatherCode)}</span>
-                  <span className="text-sm font-semibold text-slate-900 w-12 text-right">{h.temp}°F</span>
-                  <span className="text-xs text-slate-500 w-16 text-right">💨 {h.windSpeed}mph</span>
-                  <span className="text-xs text-slate-400 w-16 text-right">{h.pressure} hPa</span>
-                </li>
-              )
-            })}
-          </ul>
         </div>
       )}
 
       {!loading && !location && !error && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+        <div className="mx-4 bg-white rounded-2xl border border-slate-200 p-8 text-center">
           <p className="text-slate-500 text-sm">Enter a location above to see the forecast.</p>
         </div>
       )}
