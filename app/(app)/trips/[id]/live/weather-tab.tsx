@@ -30,6 +30,38 @@ function hpaToInHg(hpa: number): number {
   return hpa * 0.02953
 }
 
+function windArrowColor(speed: number): string {
+  if (speed < 5) return '#cbd5e1'
+  if (speed < 15) return '#7dd3fc'
+  if (speed < 25) return '#3b82f6'
+  return '#1d4ed8'
+}
+
+// Arrows show where wind is blowing TO (windDir = FROM, so +180 = TO)
+function WindArrowStrip({ data, chartWidth }: { data: HourlyWeather[]; chartWidth: number }) {
+  const plotLeft = 86   // margin.left(44) + yAxis.width(42)
+  const plotRight = chartWidth - 98  // chartWidth - margin.right(52) - rightAxis.width(46)
+  const plotWidth = plotRight - plotLeft
+  const n = data.length
+
+  return (
+    <svg width={chartWidth} height={48} style={{ display: 'block' }}>
+      {data.map((h, i) => {
+        const cx = plotLeft + (i + 0.5) * (plotWidth / n)
+        const cy = 24
+        const rotation = (h.windDir + 180) % 360
+        const color = windArrowColor(h.windSpeed)
+        return (
+          <g key={i} transform={`translate(${cx}, ${cy}) rotate(${rotation})`}>
+            <line x1="0" y1="8" x2="0" y2="-3" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+            <polygon points="0,-9 -3.5,-2 3.5,-2" fill={color} />
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
 const CHART_WIDTH = 900
 
 export function WeatherTab() {
@@ -157,20 +189,53 @@ export function WeatherTab() {
         </button>
       </div>
 
-      {/* Moon + Sun */}
+      {/* Moon + Sun — no emojis */}
       {moonPhase && (
-        <div className="mx-4 mb-4 bg-white rounded-2xl border border-slate-200 p-4 flex justify-between">
+        <div className="mx-4 mb-3 bg-white rounded-2xl border border-slate-200 p-4 flex justify-between">
           <div className="text-center">
             <p className="text-xs text-slate-500">Moon</p>
             <p className="font-semibold text-sm mt-0.5">{moonPhase}</p>
           </div>
           <div className="text-center">
             <p className="text-xs text-slate-500">Sunrise</p>
-            <p className="font-semibold text-sm mt-0.5">🌅 {sunrise}</p>
+            <p className="font-semibold text-sm mt-0.5">{sunrise}</p>
           </div>
           <div className="text-center">
             <p className="text-xs text-slate-500">Sunset</p>
-            <p className="font-semibold text-sm mt-0.5">🌇 {sunset}</p>
+            <p className="font-semibold text-sm mt-0.5">{sunset}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Chart key — always visible, not scrollable */}
+      {weather.length > 0 && (
+        <div className="mx-4 mb-3 bg-white rounded-2xl border border-slate-200 p-3.5">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2.5">Chart Key</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs text-slate-600">
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-px bg-green-500 block shrink-0 border-t-2 border-green-500" />
+              <span>Barometric Pressure (inHg)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-px bg-orange-500 block shrink-0 border-t-2 border-orange-500" />
+              <span>Temperature (°F)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-5 shrink-0 border-t-2 border-dashed border-blue-400 block" />
+              <span>Wind Speed (mph)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-px h-4 bg-orange-500 block shrink-0 mx-2" />
+              <span>Current Time (Now)</span>
+            </div>
+            <div className="flex items-center gap-2 col-span-2">
+              <span className="flex gap-1 shrink-0">
+                {['#cbd5e1', '#7dd3fc', '#3b82f6', '#1d4ed8'].map(c => (
+                  <span key={c} className="w-3 h-3 rounded-full block" style={{ backgroundColor: c }} />
+                ))}
+              </span>
+              <span>Wind arrows — direction wind is blowing. Light gray = calm, dark blue = strong</span>
+            </div>
           </div>
         </div>
       )}
@@ -223,13 +288,13 @@ export function WeatherTab() {
             {currentData && (
               <div className="px-4 py-2.5 bg-slate-50 border-y border-slate-200 flex gap-5 text-xs font-medium text-slate-500">
                 <span>Temp: <span className="text-slate-800 font-bold">{currentData.temp}°F</span></span>
-                <span>Wind: <span className="text-slate-800 font-bold">{degToCompass(currentData.windDir)}@{currentData.windSpeed}</span></span>
-                <span>Avg High: <span className="text-slate-800 font-bold">{avgHigh}°F</span></span>
+                <span>Wind: <span className="text-slate-800 font-bold">{degToCompass(currentData.windDir)}@{currentData.windSpeed}mph</span></span>
+                <span>High: <span className="text-slate-800 font-bold">{avgHigh}°F</span></span>
               </div>
             )}
 
             {/* Temperature + Wind combo chart */}
-            <div className="bg-white pt-2 pb-4">
+            <div className="bg-white pt-2">
               <ComposedChart width={CHART_WIDTH} height={130} data={weather} margin={{ top: 4, right: 52, bottom: 8, left: 44 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis
@@ -260,6 +325,12 @@ export function WeatherTab() {
                 <Line yAxisId="temp" type="monotone" dataKey="temp" stroke="#f97316" strokeWidth={2} dot={false} activeDot={false} />
                 <Line yAxisId="wind" type="monotone" dataKey="windSpeed" stroke="#3b82f6" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={false} />
               </ComposedChart>
+            </div>
+
+            {/* Wind direction arrows */}
+            <div className="bg-white border-t border-slate-100 pb-4">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide px-4 pt-2 pb-1">Wind Direction</p>
+              <WindArrowStrip data={weather} chartWidth={CHART_WIDTH} />
             </div>
 
           </div>
