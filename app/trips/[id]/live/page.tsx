@@ -8,7 +8,6 @@ import { PhotosTab } from '@/app/(app)/trips/[id]/live/photos-tab'
 import { NotesTab } from '@/app/(app)/trips/[id]/live/notes-tab'
 import { LiveTabBar } from '@/app/(app)/trips/[id]/live/live-tab-bar'
 
-// Never cache this page — guide data (presets, location) must always be fresh
 export const dynamic = 'force-dynamic'
 
 export default async function TripLivePage({ params, searchParams }: {
@@ -19,28 +18,52 @@ export default async function TripLivePage({ params, searchParams }: {
   const { tab = 'weather' } = await searchParams
   const supabase = await createClient()
 
-  // Join guides directly so presets come in the same query — no separate auth call needed
+  // 1. Trip data — separate from guide data so a guide query failure never breaks the page
   const { data: trip } = await supabase
     .from('trips')
-    .select('*, clients(name), trip_live_catches(*), trip_photos(*), guides(species_presets, lure_presets, location)')
+    .select('*, clients(name), trip_live_catches(*), trip_photos(*)')
     .eq('id', id)
     .single()
 
   if (!trip) notFound()
   if (!(trip as any).started_at) redirect(`/trips/${id}`)
 
-  const liveCatches = (trip.trip_live_catches as {
+  const liveCatches = ((trip as any).trip_live_catches as {
     id: string; species: string; count: number; logged_at: string;
     size_inches: number | null; weight_lbs: number | null;
     caught_on: string | null; photo_url: string | null
-  }[]) ?? []
-  const photos = (trip.trip_photos as { id: string; url: string }[]) ?? []
-  const clientName = (trip.clients as { name: string } | null)?.name ?? 'No client'
+  }[] | null) ?? []
+  const photos = ((trip as any).trip_photos as { id: string; url: string }[] | null) ?? []
+  const clientName = ((trip as any).clients as { name: string } | null)?.name ?? 'No client'
+  const guideId = (trip as any).guide_id as string
 
-  const guide = trip.guides as { species_presets: string[]; lure_presets: string[]; location: string | null } | null
-  const speciesPresets: string[] = guide?.species_presets ?? []
-  const lurePresets: string[] = guide?.lure_presets ?? []
-  const guideLocation: string = guide?.location ?? ''
+  // 2. Guide location — only selects columns from the original schema, always safe
+  let guideLocation = ''
+  if (guideId) {
+    const { data: guideBase } = await supabase
+      .from('guides')
+      .select('location')
+      .eq('id', guideId)
+      .single()
+    guideLocation = (guideBase as any)?.location ?? ''
+  }
+
+  // 3. Species & lure presets — separate query so a missing column doesn't break location
+  let speciesPresets: string[] = []
+  let lurePresets: string[] = []
+  if (guideId) {
+    const { data: guidePresets, error: presetsError } = await supabase
+      .from('guides')
+      .select('species_presets, lure_presets')
+      .eq('id', guideId)
+      .single()
+
+    if (!presetsError && guidePresets) {
+      speciesPresets = (guidePresets as any).species_presets ?? []
+      lurePresets = (guidePresets as any).lure_presets ?? []
+    }
+    // If presetsError → columns don't exist yet (migration not run) — fall back to []
+  }
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
@@ -66,7 +89,15 @@ export default async function TripLivePage({ params, searchParams }: {
       {/* Tab content */}
       <div className="flex-1 overflow-hidden flex flex-col">
         {tab === 'weather' && <WeatherTab defaultLocation={guideLocation} />}
-        {tab === 'fish' && <FishLogTab tripId={id} initialCatches={liveCatches} initialPhotos={photos} speciesPresets={speciesPresets} lurePresets={lurePresets} />}
+        {tab === 'fish' && (
+          <FishLogTab
+            tripId={id}
+            initialCatches={liveCatches}
+            initialPhotos={photos}
+            speciesPresets={speciesPresets}
+            lurePresets={lurePresets}
+          />
+        )}
         {tab === 'photos' && <PhotosTab tripId={id} initialPhotos={photos} />}
         {tab === 'notes' && <NotesTab tripId={id} initialNotes={(trip as any).live_notes ?? ''} />}
       </div>
