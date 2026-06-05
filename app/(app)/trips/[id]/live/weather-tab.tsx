@@ -75,11 +75,12 @@ export function WeatherTab({ defaultLocation }: { defaultLocation?: string }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  // Track whether GPS has already provided a location so default doesn't overwrite it
+  const gpsWonRef = useRef(false)
 
   const currentHour = new Date().getHours()
   const currentData = weather.find(w => w.hour === currentHour)
 
-  // Geocode a location string → lat/lon using Open-Meteo
   async function geocodeLocation(name: string): Promise<{ lat: number; lon: number } | null> {
     try {
       const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1`)
@@ -92,40 +93,37 @@ export function WeatherTab({ defaultLocation }: { defaultLocation?: string }) {
   }
 
   useEffect(() => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude })
-          setActiveLocationLabel('Current Location')
-        },
-        async () => {
-          // GPS denied — fall back to guide's default location
-          if (defaultLocation) {
-            setManualLocation(defaultLocation)
-            const coords = await geocodeLocation(defaultLocation)
-            if (coords) {
-              setLocation(coords)
-              setActiveLocationLabel(defaultLocation)
-            } else {
-              setLoading(false)
-            }
-          } else {
-            setLoading(false)
-          }
-        }
-      )
-    } else if (defaultLocation) {
-      // No geolocation API — use default location
+    // Fire default location and GPS in parallel — whoever responds first wins.
+    // GPS overrides default if it comes in later (more accurate).
+
+    // 1. Start default location geocoding immediately (no waiting)
+    if (defaultLocation) {
       setManualLocation(defaultLocation)
       geocodeLocation(defaultLocation).then(coords => {
-        if (coords) {
+        if (coords && !gpsWonRef.current) {
           setLocation(coords)
           setActiveLocationLabel(defaultLocation)
-        } else {
+        } else if (!coords && !gpsWonRef.current) {
           setLoading(false)
         }
       })
-    } else {
+    }
+
+    // 2. Try GPS in parallel — overrides default if it responds
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          gpsWonRef.current = true
+          setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude })
+          setActiveLocationLabel('Current Location')
+        },
+        () => {
+          // GPS denied or failed — default location handles it
+          if (!defaultLocation) setLoading(false)
+        },
+        { timeout: 8000, maximumAge: 300000 }
+      )
+    } else if (!defaultLocation) {
       setLoading(false)
     }
   }, [])
