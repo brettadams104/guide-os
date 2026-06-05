@@ -84,6 +84,25 @@ export async function saveLiveNotes(tripId: string, notes: string): Promise<void
   await supabase.from('trips').update({ live_notes: notes }).eq('id', tripId)
 }
 
+export async function addSpeciesPreset(species: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: guide } = await supabase.from('guides').select('species_presets').eq('id', user!.id).single()
+  const current: string[] = (guide as any)?.species_presets ?? []
+  if (current.some(s => s.toLowerCase() === species.toLowerCase())) return
+  await supabase.from('guides').update({ species_presets: [...current, species] }).eq('id', user!.id)
+  revalidatePath('/settings')
+}
+
+export async function removeSpeciesPreset(species: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: guide } = await supabase.from('guides').select('species_presets').eq('id', user!.id).single()
+  const current: string[] = (guide as any)?.species_presets ?? []
+  await supabase.from('guides').update({ species_presets: current.filter(s => s !== species) }).eq('id', user!.id)
+  revalidatePath('/settings')
+}
+
 export async function uploadTripLivePhoto(tripId: string, file: File): Promise<{ url?: string; error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

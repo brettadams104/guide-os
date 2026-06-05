@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { addStaff, deleteStaff } from '@/lib/actions/trip-options'
 import { TimeSlotManager } from '@/components/time-slot-manager'
 import { AccountSettings } from '@/components/account-settings'
+import { SpeciesPresetManager } from '@/components/species-preset-manager'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -13,6 +14,7 @@ export default async function SettingsPage() {
     supabase.from('guide_time_slots').select('id, label, start_time, end_time, price').eq('guide_id', user!.id).order('sort_order').order('created_at'),
     supabase.from('guide_staff').select('*').eq('guide_id', user!.id).order('name'),
   ])
+  const speciesPresets: string[] = (guide as any)?.species_presets ?? []
 
   async function updateProfile(formData: FormData) {
     'use server'
@@ -59,6 +61,15 @@ export default async function SettingsPage() {
 
       {/* Account */}
       <AccountSettings currentEmail={user!.email ?? ''} />
+
+      {/* Quick Catch Species */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold text-slate-900">Quick Catch Species</h2>
+          <p className="text-xs text-slate-400 mt-0.5">These appear as one-tap buttons in Trip Mode when logging a catch</p>
+        </div>
+        <SpeciesPresetManager presets={speciesPresets} />
+      </div>
 
       {/* Offered Packages */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">

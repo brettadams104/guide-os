@@ -29,13 +29,10 @@ export default async function TripLivePage({ params, searchParams }: {
   const photos = (trip.trip_photos as { id: string; url: string }[]) ?? []
   const clientName = (trip.clients as { name: string } | null)?.name ?? 'No client'
 
-  // Get recent species for autocomplete
-  const { data: allCatches } = await supabase
-    .from('trip_catches')
-    .select('species')
-    .order('id', { ascending: false })
-    .limit(100)
-  const recentSpecies = [...new Set((allCatches ?? []).map(c => c.species))].slice(0, 20)
+  // Get guide's species presets for the quick-catch buttons
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: guide } = await supabase.from('guides').select('species_presets').eq('id', user!.id).single()
+  const speciesPresets: string[] = (guide as any)?.species_presets ?? []
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
@@ -61,7 +58,7 @@ export default async function TripLivePage({ params, searchParams }: {
       {/* Tab content */}
       <div className="flex-1 overflow-hidden flex flex-col">
         {tab === 'weather' && <WeatherTab />}
-        {tab === 'fish' && <FishLogTab tripId={id} initialCatches={liveCatches} recentSpecies={recentSpecies} />}
+        {tab === 'fish' && <FishLogTab tripId={id} initialCatches={liveCatches} speciesPresets={speciesPresets} />}
         {tab === 'photos' && <PhotosTab tripId={id} initialPhotos={photos} />}
         {tab === 'notes' && <NotesTab tripId={id} initialNotes={(trip as { live_notes?: string }).live_notes ?? ''} />}
       </div>
