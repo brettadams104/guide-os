@@ -25,7 +25,11 @@ export default async function TripLivePage({ params, searchParams }: {
   if (!trip) notFound()
   if (!trip.started_at) redirect(`/trips/${id}`)
 
-  const liveCatches = (trip.trip_live_catches as { id: string; species: string; count: number; logged_at: string }[]) ?? []
+  const liveCatches = (trip.trip_live_catches as {
+    id: string; species: string; count: number; logged_at: string;
+    size_inches: number | null; weight_lbs: number | null;
+    caught_on: string | null; photo_url: string | null
+  }[]) ?? []
   const photos = (trip.trip_photos as { id: string; url: string }[]) ?? []
   const clientName = (trip.clients as { name: string } | null)?.name ?? 'No client'
 

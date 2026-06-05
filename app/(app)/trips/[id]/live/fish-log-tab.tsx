@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { logCatch, deleteCatch, addSpeciesPreset, addLurePreset, uploadTripLivePhoto, deleteTripPhoto } from '@/lib/actions/trip-mode'
+import { logCatch, deleteCatch, addSpeciesPreset, addLurePreset, uploadTripLivePhoto } from '@/lib/actions/trip-mode'
 
 interface Catch {
   id: string
@@ -11,6 +11,7 @@ interface Catch {
   size_inches?: number | null
   weight_lbs?: number | null
   caught_on?: string | null
+  photo_url?: string | null
 }
 
 interface FishDetail {
@@ -28,19 +29,24 @@ interface Props {
   lurePresets: string[]
 }
 
-export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPresets: initialSpecies, lurePresets: initialLures }: Props) {
+export function FishLogTab({ tripId, initialCatches, initialPhotos: _initialPhotos, speciesPresets: initialSpecies, lurePresets: initialLures }: Props) {
   const [catches, setCatches] = useState<Catch[]>(initialCatches)
-  const [photos, setPhotos] = useState<Photo[]>(initialPhotos)
   const [speciesPresets, setSpeciesPresets] = useState<string[]>(initialSpecies)
   const [lurePresets, setLurePresets] = useState<string[]>(initialLures)
 
   const [species, setSpecies] = useState('')
   const [caughtOn, setCaughtOn] = useState('')
   const [count, setCount] = useState(1)
-  // Per-fish size/weight when count > 1; single values when count === 1
   const [fishDetails, setFishDetails] = useState<FishDetail[]>([{ sizeInches: '', weightLbs: '' }])
+
+  // Pending photo for the current log entry
+  const [pendingPhoto, setPendingPhoto] = useState<File | null>(null)
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null)
+
+  // Full-screen viewer
+  const [viewingPhoto, setViewingPhoto] = useState<string | null>(null)
+
   const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState(false)
 
   const caughtOnRef = useRef<HTMLInputElement>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
@@ -50,9 +56,8 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPrese
   useEffect(() => {
     setFishDetails(prev => {
       if (prev.length === count) return prev
-      if (prev.length < count) {
+      if (prev.length < count)
         return [...prev, ...Array(count - prev.length).fill(null).map(() => ({ sizeInches: '', weightLbs: '' }))]
-      }
       return prev.slice(0, count)
     })
   }, [count])
@@ -61,19 +66,18 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPrese
     setFishDetails(prev => prev.map((f, i) => i === index ? { ...f, [field]: value } : f))
   }
 
-  const handlePhoto = useCallback(async (file: File) => {
-    setUploading(true)
-    const result = await uploadTripLivePhoto(tripId, file)
-    if (result.url && result.id) {
-      setPhotos(prev => [{ id: result.id!, url: result.url! }, ...prev])
-    }
-    setUploading(false)
-  }, [tripId])
+  function handlePhotoFile(file: File) {
+    if (pendingPreview) URL.revokeObjectURL(pendingPreview)
+    setPendingPhoto(file)
+    setPendingPreview(URL.createObjectURL(file))
+  }
 
-  async function handleDeletePhoto(photoId: string, e: React.MouseEvent) {
-    e.stopPropagation()
-    setPhotos(prev => prev.filter(p => p.id !== photoId))
-    await deleteTripPhoto(photoId)
+  function clearPendingPhoto() {
+    if (pendingPreview) URL.revokeObjectURL(pendingPreview)
+    setPendingPhoto(null)
+    setPendingPreview(null)
+    if (cameraRef.current) cameraRef.current.value = ''
+    if (galleryRef.current) galleryRef.current.value = ''
   }
 
   const totalFish = catches.reduce((s, c) => s + c.count, 0)
@@ -85,15 +89,22 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPrese
     const s = species.trim()
     const lure = caughtOn.trim() || undefined
     const now = new Date().toISOString()
-    const newCatches: Catch[] = []
 
-    // Log each fish individually so every one gets its own record
+    // Upload photo once (shared across all fish in this batch)
+    let photoUrl: string | undefined
+    if (pendingPhoto) {
+      const result = await uploadTripLivePhoto(tripId, pendingPhoto)
+      if (result.url) photoUrl = result.url
+    }
+
+    const newCatches: Catch[] = []
     for (let i = 0; i < count; i++) {
       const fd = fishDetails[i] ?? { sizeInches: '', weightLbs: '' }
       const result = await logCatch(tripId, s, 1, {
         sizeInches: fd.sizeInches ? parseFloat(fd.sizeInches) : undefined,
         weightLbs: fd.weightLbs ? parseFloat(fd.weightLbs) : undefined,
         caughtOn: lure,
+        photoUrl,
       })
       if (!result.error && result.id) {
         newCatches.push({
@@ -104,6 +115,7 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPrese
           size_inches: fd.sizeInches ? parseFloat(fd.sizeInches) : null,
           weight_lbs: fd.weightLbs ? parseFloat(fd.weightLbs) : null,
           caught_on: lure ?? null,
+          photo_url: photoUrl ?? null,
         })
       }
     }
@@ -111,7 +123,6 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPrese
     if (newCatches.length > 0) {
       setCatches(prev => [...newCatches.reverse(), ...prev])
 
-      // Auto-add to presets if new
       if (!speciesPresets.some(p => p.toLowerCase() === s.toLowerCase())) {
         addSpeciesPreset(s)
         setSpeciesPresets(prev => [...prev, s])
@@ -125,6 +136,7 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPrese
       setCaughtOn('')
       setCount(1)
       setFishDetails([{ sizeInches: '', weightLbs: '' }])
+      clearPendingPhoto()
     }
 
     setSaving(false)
@@ -152,29 +164,19 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPrese
           {speciesPresets.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {speciesPresets.map(sp => (
-                <button
-                  key={sp}
-                  type="button"
-                  onClick={() => setSpecies(sp)}
+                <button key={sp} type="button" onClick={() => setSpecies(sp)}
                   className={`px-3.5 py-2 rounded-full text-sm font-medium border transition-colors ${
-                    species === sp
-                      ? 'bg-sky-500 text-white border-sky-500'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-sky-400 hover:text-sky-600'
-                  }`}
-                >
+                    species === sp ? 'bg-sky-500 text-white border-sky-500' : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-sky-400 hover:text-sky-600'
+                  }`}>
                   {sp}
                 </button>
               ))}
             </div>
           )}
-          <input
-            type="text"
-            value={species}
-            onChange={e => setSpecies(e.target.value)}
+          <input type="text" value={species} onChange={e => setSpecies(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') caughtOnRef.current?.focus() }}
             placeholder={speciesPresets.length > 0 ? 'Or type a different species…' : 'Species (e.g. Largemouth Bass)'}
-            className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-          />
+            className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
         </div>
 
         {/* Caught On */}
@@ -183,29 +185,18 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPrese
           {lurePresets.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {lurePresets.map(sp => (
-                <button
-                  key={sp}
-                  type="button"
-                  onClick={() => setCaughtOn(sp)}
+                <button key={sp} type="button" onClick={() => setCaughtOn(sp)}
                   className={`px-3.5 py-2 rounded-full text-sm font-medium border transition-colors ${
-                    caughtOn === sp
-                      ? 'bg-sky-500 text-white border-sky-500'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-sky-400 hover:text-sky-600'
-                  }`}
-                >
+                    caughtOn === sp ? 'bg-sky-500 text-white border-sky-500' : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-sky-400 hover:text-sky-600'
+                  }`}>
                   {sp}
                 </button>
               ))}
             </div>
           )}
-          <input
-            ref={caughtOnRef}
-            type="text"
-            value={caughtOn}
-            onChange={e => setCaughtOn(e.target.value)}
+          <input ref={caughtOnRef} type="text" value={caughtOn} onChange={e => setCaughtOn(e.target.value)}
             placeholder={lurePresets.length > 0 ? 'Or type a lure / bait…' : 'Lure or bait (optional)'}
-            className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-          />
+            className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
         </div>
 
         {/* Count stepper */}
@@ -213,119 +204,83 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPrese
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">How Many?</p>
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setCount(c => Math.max(1, c - 1))}
-                className="w-9 h-9 rounded-full border border-slate-200 text-slate-600 text-xl font-bold hover:bg-slate-50 flex items-center justify-center transition-colors"
-              >
+              <button type="button" onClick={() => setCount(c => Math.max(1, c - 1))}
+                className="w-9 h-9 rounded-full border border-slate-200 text-slate-600 text-xl font-bold hover:bg-slate-50 flex items-center justify-center transition-colors">
                 −
               </button>
               <span className="text-2xl font-black text-slate-900 w-6 text-center">{count}</span>
-              <button
-                type="button"
-                onClick={() => setCount(c => c + 1)}
-                className="w-9 h-9 rounded-full border border-slate-200 text-slate-600 text-xl font-bold hover:bg-slate-50 flex items-center justify-center transition-colors"
-              >
+              <button type="button" onClick={() => setCount(c => c + 1)}
+                className="w-9 h-9 rounded-full border border-slate-200 text-slate-600 text-xl font-bold hover:bg-slate-50 flex items-center justify-center transition-colors">
                 +
               </button>
             </div>
           </div>
 
-          {/* Per-fish detail rows */}
+          {/* Per-fish size / weight rows */}
           <div className="space-y-2">
             {fishDetails.map((fd, i) => (
               <div key={i} className="flex items-center gap-2">
                 {count > 1 && (
                   <span className="text-xs font-semibold text-slate-400 w-11 shrink-0 text-right">Fish {i + 1}</span>
                 )}
-                <div className={`grid gap-2 flex-1 ${count === 1 ? 'grid-cols-2' : 'grid-cols-2'}`}>
+                <div className="grid grid-cols-2 gap-2 flex-1">
                   <div>
-                    {i === 0 && (
-                      <label className="block text-xs text-slate-400 mb-1">Size (in) <span className="text-slate-300">optional</span></label>
-                    )}
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.5"
-                      value={fd.sizeInches}
-                      onChange={e => updateFish(i, 'sizeInches', e.target.value)}
-                      placeholder="—"
-                      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-sky-500"
-                    />
+                    {i === 0 && <label className="block text-xs text-slate-400 mb-1">Size (in) <span className="text-slate-300">optional</span></label>}
+                    <input type="number" min="0" step="0.5" value={fd.sizeInches}
+                      onChange={e => updateFish(i, 'sizeInches', e.target.value)} placeholder="—"
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-sky-500" />
                   </div>
                   <div>
-                    {i === 0 && (
-                      <label className="block text-xs text-slate-400 mb-1">Weight (lb) <span className="text-slate-300">optional</span></label>
-                    )}
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      value={fd.weightLbs}
-                      onChange={e => updateFish(i, 'weightLbs', e.target.value)}
-                      placeholder="—"
-                      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-sky-500"
-                    />
+                    {i === 0 && <label className="block text-xs text-slate-400 mb-1">Weight (lb) <span className="text-slate-300">optional</span></label>}
+                    <input type="number" min="0" step="0.1" value={fd.weightLbs}
+                      onChange={e => updateFish(i, 'weightLbs', e.target.value)} placeholder="—"
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-sky-500" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          <button
-            onClick={handleLog}
-            disabled={saving || !species.trim()}
-            className="w-full bg-sky-500 hover:bg-sky-400 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-50 transition-colors"
-          >
+          {/* Photo attach — inside the form */}
+          <div className="pt-2 border-t border-slate-100 space-y-2">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Photo <span className="text-slate-300 normal-case font-normal">optional</span></p>
+
+            {pendingPreview ? (
+              <div className="flex items-center gap-3">
+                <div className="relative shrink-0">
+                  <img src={pendingPreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl" />
+                  <button onClick={clearPendingPhoto}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black/70 text-white rounded-full text-xs flex items-center justify-center">
+                    ✕
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400">Photo attached — will be saved with this catch</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => cameraRef.current?.click()}
+                  className="border border-dashed border-slate-300 rounded-xl py-3 text-xs text-slate-500 hover:border-sky-400 hover:text-sky-500 transition-colors flex items-center justify-center gap-1.5 font-medium">
+                  📷 Take Photo
+                </button>
+                <button onClick={() => galleryRef.current?.click()}
+                  className="border border-dashed border-slate-300 rounded-xl py-3 text-xs text-slate-500 hover:border-sky-400 hover:text-sky-500 transition-colors flex items-center justify-center gap-1.5 font-medium">
+                  🖼 Camera Roll
+                </button>
+              </div>
+            )}
+
+            {/* capture="environment" saves to device camera roll on iOS/Android */}
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
+              onChange={e => e.target.files?.[0] && handlePhotoFile(e.target.files[0])} />
+            <input ref={galleryRef} type="file" accept="image/*" className="hidden"
+              onChange={e => e.target.files?.[0] && handlePhotoFile(e.target.files[0])} />
+          </div>
+
+          <button onClick={handleLog} disabled={saving || !species.trim()}
+            className="w-full bg-sky-500 hover:bg-sky-400 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-50 transition-colors">
             {saving ? 'Logging…' : count === 1 ? '+ Log Catch' : `+ Log ${count} Catches`}
           </button>
         </div>
-      </div>
-
-      {/* Photos */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Photos</p>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => cameraRef.current?.click()}
-            className="bg-[#0f1f35] text-white rounded-xl py-4 flex flex-col items-center gap-1.5 font-semibold text-sm hover:bg-[#1a3254] transition-colors"
-          >
-            <span className="text-2xl">📷</span>
-            Take Photo
-          </button>
-          <button
-            onClick={() => galleryRef.current?.click()}
-            className="bg-slate-50 border border-slate-200 text-slate-700 rounded-xl py-4 flex flex-col items-center gap-1.5 font-semibold text-sm hover:bg-slate-100 transition-colors"
-          >
-            <span className="text-2xl">🖼️</span>
-            Camera Roll
-          </button>
-        </div>
-
-        <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
-          onChange={e => e.target.files?.[0] && handlePhoto(e.target.files[0])} />
-        <input ref={galleryRef} type="file" accept="image/*" className="hidden"
-          onChange={e => e.target.files?.[0] && handlePhoto(e.target.files[0])} />
-
-        {uploading && (
-          <p className="text-xs text-sky-500 font-medium text-center">Uploading...</p>
-        )}
-
-        {photos.length > 0 && (
-          <div className="grid grid-cols-3 gap-2">
-            {photos.map(p => (
-              <div key={p.id} className="relative">
-                <img src={p.url} alt="Trip photo" className="w-full h-24 object-cover rounded-xl" />
-                <button
-                  onClick={e => handleDeletePhoto(p.id, e)}
-                  className="absolute top-1 right-1 w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center text-xs leading-none transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Catch log */}
@@ -336,28 +291,51 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPrese
           </div>
           <ul className="divide-y divide-slate-100">
             {catches.map(c => (
-              <li key={c.id} className="flex items-start justify-between px-4 py-3">
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-slate-900 text-sm">{c.species}</p>
-                  {c.caught_on && (
-                    <p className="text-xs text-slate-500 mt-0.5">on {c.caught_on}</p>
-                  )}
-                  <div className="flex gap-3 mt-0.5">
-                    {c.size_inches != null && (
-                      <p className="text-xs text-slate-400">{c.size_inches}&quot;</p>
-                    )}
-                    {c.weight_lbs != null && (
-                      <p className="text-xs text-slate-400">{c.weight_lbs} lb</p>
-                    )}
-                    <p className="text-xs text-slate-400">{new Date(c.logged_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+              <li key={c.id} className="px-4 py-3">
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-slate-900 text-sm">{c.species}</p>
+                    {c.caught_on && <p className="text-xs text-slate-500 mt-0.5">on {c.caught_on}</p>}
+                    <div className="flex gap-3 mt-0.5">
+                      {c.size_inches != null && <p className="text-xs text-slate-400">{c.size_inches}&quot;</p>}
+                      {c.weight_lbs != null && <p className="text-xs text-slate-400">{c.weight_lbs} lb</p>}
+                      <p className="text-xs text-slate-400">{new Date(c.logged_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
                   </div>
+                  <button onClick={() => handleDelete(c.id)}
+                    className="text-slate-300 hover:text-red-400 text-sm transition-colors ml-3 shrink-0 mt-0.5">
+                    ✕
+                  </button>
                 </div>
-                <div className="flex items-center gap-3 ml-3 shrink-0">
-                  <button onClick={() => handleDelete(c.id)} className="text-slate-300 hover:text-red-400 text-sm transition-colors">✕</button>
-                </div>
+
+                {/* Attached photo — tap to view full screen */}
+                {c.photo_url && (
+                  <button
+                    onClick={() => setViewingPhoto(c.photo_url!)}
+                    className="mt-2 w-full overflow-hidden rounded-xl block"
+                  >
+                    <img src={c.photo_url} alt={c.species} className="w-full h-48 object-cover" />
+                  </button>
+                )}
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {/* Full-screen photo viewer */}
+      {viewingPhoto && (
+        <div
+          className="fixed inset-0 bg-black z-50 flex items-center justify-center"
+          onClick={() => setViewingPhoto(null)}
+        >
+          <img src={viewingPhoto} alt="Full size" className="max-w-full max-h-full object-contain" />
+          <button
+            className="absolute top-6 right-6 w-9 h-9 bg-black/60 rounded-full flex items-center justify-center text-white text-lg"
+            onClick={() => setViewingPhoto(null)}
+          >
+            ✕
+          </button>
         </div>
       )}
     </div>

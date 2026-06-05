@@ -65,7 +65,7 @@ export async function logCatch(
   tripId: string,
   species: string,
   count: number,
-  opts?: { sizeInches?: number; weightLbs?: number; caughtOn?: string }
+  opts?: { sizeInches?: number; weightLbs?: number; caughtOn?: string; photoUrl?: string }
 ): Promise<{ error?: string; id?: string }> {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -77,6 +77,7 @@ export async function logCatch(
       size_inches: opts?.sizeInches ?? null,
       weight_lbs: opts?.weightLbs ?? null,
       caught_on: opts?.caughtOn?.trim() || null,
+      photo_url: opts?.photoUrl ?? null,
     })
     .select('id')
     .single()
