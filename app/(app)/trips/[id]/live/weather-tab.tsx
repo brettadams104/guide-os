@@ -189,11 +189,36 @@ export function WeatherTab({ defaultLocation }: { defaultLocation?: string }) {
   }
 
   async function handleManualSearch() {
-    if (!manualLocation.trim()) return
+    const raw = manualLocation.trim()
+    if (!raw) return
     setLoading(true)
     setError(null)
+
     try {
-      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(manualLocation)}&count=1`)
+      // Zip code (US 5-digit)
+      if (/^\d{5}$/.test(raw)) {
+        const res = await fetch(`https://api.zippopotam.us/us/${raw}`)
+        if (res.ok) {
+          const data = await res.json()
+          const place = data.places?.[0]
+          if (place) {
+            const label = `${place['place name']}, ${place['state abbreviation']}`
+            setLocation({ lat: parseFloat(place.latitude), lon: parseFloat(place.longitude) })
+            setActiveLocationLabel(label)
+            setManualLocation(label)
+            return
+          }
+        }
+        setError('Zip code not found')
+        setLoading(false)
+        return
+      }
+
+      // City name — strip "State" or "State, Country" suffix after a comma
+      // e.g. "Milwaukee, WI" → search "Milwaukee"
+      const cityName = raw.includes(',') ? raw.split(',')[0].trim() : raw
+
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1`)
       const data = await res.json()
       if (data.results?.[0]) {
         const { latitude, longitude, name, admin1, country_code } = data.results[0]
@@ -228,7 +253,7 @@ export function WeatherTab({ defaultLocation }: { defaultLocation?: string }) {
             value={manualLocation}
             onChange={e => setManualLocation(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') handleManualSearch() }}
-            placeholder="Search a different location…"
+            placeholder="Search by city or zip code…"
             className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
           />
           <button onClick={handleManualSearch} className="bg-sky-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-sky-400">
