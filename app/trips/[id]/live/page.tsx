@@ -33,9 +33,9 @@ export default async function TripLivePage({ params, searchParams }: {
   const photos = (trip.trip_photos as { id: string; url: string }[]) ?? []
   const clientName = (trip.clients as { name: string } | null)?.name ?? 'No client'
 
-  // Get guide's species presets for the quick-catch buttons
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: guide } = await supabase.from('guides').select('species_presets, lure_presets').eq('id', user!.id).single()
+  // Use guide_id from the trip (already validated by RLS) — avoids a separate getUser() call
+  const guideId = (trip as any).guide_id as string
+  const { data: guide } = await supabase.from('guides').select('species_presets, lure_presets').eq('id', guideId).single()
   const speciesPresets: string[] = (guide as any)?.species_presets ?? []
   const lurePresets: string[] = (guide as any)?.lure_presets ?? []
 
