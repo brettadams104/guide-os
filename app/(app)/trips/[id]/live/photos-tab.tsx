@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { uploadTripLivePhoto, deleteTripPhoto } from '@/lib/actions/trip-mode'
+import { CameraIcon, GalleryIcon } from '@/components/photo-icons'
 
 interface Photo { id: string; url: string }
 
@@ -34,14 +35,14 @@ export function PhotosTab({ tripId, initialPhotos }: { tripId: string; initialPh
           onClick={() => cameraRef.current?.click()}
           className="bg-[#0f1f35] text-white rounded-2xl py-5 flex flex-col items-center gap-2 font-semibold text-sm hover:bg-[#1a3254] transition-colors"
         >
-          <span className="text-3xl">📷</span>
+          <CameraIcon size={30} color="white" />
           Take Photo
         </button>
         <button
           onClick={() => galleryRef.current?.click()}
           className="bg-white border border-slate-200 text-slate-700 rounded-2xl py-5 flex flex-col items-center gap-2 font-semibold text-sm hover:bg-slate-50 transition-colors"
         >
-          <span className="text-3xl">🖼️</span>
+          <GalleryIcon size={30} color="#475569" />
           Camera Roll
         </button>
       </div>

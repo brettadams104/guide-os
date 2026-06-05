@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { logCatch, deleteCatch, addSpeciesPreset, addLurePreset, uploadTripLivePhoto } from '@/lib/actions/trip-mode'
+import { CameraIcon, GalleryIcon } from '@/components/photo-icons'
 
 interface Catch {
   id: string
@@ -260,11 +261,11 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos: _initialPhot
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => cameraRef.current?.click()}
                   className="border border-dashed border-slate-300 rounded-xl py-3 text-xs text-slate-500 hover:border-sky-400 hover:text-sky-500 transition-colors flex items-center justify-center gap-1.5 font-medium">
-                  📷 Take Photo
+                  <CameraIcon size={16} color="currentColor" /> Take Photo
                 </button>
                 <button onClick={() => galleryRef.current?.click()}
                   className="border border-dashed border-slate-300 rounded-xl py-3 text-xs text-slate-500 hover:border-sky-400 hover:text-sky-500 transition-colors flex items-center justify-center gap-1.5 font-medium">
-                  🖼 Camera Roll
+                  <GalleryIcon size={16} color="currentColor" /> Camera Roll
                 </button>
               </div>
             )}
