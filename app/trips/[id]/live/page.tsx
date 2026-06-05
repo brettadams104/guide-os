@@ -35,9 +35,10 @@ export default async function TripLivePage({ params, searchParams }: {
 
   // Use guide_id from the trip (already validated by RLS) — avoids a separate getUser() call
   const guideId = (trip as any).guide_id as string
-  const { data: guide } = await supabase.from('guides').select('species_presets, lure_presets').eq('id', guideId).single()
+  const { data: guide } = await supabase.from('guides').select('species_presets, lure_presets, location').eq('id', guideId).single()
   const speciesPresets: string[] = (guide as any)?.species_presets ?? []
   const lurePresets: string[] = (guide as any)?.lure_presets ?? []
+  const guideLocation: string = (guide as any)?.location ?? ''
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
@@ -62,7 +63,7 @@ export default async function TripLivePage({ params, searchParams }: {
 
       {/* Tab content */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        {tab === 'weather' && <WeatherTab />}
+        {tab === 'weather' && <WeatherTab defaultLocation={guideLocation} />}
         {tab === 'fish' && <FishLogTab tripId={id} initialCatches={liveCatches} initialPhotos={photos} speciesPresets={speciesPresets} lurePresets={lurePresets} />}
         {tab === 'photos' && <PhotosTab tripId={id} initialPhotos={photos} />}
         {tab === 'notes' && <NotesTab tripId={id} initialNotes={(trip as { live_notes?: string }).live_notes ?? ''} />}

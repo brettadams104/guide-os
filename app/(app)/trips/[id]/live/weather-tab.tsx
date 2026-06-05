@@ -64,9 +64,10 @@ function WindArrowStrip({ data, chartWidth }: { data: HourlyWeather[]; chartWidt
 
 const CHART_WIDTH = 900
 
-export function WeatherTab() {
+export function WeatherTab({ defaultLocation }: { defaultLocation?: string }) {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [manualLocation, setManualLocation] = useState('')
+  const [activeLocationLabel, setActiveLocationLabel] = useState('')
   const [weather, setWeather] = useState<HourlyWeather[]>([])
   const [moonPhase, setMoonPhase] = useState('')
   const [sunrise, setSunrise] = useState('')
@@ -78,12 +79,52 @@ export function WeatherTab() {
   const currentHour = new Date().getHours()
   const currentData = weather.find(w => w.hour === currentHour)
 
+  // Geocode a location string → lat/lon using Open-Meteo
+  async function geocodeLocation(name: string): Promise<{ lat: number; lon: number } | null> {
+    try {
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1`)
+      const data = await res.json()
+      if (data.results?.[0]) {
+        return { lat: data.results[0].latitude, lon: data.results[0].longitude }
+      }
+    } catch {}
+    return null
+  }
+
   useEffect(() => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        pos => setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-        () => setLoading(false)
+        pos => {
+          setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude })
+          setActiveLocationLabel('Current Location')
+        },
+        async () => {
+          // GPS denied — fall back to guide's default location
+          if (defaultLocation) {
+            setManualLocation(defaultLocation)
+            const coords = await geocodeLocation(defaultLocation)
+            if (coords) {
+              setLocation(coords)
+              setActiveLocationLabel(defaultLocation)
+            } else {
+              setLoading(false)
+            }
+          } else {
+            setLoading(false)
+          }
+        }
       )
+    } else if (defaultLocation) {
+      // No geolocation API — use default location
+      setManualLocation(defaultLocation)
+      geocodeLocation(defaultLocation).then(coords => {
+        if (coords) {
+          setLocation(coords)
+          setActiveLocationLabel(defaultLocation)
+        } else {
+          setLoading(false)
+        }
+      })
     } else {
       setLoading(false)
     }
@@ -152,12 +193,14 @@ export function WeatherTab() {
   async function handleManualSearch() {
     if (!manualLocation.trim()) return
     setLoading(true)
+    setError(null)
     try {
       const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(manualLocation)}&count=1`)
       const data = await res.json()
       if (data.results?.[0]) {
-        const { latitude, longitude } = data.results[0]
+        const { latitude, longitude, name, admin1, country_code } = data.results[0]
         setLocation({ lat: latitude, lon: longitude })
+        setActiveLocationLabel([name, admin1, country_code].filter(Boolean).join(', '))
       } else {
         setError('Location not found')
         setLoading(false)
@@ -175,18 +218,25 @@ export function WeatherTab() {
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Location search */}
-      <div className="p-4 flex gap-2">
-        <input
-          type="text"
-          value={manualLocation}
-          onChange={e => setManualLocation(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') handleManualSearch() }}
-          placeholder="Search location..."
-          className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
-        />
-        <button onClick={handleManualSearch} className="bg-sky-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-sky-400">
-          Search
-        </button>
+      <div className="p-4 space-y-2">
+        {activeLocationLabel && (
+          <p className="text-xs text-slate-500 font-medium px-0.5">
+            Showing weather for <span className="text-slate-800 font-semibold">{activeLocationLabel}</span>
+          </p>
+        )}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={manualLocation}
+            onChange={e => setManualLocation(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleManualSearch() }}
+            placeholder="Search a different location…"
+            className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+          />
+          <button onClick={handleManualSearch} className="bg-sky-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-sky-400">
+            Search
+          </button>
+        </div>
       </div>
 
       {/* Moon + Sun — no emojis */}
