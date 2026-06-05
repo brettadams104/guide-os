@@ -59,7 +59,7 @@ export default async function TripLivePage({ params, searchParams }: {
       {/* Tab content */}
       <div className="flex-1 overflow-hidden flex flex-col">
         {tab === 'weather' && <WeatherTab />}
-        {tab === 'fish' && <FishLogTab tripId={id} initialCatches={liveCatches} speciesPresets={speciesPresets} lurePresets={lurePresets} />}
+        {tab === 'fish' && <FishLogTab tripId={id} initialCatches={liveCatches} initialPhotos={photos} speciesPresets={speciesPresets} lurePresets={lurePresets} />}
         {tab === 'photos' && <PhotosTab tripId={id} initialPhotos={photos} />}
         {tab === 'notes' && <NotesTab tripId={id} initialNotes={(trip as { live_notes?: string }).live_notes ?? ''} />}
       </div>

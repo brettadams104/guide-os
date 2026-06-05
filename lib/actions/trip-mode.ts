@@ -134,7 +134,7 @@ export async function removeLurePreset(lure: string): Promise<void> {
   revalidatePath('/settings')
 }
 
-export async function uploadTripLivePhoto(tripId: string, file: File): Promise<{ url?: string; error?: string }> {
+export async function uploadTripLivePhoto(tripId: string, file: File): Promise<{ url?: string; id?: string; error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const ext = file.name.split('.').pop() ?? 'jpg'
@@ -144,8 +144,21 @@ export async function uploadTripLivePhoto(tripId: string, file: File): Promise<{
   if (uploadError) return { error: uploadError.message }
 
   const { data: { publicUrl } } = supabase.storage.from('trip-photos').getPublicUrl(path)
-  const { error } = await supabase.from('trip_photos').insert({ trip_id: tripId, url: publicUrl })
+  const { data, error } = await supabase.from('trip_photos').insert({ trip_id: tripId, url: publicUrl }).select('id').single()
   if (error) return { error: error.message }
 
-  return { url: publicUrl }
+  return { url: publicUrl, id: data.id }
+}
+
+export async function deleteTripPhoto(photoId: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: photo } = await supabase.from('trip_photos').select('url').eq('id', photoId).single()
+  if (photo?.url) {
+    const marker = '/trip-photos/'
+    const idx = photo.url.indexOf(marker)
+    if (idx !== -1) {
+      await supabase.storage.from('trip-photos').remove([photo.url.slice(idx + marker.length)])
+    }
+  }
+  await supabase.from('trip_photos').delete().eq('id', photoId)
 }

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { logCatch, deleteCatch, addSpeciesPreset, addLurePreset } from '@/lib/actions/trip-mode'
+import { useState, useRef, useCallback } from 'react'
+import { logCatch, deleteCatch, addSpeciesPreset, addLurePreset, uploadTripLivePhoto, deleteTripPhoto } from '@/lib/actions/trip-mode'
 
 interface Catch {
   id: string
@@ -13,15 +13,19 @@ interface Catch {
   caught_on?: string | null
 }
 
+interface Photo { id: string; url: string }
+
 interface Props {
   tripId: string
   initialCatches: Catch[]
+  initialPhotos: Photo[]
   speciesPresets: string[]
   lurePresets: string[]
 }
 
-export function FishLogTab({ tripId, initialCatches, speciesPresets: initialSpecies, lurePresets: initialLures }: Props) {
+export function FishLogTab({ tripId, initialCatches, initialPhotos, speciesPresets: initialSpecies, lurePresets: initialLures }: Props) {
   const [catches, setCatches] = useState<Catch[]>(initialCatches)
+  const [photos, setPhotos] = useState<Photo[]>(initialPhotos)
   const [speciesPresets, setSpeciesPresets] = useState<string[]>(initialSpecies)
   const [lurePresets, setLurePresets] = useState<string[]>(initialLures)
 
@@ -31,9 +35,27 @@ export function FishLogTab({ tripId, initialCatches, speciesPresets: initialSpec
   const [sizeInches, setSizeInches] = useState('')
   const [weightLbs, setWeightLbs] = useState('')
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const countRef = useRef<HTMLInputElement>(null)
   const caughtOnRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
+  const galleryRef = useRef<HTMLInputElement>(null)
+
+  const handlePhoto = useCallback(async (file: File) => {
+    setUploading(true)
+    const result = await uploadTripLivePhoto(tripId, file)
+    if (result.url && result.id) {
+      setPhotos(prev => [{ id: result.id!, url: result.url! }, ...prev])
+    }
+    setUploading(false)
+  }, [tripId])
+
+  async function handleDeletePhoto(photoId: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    setPhotos(prev => prev.filter(p => p.id !== photoId))
+    await deleteTripPhoto(photoId)
+  }
 
   const totalFish = catches.reduce((s, c) => s + c.count, 0)
 
@@ -210,6 +232,53 @@ export function FishLogTab({ tripId, initialCatches, speciesPresets: initialSpec
             {saving ? 'Logging…' : '+ Log Catch'}
           </button>
         </div>
+      </div>
+
+      {/* Photos */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Photos</p>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => cameraRef.current?.click()}
+            className="bg-[#0f1f35] text-white rounded-xl py-4 flex flex-col items-center gap-1.5 font-semibold text-sm hover:bg-[#1a3254] transition-colors"
+          >
+            <span className="text-2xl">📷</span>
+            Take Photo
+          </button>
+          <button
+            onClick={() => galleryRef.current?.click()}
+            className="bg-slate-50 border border-slate-200 text-slate-700 rounded-xl py-4 flex flex-col items-center gap-1.5 font-semibold text-sm hover:bg-slate-100 transition-colors"
+          >
+            <span className="text-2xl">🖼️</span>
+            Camera Roll
+          </button>
+        </div>
+
+        {/* capture="environment" saves to device camera roll on iOS/Android */}
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
+          onChange={e => e.target.files?.[0] && handlePhoto(e.target.files[0])} />
+        <input ref={galleryRef} type="file" accept="image/*" className="hidden"
+          onChange={e => e.target.files?.[0] && handlePhoto(e.target.files[0])} />
+
+        {uploading && (
+          <p className="text-xs text-sky-500 font-medium text-center">Uploading...</p>
+        )}
+
+        {photos.length > 0 && (
+          <div className="grid grid-cols-3 gap-2">
+            {photos.map(p => (
+              <div key={p.id} className="relative">
+                <img src={p.url} alt="Trip photo" className="w-full h-24 object-cover rounded-xl" />
+                <button
+                  onClick={e => handleDeletePhoto(p.id, e)}
+                  className="absolute top-1 right-1 w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center text-xs leading-none transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Catch log */}

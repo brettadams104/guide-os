@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { uploadTripLivePhoto } from '@/lib/actions/trip-mode'
+import { uploadTripLivePhoto, deleteTripPhoto } from '@/lib/actions/trip-mode'
 
 interface Photo { id: string; url: string }
 
@@ -15,10 +15,16 @@ export function PhotosTab({ tripId, initialPhotos }: { tripId: string; initialPh
   async function handleFile(file: File) {
     setUploading(true)
     const result = await uploadTripLivePhoto(tripId, file)
-    if (result.url) {
-      setPhotos(prev => [{ id: Date.now().toString(), url: result.url! }, ...prev])
+    if (result.url && result.id) {
+      setPhotos(prev => [{ id: result.id!, url: result.url! }, ...prev])
     }
     setUploading(false)
+  }
+
+  async function handleDelete(photoId: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    setPhotos(prev => prev.filter(p => p.id !== photoId))
+    await deleteTripPhoto(photoId)
   }
 
   return (
@@ -40,6 +46,7 @@ export function PhotosTab({ tripId, initialPhotos }: { tripId: string; initialPh
         </button>
       </div>
 
+      {/* capture="environment" triggers device camera and saves to camera roll on iOS/Android */}
       <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
         onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
       <input ref={galleryRef} type="file" accept="image/*" className="hidden"
@@ -54,8 +61,14 @@ export function PhotosTab({ tripId, initialPhotos }: { tripId: string; initialPh
       {photos.length > 0 ? (
         <div className="grid grid-cols-2 gap-2">
           {photos.map(p => (
-            <div key={p.id} onClick={() => setSelected(p.url)} className="cursor-pointer">
+            <div key={p.id} className="relative group cursor-pointer" onClick={() => setSelected(p.url)}>
               <img src={p.url} alt="Trip photo" className="w-full h-40 object-cover rounded-2xl" />
+              <button
+                onClick={e => handleDelete(p.id, e)}
+                className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center text-xs leading-none transition-colors"
+              >
+                ✕
+              </button>
             </div>
           ))}
         </div>
@@ -68,7 +81,7 @@ export function PhotosTab({ tripId, initialPhotos }: { tripId: string; initialPh
       {selected && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center" onClick={() => setSelected(null)}>
           <img src={selected} alt="Full size" className="max-w-full max-h-full object-contain" />
-          <button className="absolute top-6 right-6 text-white text-2xl">✕</button>
+          <button className="absolute top-6 right-6 w-9 h-9 bg-black/60 rounded-full flex items-center justify-center text-white text-lg">✕</button>
         </div>
       )}
     </div>
