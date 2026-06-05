@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { finishTrip } from '@/lib/actions/trip-mode'
+import { CollectPayment } from './collect-payment'
 
 function formatDuration(startedAt: string, endedAt: string | null): string {
   const start = new Date(startedAt).getTime()
@@ -10,6 +10,15 @@ function formatDuration(startedAt: string, endedAt: string | null): string {
   const h = Math.floor(mins / 60)
   const m = mins % 60
   return h > 0 ? `${h}h ${m}m` : `${m}m`
+}
+
+function MailIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block mr-2">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <polyline points="2,4 12,13 22,4" />
+    </svg>
+  )
 }
 
 export default async function TripSummaryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,37 +38,32 @@ export default async function TripSummaryPage({ params }: { params: Promise<{ id
   const photos = (trip.trip_photos as { id: string; url: string }[]) ?? []
   const conditions = ((trip.trip_conditions as any[])?.[0]) ?? null
   const client = trip.clients as { name: string; email: string | null; phone: string | null } | null
+  const price: number = (trip as any).price ?? 0
+  const alreadyCollected: number = (trip as any).amount_collected ?? 0
 
-  // Species breakdown from live catches
   const speciesMap: Record<string, number> = {}
   liveCatches.forEach(c => { speciesMap[c.species] = (speciesMap[c.species] ?? 0) + c.count })
   const totalFish = Object.values(speciesMap).reduce((s, n) => s + n, 0)
   const duration = formatDuration((trip as any).started_at, (trip as any).ended_at ?? null)
 
-  // Build mailto recap
   const date = new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
   const catchSummary = Object.entries(speciesMap).map(([s, c]) => `  • ${s}: ${c}`).join('\n') || '  • No fish logged'
   const recapBody = encodeURIComponent(
     `Hi ${client?.name ?? 'there'},\n\nThank you for fishing with us on ${date}!\n\n` +
-    `🎣 Total Fish: ${totalFish}\n${catchSummary}\n\n` +
-    `⏱ Time on Water: ${duration}\n` +
-    (conditions ? `🌤 Conditions: ${conditions.weather ?? ''} ${conditions.temp_high ?? ''}°F\n` : '') +
-    ((trip as any).live_notes ? `\n📝 Notes:\n${(trip as any).live_notes}\n` : '') +
+    `Total Fish: ${totalFish}\n${catchSummary}\n\n` +
+    `Time on Water: ${duration}\n` +
+    (conditions ? `Conditions: ${conditions.weather ?? ''} ${conditions.temp_high ?? ''}°F\n` : '') +
+    ((trip as any).live_notes ? `\nNotes:\n${(trip as any).live_notes}\n` : '') +
     `\nWe hope to see you again soon!\n`
   )
   const mailtoLink = `mailto:${client?.email ?? ''}?subject=${encodeURIComponent(`Your Trip Recap — ${date}`)}&body=${recapBody}`
 
-  async function handleFinish() {
-    'use server'
-    await finishTrip(id)
-    redirect(`/trips/${id}`)
-  }
-
   return (
     <div className="max-w-xl mx-auto p-4 space-y-6 pb-10">
+
+      {/* Header */}
       <div className="text-center pt-4">
-        <p className="text-4xl mb-2">🎣</p>
-        <h1 className="text-2xl font-black text-slate-900">Trip Complete!</h1>
+        <h1 className="text-2xl font-black text-slate-900">Trip Complete</h1>
         <p className="text-slate-500 text-sm mt-1">{date}</p>
       </div>
 
@@ -79,7 +83,7 @@ export default async function TripSummaryPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      {/* Species breakdown */}
+      {/* Catch breakdown */}
       {Object.keys(speciesMap).length > 0 && (
         <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <h2 className="font-bold text-slate-900 mb-3">Catch Breakdown</h2>
@@ -107,7 +111,7 @@ export default async function TripSummaryPage({ params }: { params: Promise<{ id
         </div>
       )}
 
-      {/* Photos preview */}
+      {/* Photos */}
       {photos.length > 0 && (
         <div>
           <h2 className="font-bold text-slate-900 mb-3">Photos</h2>
@@ -127,23 +131,23 @@ export default async function TripSummaryPage({ params }: { params: Promise<{ id
         </div>
       )}
 
-      {/* Actions */}
+      {/* Collect Payment */}
+      {price > 0 && (
+        <CollectPayment tripId={id} price={price} alreadyCollected={alreadyCollected} />
+      )}
+
+      {/* Send recap + back */}
       <div className="space-y-3">
         {client?.email && (
           <a href={mailtoLink}
-            className="block w-full bg-[#0f1f35] hover:bg-[#1a3254] text-white font-bold py-4 rounded-2xl text-center text-sm transition-colors">
-            📧 Send Recap to {client.name}
+            className="flex items-center justify-center w-full bg-[#0f1f35] hover:bg-[#1a3254] text-white font-bold py-4 rounded-2xl text-sm transition-colors">
+            <MailIcon />
+            Send Recap to {client.name}
           </a>
         )}
-        <form action={handleFinish}>
-          <button type="submit"
-            className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-2xl text-sm transition-colors">
-            Save Trip &amp; Finish ✓
-          </button>
-        </form>
-        <Link href={`/trips/${id}/live`}
+        <Link href={`/trips/${id}`}
           className="block w-full border border-slate-200 text-slate-600 font-medium py-3 rounded-2xl text-center text-sm hover:bg-slate-50 transition-colors">
-          ← Back to Trip
+          View Trip Detail
         </Link>
       </div>
     </div>

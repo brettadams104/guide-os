@@ -97,6 +97,19 @@ export async function saveLiveNotes(tripId: string, notes: string): Promise<void
   await supabase.from('trips').update({ live_notes: notes }).eq('id', tripId)
 }
 
+export async function collectTripPayment(tripId: string, amount: number, method: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: trip } = await supabase.from('trips').select('amount_collected').eq('id', tripId).single()
+  const newTotal = ((trip as any)?.amount_collected ?? 0) + amount
+  const { error } = await supabase.from('trips')
+    .update({ amount_collected: newTotal, payment_method: method })
+    .eq('id', tripId)
+  if (error) return { error: error.message }
+  revalidatePath(`/trips/${tripId}/summary`)
+  revalidatePath(`/trips/${tripId}`)
+  return {}
+}
+
 export async function addSpeciesPreset(species: string): Promise<void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -7,6 +7,7 @@ import { FishLogTab } from '@/app/(app)/trips/[id]/live/fish-log-tab'
 import { PhotosTab } from '@/app/(app)/trips/[id]/live/photos-tab'
 import { NotesTab } from '@/app/(app)/trips/[id]/live/notes-tab'
 import { LiveTabBar } from '@/app/(app)/trips/[id]/live/live-tab-bar'
+import { FinishTripButton } from '@/app/(app)/trips/[id]/live/finish-trip-button'
 
 export const dynamic = 'force-dynamic'
 
@@ -79,10 +80,7 @@ export default async function TripLivePage({ params, searchParams }: {
             className="text-xs text-slate-400 border border-white/20 px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors">
             ⏸ Pause
           </Link>
-          <Link href={`/trips/${id}/summary`}
-            className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-green-400 transition-colors">
-            Finish
-          </Link>
+          <FinishTripButton tripId={id} />
         </div>
       </div>
 
