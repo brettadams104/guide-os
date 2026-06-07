@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { LogoMark } from '@/components/logo'
 
 interface Props {
   signOut: () => Promise<void>
@@ -23,8 +24,9 @@ export function Sidebar({ signOut, guideName }: Props) {
 
   return (
     <aside className="fixed inset-y-0 left-0 w-60 bg-[#0f1f35] flex flex-col z-20">
-      <div className="px-6 py-6 border-b border-white/10">
-        <h1 className="text-xl font-bold text-white tracking-tight">GuideStride</h1>
+      <div className="px-5 py-5 border-b border-white/10 flex items-center gap-2.5">
+        <LogoMark size={30} variant="on-dark" />
+        <span className="text-white font-bold text-lg tracking-tight">GuideStride</span>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">

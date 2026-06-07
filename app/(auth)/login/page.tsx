@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { LogoMark } from '@/components/logo'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -24,9 +25,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0f1f35] p-4">
       <div className="w-full max-w-sm space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white tracking-tight">GuideStride</h1>
-          <p className="text-slate-400 text-sm mt-2">Sign in to your account</p>
+        <div className="text-center flex flex-col items-center gap-3">
+          <LogoMark size={56} variant="on-dark" />
+          <div>
+            <h1 className="text-2xl font-bold text-white tracking-tight">GuideStride</h1>
+            <p className="text-slate-400 text-sm mt-1">Sign in to your account</p>
+          </div>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 bg-white/5 border border-white/10 rounded-2xl p-6">
           <div>
