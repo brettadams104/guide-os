@@ -56,7 +56,7 @@ export function EditTripForm({ trip, timeSlots, staff }: Props) {
       {/* Date & Location */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
         <h2 className="font-semibold text-slate-900 text-sm uppercase tracking-wide text-slate-500">Trip Details</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Date</label>
             <input name="trip_date" type="date" required defaultValue={trip.trip_date}
@@ -116,7 +116,7 @@ export function EditTripForm({ trip, timeSlots, staff }: Props) {
       {/* Payment */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
         <h2 className="font-semibold text-slate-900 text-sm uppercase tracking-wide text-slate-500">Payment</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Trip Price</label>
             <div className="relative">
