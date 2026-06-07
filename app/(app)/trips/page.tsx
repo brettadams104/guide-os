@@ -13,6 +13,7 @@ import { createClientRecord } from '@/lib/actions/clients'
 import { createClient } from '@/lib/supabase/client'
 import { ClientSearch } from '@/components/client-search'
 import { CategoryCombobox } from '@/components/category-combobox'
+import { PhoneInput } from '@/components/phone-input'
 
 const TABS = ['Current Trips', 'Schedule', 'Completed'] as const
 type Tab = typeof TABS[number]
@@ -229,8 +230,11 @@ function ScheduleTab() {
         {isNewClient && (
           <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 space-y-3">
             <p className="text-xs font-semibold text-sky-700 uppercase tracking-wide">New Client Details</p>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Phone <span className="text-slate-400">(optional)</span></label>
+              <PhoneInput name="new_phone" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white" />
+            </div>
             {[
-              { name: 'new_phone', label: 'Phone', type: 'tel', placeholder: '(555) 000-0000' },
               { name: 'new_email', label: 'Email', type: 'email', placeholder: 'email@example.com' },
               { name: 'new_address', label: 'Address', type: 'text', placeholder: 'City, State' },
             ].map(f => (

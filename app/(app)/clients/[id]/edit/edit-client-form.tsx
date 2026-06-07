@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { PhoneInput } from '@/components/phone-input'
 import { updateClientRecord, deleteClientRecord } from '@/lib/actions/clients'
 import { createClient } from '@/lib/supabase/client'
 
@@ -100,23 +101,22 @@ export function EditClientForm({ client, trips, outstanding }: Props) {
       {/* Client details */}
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
         <h2 className="font-semibold text-slate-900">Client Details</h2>
-        {[
-          { name: 'name', label: 'Full Name', type: 'text', required: true, value: client.name },
-          { name: 'phone', label: 'Phone', type: 'tel', required: false, value: client.phone ?? '' },
-          { name: 'email', label: 'Email', type: 'email', required: false, value: client.email ?? '' },
-          { name: 'address', label: 'Address', type: 'text', required: false, value: client.address ?? '' },
-        ].map(f => (
-          <div key={f.name}>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">{f.label}</label>
-            <input
-              name={f.name}
-              type={f.type}
-              required={f.required}
-              defaultValue={f.value}
-              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-            />
-          </div>
-        ))}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
+          <input name="name" type="text" required defaultValue={client.name} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone</label>
+          <PhoneInput defaultValue={client.phone ?? ''} />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+          <input name="email" type="email" defaultValue={client.email ?? ''} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Address</label>
+          <input name="address" type="text" defaultValue={client.address ?? ''} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">Notes</label>
           <textarea
