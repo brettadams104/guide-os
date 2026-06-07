@@ -36,9 +36,9 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           </div>
         )}
         {client.email && (
-          <div>
+          <div className="min-w-0">
             <p className="text-xs text-slate-500 uppercase tracking-wide">Email</p>
-            <p className="text-slate-900 font-medium text-sm mt-1">{client.email}</p>
+            <p className="text-slate-900 font-medium text-sm mt-1 truncate">{client.email}</p>
           </div>
         )}
         <div>
