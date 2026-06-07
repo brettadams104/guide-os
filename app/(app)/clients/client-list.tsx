@@ -37,7 +37,7 @@ export function ClientList({ clients }: { clients: Client[] }) {
       {/* Search bar */}
       <div ref={ref} className="relative">
         <div className="relative">
-          <span className="absolute left-3.5 top-3 text-slate-400 text-sm">🔍</span>
+          <svg className="absolute left-3.5 top-3 text-slate-400" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input
             type="text"
             value={query}
