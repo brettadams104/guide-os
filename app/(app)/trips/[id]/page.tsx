@@ -70,7 +70,7 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
               </div>
               <form action={handleStart}>
                 <button type="submit" className="bg-green-600 hover:bg-green-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">
-                  Start Trip 🎣
+                  Start Trip
                 </button>
               </form>
             </div>
@@ -98,13 +98,13 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
           <div className="space-y-2">
             {client.phone && (
               <a href={`tel:${client.phone}`} className="flex items-center gap-3 text-sm">
-                <span className="text-slate-400">📞</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.26h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.85a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
                 <span className="text-sky-600 font-medium hover:text-sky-500">{client.phone}</span>
               </a>
             )}
             {client.email && (
               <a href={`mailto:${client.email}`} className="flex items-center gap-3 text-sm">
-                <span className="text-slate-400">✉️</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
                 <span className="text-sky-600 font-medium hover:text-sky-500">{client.email}</span>
               </a>
             )}
@@ -118,8 +118,18 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
           <ConditionsDisplay conditions={conditions} />
           {(conditions.sunrise || conditions.sunset) && (
             <div className="flex gap-6 text-sm text-slate-500">
-              {conditions.sunrise && <span>🌅 Sunrise: {conditions.sunrise}</span>}
-              {conditions.sunset && <span>🌇 Sunset: {conditions.sunset}</span>}
+              {conditions.sunrise && (
+                <span className="flex items-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                  Sunrise: {conditions.sunrise}
+                </span>
+              )}
+              {conditions.sunset && (
+                <span className="flex items-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 10V2M4.22 12.22l1.42 1.42M1 18h2M21 18h2M18.36 13.64l1.42-1.42M12 18a6 6 0 0 0 0-12v0"/><path d="M3 18h18"/></svg>
+                  Sunset: {conditions.sunset}
+                </span>
+              )}
             </div>
           )}
         </div>

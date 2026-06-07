@@ -64,7 +64,7 @@ export default function NewTripPage() {
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Notes</label>
             <textarea name="notes" rows={3} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" placeholder="How'd it go?" />
           </div>
-          <p className="text-xs text-slate-400">🌤 Weather, moon phase, and barometric pressure will be fetched automatically when you save.</p>
+          <p className="text-xs text-slate-400">Weather, moon phase, and barometric pressure are fetched automatically when you save.</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
