@@ -5,6 +5,7 @@ import { logCatch, deleteCatch, addSpeciesPreset, addLurePreset } from '@/lib/ac
 import { uploadPhotoDirectly } from '@/lib/upload-photo'
 import { CameraIcon, GalleryIcon } from '@/components/photo-icons'
 
+
 interface Catch {
   id: string
   species: string
@@ -51,6 +52,7 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos: _initialPhot
   const [saving, setSaving] = useState(false)
 
   const caughtOnRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
   const galleryRef = useRef<HTMLInputElement>(null)
 
   // Keep fishDetails array in sync with count
@@ -257,12 +259,21 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos: _initialPhot
                 <p className="text-xs text-slate-400">Photo attached — will be saved with this catch</p>
               </div>
             ) : (
-              <button onClick={() => galleryRef.current?.click()}
-                className="w-full border border-dashed border-slate-300 rounded-xl py-3 text-xs text-slate-500 hover:border-sky-400 hover:text-sky-500 transition-colors flex items-center justify-center gap-1.5 font-medium">
-                <GalleryIcon size={16} color="currentColor" /> Add Photo
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => cameraRef.current?.click()}
+                  className="border border-dashed border-slate-300 rounded-xl py-3 text-xs text-slate-500 hover:border-sky-400 hover:text-sky-500 transition-colors flex items-center justify-center gap-1.5 font-medium">
+                  <CameraIcon size={16} color="currentColor" /> Take Photo
+                </button>
+                <button onClick={() => galleryRef.current?.click()}
+                  className="border border-dashed border-slate-300 rounded-xl py-3 text-xs text-slate-500 hover:border-sky-400 hover:text-sky-500 transition-colors flex items-center justify-center gap-1.5 font-medium">
+                  <GalleryIcon size={16} color="currentColor" /> Camera Roll
+                </button>
+              </div>
             )}
 
+            {/* capture="environment" → iOS saves photo to camera roll automatically */}
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
+              onChange={e => e.target.files?.[0] && handlePhotoFile(e.target.files[0])} />
             <input ref={galleryRef} type="file" accept="image/*" className="hidden"
               onChange={e => e.target.files?.[0] && handlePhotoFile(e.target.files[0])} />
           </div>
