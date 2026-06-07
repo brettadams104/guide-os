@@ -299,7 +299,7 @@ function ScheduleTab() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Date</label>
             <input name="trip_date" type="date" required defaultValue={localDateStr()} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
@@ -313,7 +313,7 @@ function ScheduleTab() {
           <label className="block text-sm font-medium text-slate-700 mb-1.5">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
           <textarea name="notes" rows={2} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" placeholder="Meeting spot, special requests..." />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Trip Price <span className="text-slate-400 font-normal">(optional)</span></label>
             <div className="relative"><span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
