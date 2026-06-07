@@ -7,6 +7,44 @@ import { CameraIcon, GalleryIcon } from '@/components/photo-icons'
 
 interface Photo { id: string; url: string }
 
+function Lightbox({ url, onClose }: { url: string; onClose: () => void }) {
+  async function handleSave() {
+    try {
+      const res = await fetch(url)
+      const blob = await res.blob()
+      const file = new File([blob], 'trip-photo.jpg', { type: blob.type || 'image/jpeg' })
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Trip Photo' })
+      } else {
+        // Fallback: open in new tab so user can long-press to save
+        window.open(url, '_blank')
+      }
+    } catch {
+      window.open(url, '_blank')
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black z-50 flex flex-col" onClick={onClose}>
+      <div className="flex items-center justify-between px-5 pt-12 pb-4">
+        <button onClick={onClose} className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center text-white text-lg">✕</button>
+        <button
+          onClick={e => { e.stopPropagation(); handleSave() }}
+          className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Save to Camera Roll
+        </button>
+      </div>
+      <div className="flex-1 flex items-center justify-center p-4" onClick={onClose}>
+        <img src={url} alt="Full size" className="max-w-full max-h-full object-contain rounded-xl" onClick={e => e.stopPropagation()} />
+      </div>
+    </div>
+  )
+}
+
 export function PhotosTab({ tripId, initialPhotos }: { tripId: string; initialPhotos: Photo[] }) {
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos)
   const [uploading, setUploading] = useState(false)
@@ -81,10 +119,7 @@ export function PhotosTab({ tripId, initialPhotos }: { tripId: string; initialPh
       )}
 
       {selected && (
-        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center" onClick={() => setSelected(null)}>
-          <img src={selected} alt="Full size" className="max-w-full max-h-full object-contain" />
-          <button className="absolute top-6 right-6 w-9 h-9 bg-black/60 rounded-full flex items-center justify-center text-white text-lg">✕</button>
-        </div>
+        <Lightbox url={selected} onClose={() => setSelected(null)} />
       )}
     </div>
   )
