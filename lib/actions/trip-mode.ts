@@ -148,20 +148,27 @@ export async function removeLurePreset(lure: string): Promise<void> {
   revalidatePath('/settings')
 }
 
+// Legacy server-side upload — kept for backwards compat but prefer saveTripPhotoRecord
 export async function uploadTripLivePhoto(tripId: string, file: File): Promise<{ url?: string; id?: string; error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const ext = file.name.split('.').pop() ?? 'jpg'
   const path = `${user!.id}/${tripId}/live-${Date.now()}.${ext}`
-
   const { error: uploadError } = await supabase.storage.from('trip-photos').upload(path, file)
   if (uploadError) return { error: uploadError.message }
-
   const { data: { publicUrl } } = supabase.storage.from('trip-photos').getPublicUrl(path)
   const { data, error } = await supabase.from('trip_photos').insert({ trip_id: tripId, url: publicUrl }).select('id').single()
   if (error) return { error: error.message }
-
   return { url: publicUrl, id: data.id }
+}
+
+// Lightweight server action — just saves URL after browser-side direct upload
+export async function saveTripPhotoRecord(tripId: string, url: string): Promise<{ id?: string; error?: string }> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('trip_photos').insert({ trip_id: tripId, url }).select('id').single()
+  if (error) return { error: error.message }
+  revalidatePath(`/trips/${tripId}/live`)
+  return { id: data.id }
 }
 
 export async function deleteTripPhoto(photoId: string): Promise<void> {

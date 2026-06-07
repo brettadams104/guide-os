@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { logCatch, deleteCatch, addSpeciesPreset, addLurePreset, uploadTripLivePhoto } from '@/lib/actions/trip-mode'
+import { logCatch, deleteCatch, addSpeciesPreset, addLurePreset } from '@/lib/actions/trip-mode'
+import { uploadPhotoDirectly } from '@/lib/upload-photo'
 import { CameraIcon, GalleryIcon } from '@/components/photo-icons'
 
 interface Catch {
@@ -94,7 +95,7 @@ export function FishLogTab({ tripId, initialCatches, initialPhotos: _initialPhot
     // Upload photo once (shared across all fish in this batch)
     let photoUrl: string | undefined
     if (pendingPhoto) {
-      const result = await uploadTripLivePhoto(tripId, pendingPhoto)
+      const result = await uploadPhotoDirectly(pendingPhoto, tripId)
       if (result.url) photoUrl = result.url
     }
 

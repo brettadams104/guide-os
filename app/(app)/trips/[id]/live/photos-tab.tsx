@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { uploadTripLivePhoto, deleteTripPhoto } from '@/lib/actions/trip-mode'
+import { deleteTripPhoto } from '@/lib/actions/trip-mode'
+import { uploadPhotoDirectly } from '@/lib/upload-photo'
 import { CameraIcon, GalleryIcon } from '@/components/photo-icons'
 
 interface Photo { id: string; url: string }
@@ -15,7 +16,7 @@ export function PhotosTab({ tripId, initialPhotos }: { tripId: string; initialPh
 
   async function handleFile(file: File) {
     setUploading(true)
-    const result = await uploadTripLivePhoto(tripId, file)
+    const result = await uploadPhotoDirectly(file, tripId)
     if (result.url && result.id) {
       setPhotos(prev => [{ id: result.id!, url: result.url! }, ...prev])
     }
