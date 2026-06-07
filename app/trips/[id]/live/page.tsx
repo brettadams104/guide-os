@@ -77,8 +77,9 @@ export default async function TripLivePage({ params, searchParams }: {
         <TripTimer startedAt={(trip as any).started_at} />
         <div className="flex gap-2">
           <Link href={`/trips/${id}`}
-            className="text-xs text-slate-400 border border-white/20 px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors">
-            ⏸ Pause
+            className="text-xs text-slate-400 border border-white/20 px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>
+            Pause
           </Link>
           <FinishTripButton tripId={id} />
         </div>
