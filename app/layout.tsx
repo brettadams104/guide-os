@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'GuideOS',
-  description: 'The operating system for fishing guides',
+  title: 'GuideStride',
+  description: 'Business management for fishing guides',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

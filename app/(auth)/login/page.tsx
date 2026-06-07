@@ -25,7 +25,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#0f1f35] p-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white tracking-tight">GuideOS</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight">GuideStride</h1>
           <p className="text-slate-400 text-sm mt-2">Sign in to your account</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 bg-white/5 border border-white/10 rounded-2xl p-6">

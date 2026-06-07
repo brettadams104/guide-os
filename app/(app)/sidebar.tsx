@@ -24,7 +24,7 @@ export function Sidebar({ signOut, guideName }: Props) {
   return (
     <aside className="fixed inset-y-0 left-0 w-60 bg-[#0f1f35] flex flex-col z-20">
       <div className="px-6 py-6 border-b border-white/10">
-        <h1 className="text-xl font-bold text-white tracking-tight">GuideOS</h1>
+        <h1 className="text-xl font-bold text-white tracking-tight">GuideStride</h1>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
