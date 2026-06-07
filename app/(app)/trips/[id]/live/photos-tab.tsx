@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { deleteTripPhoto } from '@/lib/actions/trip-mode'
 import { uploadPhotoDirectly } from '@/lib/upload-photo'
-import { CameraIcon, GalleryIcon } from '@/components/photo-icons'
+import { GalleryIcon } from '@/components/photo-icons'
 
 interface Photo { id: string; url: string }
 
@@ -11,7 +11,6 @@ export function PhotosTab({ tripId, initialPhotos }: { tripId: string; initialPh
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos)
   const [uploading, setUploading] = useState(false)
   const [selected, setSelected] = useState<string | null>(null)
-  const cameraRef = useRef<HTMLInputElement>(null)
   const galleryRef = useRef<HTMLInputElement>(null)
 
   async function handleFile(file: File) {
@@ -31,26 +30,14 @@ export function PhotosTab({ tripId, initialPhotos }: { tripId: string; initialPh
 
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={() => cameraRef.current?.click()}
-          className="bg-[#0f1f35] text-white rounded-2xl py-5 flex flex-col items-center gap-2 font-semibold text-sm hover:bg-[#1a3254] transition-colors"
-        >
-          <CameraIcon size={30} color="white" />
-          Take Photo
-        </button>
-        <button
-          onClick={() => galleryRef.current?.click()}
-          className="bg-white border border-slate-200 text-slate-700 rounded-2xl py-5 flex flex-col items-center gap-2 font-semibold text-sm hover:bg-slate-50 transition-colors"
-        >
-          <GalleryIcon size={30} color="#475569" />
-          Camera Roll
-        </button>
-      </div>
+      <button
+        onClick={() => galleryRef.current?.click()}
+        className="w-full bg-[#0f1f35] text-white rounded-2xl py-5 flex flex-col items-center gap-2 font-semibold text-sm hover:bg-[#1a3254] transition-colors"
+      >
+        <GalleryIcon size={30} color="white" />
+        Add Photo
+      </button>
 
-      {/* capture="environment" triggers device camera and saves to camera roll on iOS/Android */}
-      <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
-        onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
       <input ref={galleryRef} type="file" accept="image/*" className="hidden"
         onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
 
