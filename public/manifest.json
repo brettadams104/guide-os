@@ -1,0 +1,17 @@
+{
+  "name": "GuideStride",
+  "short_name": "GuideStride",
+  "description": "Business management for fishing guides",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0f1f35",
+  "theme_color": "#0f1f35",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
