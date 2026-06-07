@@ -14,13 +14,12 @@ import { createClient } from '@/lib/supabase/client'
 import { ClientSearch } from '@/components/client-search'
 import { CategoryCombobox } from '@/components/category-combobox'
 
-const TABS = ['Current Trips', 'Schedule', 'Log Details', 'Completed'] as const
+const TABS = ['Current Trips', 'Schedule', 'Completed'] as const
 type Tab = typeof TABS[number]
 
 const TAB_PARAM: Record<string, Tab> = {
   'current': 'Current Trips',
   'schedule': 'Schedule',
-  'log': 'Log Details',
   'completed': 'Completed',
 }
 
@@ -49,7 +48,6 @@ export default function TripsPage() {
 
       {tab === 'Current Trips' && <UpcomingTab />}
       {tab === 'Schedule' && <ScheduleTab />}
-      {tab === 'Log Details' && <LogDetailsTab />}
       {tab === 'Completed' && <CompletedTab />}
     </div>
   )

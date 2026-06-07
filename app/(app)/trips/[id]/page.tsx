@@ -6,6 +6,7 @@ import { TripActions } from './trip-actions'
 import { TripCostCard } from './trip-cost-card'
 import type { TripConditions } from '@/lib/types'
 import { startTrip } from '@/lib/actions/trip-mode'
+import { LogDetailsForm } from './log-details-form'
 
 export default async function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -143,6 +144,11 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
             ))}
           </div>
         </div>
+      )}
+
+      {/* Log Details — only for scheduled trips not yet started through Trip Mode */}
+      {trip.status === 'scheduled' && !(trip as any).ended_at && (
+        <LogDetailsForm tripId={id} tripDate={trip.trip_date} defaultPrice={trip.price} />
       )}
 
       <TripActions tripId={id} currentStatus={trip.status ?? 'scheduled'} />
