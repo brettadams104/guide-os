@@ -75,7 +75,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               const totalFish = (trip.trip_catches as { species: string; count: number }[])?.reduce((s, c) => s + c.count, 0) ?? 0
               return (
                 <li key={trip.id}>
-                  <Link href={`/trips/${trip.id}`} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors">
+                  <Link href={`/trips/${trip.id}?back=/clients/${id}`} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors">
                     <div>
                       <p className="font-medium text-slate-900 text-sm">
                         {new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}

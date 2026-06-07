@@ -8,8 +8,11 @@ import type { TripConditions } from '@/lib/types'
 import { startTrip } from '@/lib/actions/trip-mode'
 import { LogDetailsForm } from './log-details-form'
 
-export default async function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TripDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ back?: string }> }) {
   const { id } = await params
+  const { back } = await searchParams
+  const backHref = back ?? '/trips'
+  const backLabel = back?.startsWith('/clients') ? '← Client' : '← Trips'
   const supabase = await createClient()
 
   const { data: trip } = await supabase
@@ -38,7 +41,7 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/trips" className="text-slate-400 hover:text-slate-600 text-sm">← Trips</Link>
+          <Link href={backHref} className="text-slate-400 hover:text-slate-600 text-sm">{backLabel}</Link>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
               {new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
