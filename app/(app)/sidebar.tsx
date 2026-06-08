@@ -25,7 +25,7 @@ export function Sidebar({ signOut, guideName }: Props) {
   return (
     <aside className="fixed inset-y-0 left-0 w-60 bg-[#0f1f35] flex flex-col z-20">
       <div className="px-5 py-5 border-b border-white/10 flex items-center gap-2.5">
-        <LogoMark size={36} />
+        <LogoMark size={30} variant="on-dark" />
         <span className="text-white font-bold text-lg tracking-tight">GuideStride</span>
       </div>
 
