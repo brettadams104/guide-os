@@ -68,7 +68,7 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="text-center flex flex-col items-center gap-3">
-          <LogoMark size={56} variant="on-dark" />
+          <LogoMark size={80} />
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight">GuideStride</h1>
             <p className="text-slate-400 text-sm mt-1">
