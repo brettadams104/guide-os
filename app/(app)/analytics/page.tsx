@@ -26,12 +26,17 @@ export default async function AnalyticsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: trips }, { data: catches }, { data: conditions }] = await Promise.all([
+  const [{ data: trips }, { data: scheduledTrips }, { data: catches }, { data: conditions }] = await Promise.all([
     supabase.from('trips')
       .select('id, trip_date, location, amount_collected, price, payment_method, client_id, time_slot_id, started_at, ended_at, clients(name), guide_time_slots(label)')
       .eq('guide_id', user!.id)
       .eq('status', 'completed')
       .order('trip_date', { ascending: false }),
+    supabase.from('trips')
+      .select('id, trip_date, price, amount_collected, clients(name)')
+      .eq('guide_id', user!.id)
+      .in('status', ['scheduled', 'in_progress'])
+      .gt('price', 0),
     supabase.from('trip_catches').select('species, count, trip_id'),
     supabase.from('trip_conditions').select('trip_id, moon_phase, pressure_trend'),
   ])
@@ -174,7 +179,7 @@ export default async function AnalyticsPage() {
     yoyData[year][monthIdx] += t.amount_collected ?? 0
   })
 
-  const allTimeFinancial = buildFinancialData(trips ?? [])
+  const allTimeFinancial = buildFinancialData(trips ?? [], scheduledTrips ?? [])
 
   const fishingData = {
     speciesData, moonData, pressureData, monthFishData, totalFish, totalTrips,
@@ -197,7 +202,7 @@ export default async function AnalyticsPage() {
   )
 }
 
-function buildFinancialData(filtered: any[]) {
+function buildFinancialData(filtered: any[], scheduled: any[] = []) {
   const totalRevenue = filtered.reduce((s: number, t: any) => s + (t.amount_collected ?? 0), 0)
   const totalBilled = filtered.reduce((s: number, t: any) => s + (t.price ?? 0), 0)
   const totalOutstanding = Math.max(0, totalBilled - totalRevenue)
@@ -255,14 +260,24 @@ function buildFinancialData(filtered: any[]) {
     return { month: new Date(m + '-01').toLocaleString('default', { month: 'short' }), revenue: c > 0 ? Math.round(rev / c) : 0 }
   })
 
-  const outstanding = filtered
-    .filter((t: any) => (t.price ?? 0) > (t.amount_collected ?? 0))
-    .map((t: any) => ({
-      id: t.id,
-      client: (t.clients as { name: string } | null)?.name ?? 'No client',
-      date: t.trip_date,
-      owed: (t.price ?? 0) - (t.amount_collected ?? 0),
-    }))
+  const outstanding = [
+    ...filtered.filter((t: any) => (t.price ?? 0) > (t.amount_collected ?? 0))
+      .map((t: any) => ({
+        id: t.id,
+        client: (t.clients as { name: string } | null)?.name ?? 'No client',
+        date: t.trip_date,
+        owed: (t.price ?? 0) - (t.amount_collected ?? 0),
+        status: 'completed',
+      })),
+    ...scheduled.filter((t: any) => (t.price ?? 0) > (t.amount_collected ?? 0))
+      .map((t: any) => ({
+        id: t.id,
+        client: (t.clients as { name: string } | null)?.name ?? 'No client',
+        date: t.trip_date,
+        owed: (t.price ?? 0) - (t.amount_collected ?? 0),
+        status: 'scheduled',
+      })),
+  ].sort((a, b) => a.date.localeCompare(b.date))
 
   return { totalRevenue, totalBilled, totalOutstanding, totalTrips: count, avgPerTrip, collectionRate, bestMonthLabel, bestMonthAmount, revenueData, financialsBarData, paymentData, packageData, topClients, avgByMonth, outstanding }
 }

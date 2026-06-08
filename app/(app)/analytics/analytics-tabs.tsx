@@ -233,7 +233,12 @@ export function AnalyticsTabs({ fishingData, allTrips, allYears, yoyData }: {
                 {fin.outstanding.map((t: any) => (
                   <li key={t.id} className="flex items-center justify-between px-6 py-3">
                     <div>
-                      <p className="font-semibold text-slate-900 text-sm">{t.client}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-slate-900 text-sm">{t.client}</p>
+                        {t.status === 'scheduled' && (
+                          <span className="text-xs bg-sky-100 text-sky-600 font-medium px-1.5 py-0.5 rounded-full">Upcoming</span>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-400">{new Date(t.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
                     </div>
                     <Link href={`/trips/${t.id}`} className="font-bold text-amber-600">${t.owed.toFixed(0)}</Link>
