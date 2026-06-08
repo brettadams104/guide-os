@@ -15,7 +15,6 @@ const NAV = [
   { href: '/trips', label: 'Trips', icon: '◎' },
   { href: '/water-flows', label: 'Water Flows', icon: '≋' },
   { href: '/calendar', label: 'Calendar', icon: '▦' },
-  { href: '/financials', label: 'Financials', icon: '$' },
   { href: '/analytics', label: 'Analytics', icon: '▲' },
 ]
 
