@@ -195,6 +195,7 @@ export default async function AnalyticsPage() {
         fishingData={fishingData}
         allTimeFinancial={allTimeFinancial}
         allTrips={(trips ?? []) as any[]}
+        scheduledTrips={(scheduledTrips ?? []) as any[]}
         allYears={allYears}
         yoyData={yoyData}
       />

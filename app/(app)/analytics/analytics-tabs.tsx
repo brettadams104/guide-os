@@ -17,7 +17,7 @@ import Link from 'next/link'
 const TABS = ['Fishing', 'Financials'] as const
 type Tab = typeof TABS[number]
 
-function buildFinancialData(filtered: any[]) {
+function buildFinancialData(filtered: any[], scheduled: any[] = []) {
   const totalRevenue = filtered.reduce((s: number, t: any) => s + (t.amount_collected ?? 0), 0)
   const totalBilled = filtered.reduce((s: number, t: any) => s + (t.price ?? 0), 0)
   const totalOutstanding = Math.max(0, totalBilled - totalRevenue)
@@ -76,22 +76,33 @@ function buildFinancialData(filtered: any[]) {
     return { month: new Date(m + '-01').toLocaleString('default', { month: 'short' }), revenue: c > 0 ? Math.round(rev / c) : 0 }
   })
 
-  const outstanding = filtered
-    .filter((t: any) => (t.price ?? 0) > (t.amount_collected ?? 0))
-    .map((t: any) => ({
-      id: t.id,
-      client: (t.clients as { name: string } | null)?.name ?? 'No client',
-      date: t.trip_date,
-      owed: (t.price ?? 0) - (t.amount_collected ?? 0),
-    }))
+  const outstanding = [
+    ...filtered.filter((t: any) => (t.price ?? 0) > (t.amount_collected ?? 0))
+      .map((t: any) => ({
+        id: t.id,
+        client: (t.clients as { name: string } | null)?.name ?? 'No client',
+        date: t.trip_date,
+        owed: (t.price ?? 0) - (t.amount_collected ?? 0),
+        status: 'completed',
+      })),
+    ...scheduled.filter((t: any) => (t.price ?? 0) > (t.amount_collected ?? 0))
+      .map((t: any) => ({
+        id: t.id,
+        client: (t.clients as { name: string } | null)?.name ?? 'No client',
+        date: t.trip_date,
+        owed: (t.price ?? 0) - (t.amount_collected ?? 0),
+        status: 'scheduled',
+      })),
+  ].sort((a, b) => a.date.localeCompare(b.date))
 
   return { totalRevenue, totalBilled, totalOutstanding, totalTrips: count, avgPerTrip, collectionRate, bestMonthLabel, bestMonthAmount, revenueData, financialsBarData, paymentData, packageData, topClients, avgByMonth, outstanding }
 }
 
-export function AnalyticsTabs({ fishingData, allTrips, allYears, yoyData }: {
+export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears, yoyData }: {
   fishingData: any
   allTimeFinancial: any
   allTrips: any[]
+  scheduledTrips: any[]
   allYears: number[]
   yoyData: Record<number, number[]>
 }) {
@@ -109,7 +120,7 @@ export function AnalyticsTabs({ fishingData, allTrips, allYears, yoyData }: {
     [allTrips, selectedYear]
   )
 
-  const fin = useMemo(() => buildFinancialData(filtered), [filtered])
+  const fin = useMemo(() => buildFinancialData(filtered, scheduledTrips ?? []), [filtered, scheduledTrips])
 
   return (
     <>
