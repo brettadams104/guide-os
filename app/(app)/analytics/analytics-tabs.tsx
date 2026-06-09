@@ -165,10 +165,11 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
               <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Avg Per Trip</p>
               <p className="text-3xl font-black text-slate-900 mt-2">${fin.avgPerTrip.toFixed(0)}</p>
             </div>
-            <div className={`rounded-2xl p-5 ${fin.totalOutstanding > 0 ? 'bg-amber-50 border border-amber-200' : 'bg-white border border-slate-200'}`}>
+            <Link href="/outstanding" className={`rounded-2xl p-5 block hover:opacity-80 transition-opacity ${fin.totalOutstanding > 0 ? 'bg-amber-50 border border-amber-200' : 'bg-white border border-slate-200'}`}>
               <p className={`text-xs uppercase tracking-widest font-semibold ${fin.totalOutstanding > 0 ? 'text-amber-600' : 'text-slate-500'}`}>Outstanding</p>
               <p className={`text-3xl font-black mt-2 ${fin.totalOutstanding > 0 ? 'text-amber-600' : 'text-slate-900'}`}>${fin.totalOutstanding.toFixed(0)}</p>
-            </div>
+              {fin.totalOutstanding > 0 && <p className="text-xs text-amber-500 mt-1">Tap to view →</p>}
+            </Link>
             <div className="bg-white rounded-2xl border border-slate-200 p-5">
               <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Best Month</p>
               <p className="text-xl font-black text-slate-900 mt-2">${fin.bestMonthAmount.toFixed(0)}</p>
