@@ -2,8 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ClientDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ back?: string }> }) {
   const { id } = await params
+  const { back } = await searchParams
+  const backHref = back ?? '/clients'
+  const backLabel = back?.startsWith('/outstanding') ? '← Outstanding' : '← Clients'
   const supabase = await createClient()
 
   const { data: client } = await supabase.from('clients').select('*').eq('id', id).single()
@@ -22,7 +25,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/clients" className="text-slate-400 hover:text-slate-600 text-sm">← Clients</Link>
+          <Link href={backHref} className="text-slate-400 hover:text-slate-600 text-sm">{backLabel}</Link>
           <h1 className="text-2xl font-bold text-slate-900">{client.name}</h1>
         </div>
         <Link href={`/clients/${id}/edit`} className="text-sm border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium px-4 py-2 rounded-xl transition-colors">Edit</Link>
