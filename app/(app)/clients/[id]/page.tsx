@@ -73,16 +73,31 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           <ul className="divide-y divide-slate-100">
             {trips.map(trip => {
               const totalFish = (trip.trip_catches as { species: string; count: number }[])?.reduce((s, c) => s + c.count, 0) ?? 0
+              const owed = Math.max(0, (trip.price ?? 0) - (trip.amount_collected ?? 0))
+              const hasOutstanding = owed > 0
               return (
-                <li key={trip.id}>
-                  <Link href={`/trips/${trip.id}?back=/clients/${id}`} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors">
-                    <div>
-                      <p className="font-medium text-slate-900 text-sm">
-                        {new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                      </p>
+                <li key={trip.id} className={hasOutstanding ? 'bg-amber-50' : ''}>
+                  <Link href={`/trips/${trip.id}?back=/clients/${id}`} className="flex items-center justify-between px-6 py-4 hover:bg-amber-100/60 transition-colors">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium text-slate-900 text-sm">
+                          {new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                        </p>
+                        {hasOutstanding && (
+                          <span className="text-xs bg-amber-200 text-amber-800 font-semibold px-2 py-0.5 rounded-full">
+                            ${owed.toFixed(0)} owed
+                          </span>
+                        )}
+                      </div>
                       <p className="text-slate-500 text-xs mt-0.5">{trip.location ?? 'No location'} · {totalFish} fish</p>
                     </div>
-                    {trip.price && <p className="text-slate-700 text-sm font-medium">${trip.amount_collected?.toFixed(0)}</p>}
+                    <div className="text-right shrink-0 ml-4">
+                      {trip.price && (
+                        <p className={`text-sm font-semibold ${hasOutstanding ? 'text-amber-600' : 'text-slate-700'}`}>
+                          ${(trip.amount_collected ?? 0).toFixed(0)} / ${trip.price.toFixed(0)}
+                        </p>
+                      )}
+                    </div>
                   </Link>
                 </li>
               )
