@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GuideStride Business Plan 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: #1e293b;
+    background: #fff;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* ── Cover Page ── */
+  .cover {
+    min-height: 100vh;
+    background: #0f1f35;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    page-break-after: always;
+  }
+  .cover img {
+    width: 120px;
+    height: 120px;
+    border-radius: 24px;
+    margin-bottom: 32px;
+  }
+  .cover h1 {
+    font-size: 48px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .cover h1 span { color: #DC2626; }
+  .cover .tagline {
+    font-size: 18px;
+    color: #94a3b8;
+    font-weight: 500;
+    margin-bottom: 48px;
+    max-width: 500px;
+  }
+  .cover .meta {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cover .meta p { color: #64748b; font-size: 14px; }
+  .cover .meta strong { color: #cbd5e1; }
+
+  /* ── Content ── */
+  .content {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 52px;
+    page-break-inside: avoid;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #0f1f35;
+  }
+  .section-number {
+    background: #0f1f35;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 20px;
+    font-weight: 900;
+    color: #0f1f35;
+    letter-spacing: -0.3px;
+  }
+
+  h3 {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f1f35;
+    margin: 20px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  p { margin-bottom: 10px; color: #334155; }
+
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 12px;
+  }
+  li {
+    margin-bottom: 5px;
+    color: #334155;
+  }
+
+  strong { color: #0f1f35; font-weight: 700; }
+
+  /* ── Highlight box ── */
+  .highlight {
+    background: #f0f9ff;
+    border-left: 4px solid #0ea5e9;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+  }
+  .highlight p { margin: 0; color: #0369a1; font-weight: 600; font-size: 13px; }
+
+  .callout {
+    background: #0f1f35;
+    color: #fff;
+    padding: 20px 24px;
+    border-radius: 12px;
+    margin: 20px 0;
+  }
+  .callout p { color: #cbd5e1; margin: 0; }
+  .callout strong { color: #fff; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 12.5px;
+  }
+  thead tr {
+    background: #0f1f35;
+    color: #fff;
+  }
+  thead th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  tbody tr:hover { background: #f0f9ff; }
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+  }
+  td:first-child { font-weight: 600; color: #0f1f35; }
+  .check { color: #16a34a; font-weight: 700; }
+  .cross { color: #dc2626; font-weight: 700; }
+  .neutral { color: #64748b; }
+
+  /* ── KPI cards ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .kpi {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .kpi .value {
+    font-size: 28px;
+    font-weight: 900;
+    color: #0f1f35;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .kpi .value.blue { color: #0ea5e9; }
+  .kpi .value.red { color: #dc2626; }
+  .kpi .label {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Risk table ── */
+  .risk-low { color: #16a34a; font-weight: 700; }
+  .risk-med { color: #d97706; font-weight: 700; }
+  .risk-high { color: #dc2626; font-weight: 700; }
+
+  /* ── Timeline ── */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 16px 0;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e2e8f0;
+  }
+  .timeline-item {
+    display: flex;
+    gap: 20px;
+    padding: 0 0 20px 0;
+    position: relative;
+  }
+  .timeline-dot {
+    width: 32px;
+    height: 32px;
+    background: #0f1f35;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .timeline-dot.blue { background: #0ea5e9; }
+  .timeline-dot.red { background: #dc2626; }
+  .timeline-content h4 {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f1f35;
+    margin-bottom: 4px;
+  }
+  .timeline-content p { margin: 0; font-size: 12px; }
+
+  /* ── Footer ── */
+  .doc-footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 2px solid #0f1f35;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .doc-footer p { font-size: 11px; color: #94a3b8; margin: 0; }
+  .doc-footer strong { color: #0f1f35; }
+
+  /* ── Print ── */
+  @media print {
+    body { font-size: 12px; }
+    .cover { min-height: 100vh; }
+    .section { page-break-inside: avoid; }
+    .kpi-grid { page-break-inside: avoid; }
+    table { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Cover -->
+<div class="cover">
+  <img src="../public/logo.png" alt="GuideStride Logo" />
+  <h1>Guide<span>Stride</span></h1>
+  <p class="tagline">Business Management Software for Independent Fishing Guides</p>
+  <div class="meta">
+    <p><strong>Business Plan — Version 1.0</strong></p>
+    <p>Prepared June 2026</p>
+    <p><strong>Brett Adams & Kam Grassi</strong> · Founders</p>
+    <p>guidestride.com · app.guidestride.com</p>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- 1. Executive Summary -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <h2>Executive Summary</h2>
+    </div>
+    <p>GuideStride is a subscription-based business management platform built specifically for independent fishing guides. We give non-technical guides a simple, affordable way to manage clients, schedule trips, log catches, track payments, and grow their business — all from their phone.</p>
+    <p>The fishing guide industry is underserved by software. Most guides run their operations on spreadsheets, personal calendars, and pen and paper. The few software options that exist are expensive, bloated, and built for large lodges and outfitters — not the solo guide running 100 trips a year out of his truck.</p>
+    <div class="callout">
+      <p><strong>Our position:</strong> GuideStride is the Netflix of guide management software — simple, familiar, and impossible to justify not having. At $20/month with no contracts and no percentage cuts, we are the most affordable purpose-built platform in the market.</p>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="value blue">$20</div><div class="label">Per Month</div></div>
+      <div class="kpi"><div class="value">100</div><div class="label">Year 1 Goal</div></div>
+      <div class="kpi"><div class="value red">1,000</div><div class="label">Year 3 Goal</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Detail</th><th>Info</th></tr></thead>
+      <tbody>
+        <tr><td>Founders</td><td>Brett Adams (Operations & Marketing) · Kam Grassi (Sales & Customer Relations)</td></tr>
+        <tr><td>Beta Launch</td><td>June 2026</td></tr>
+        <tr><td>Paid Launch</td><td>August 2026</td></tr>
+        <tr><td>Business Model</td><td>SaaS subscription — $20/month per guide</td></tr>
+        <tr><td>Initial Investment</td><td>$500 (self-funded)</td></tr>
+        <tr><td>Monthly Operating Cost</td><td>$8/month at launch</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 2. The Problem -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <h2>The Problem</h2>
+    </div>
+    <p>Independent fishing guides are running small businesses with no business infrastructure. They face three core problems every day:</p>
+    <h3>1. Admin work eats their time</h3>
+    <p>Scheduling, client communication, trip logging, and payment chasing — all done manually. A guide running 120 trips a year spends hundreds of hours on paperwork that should take minutes.</p>
+    <h3>2. They can't prove their value</h3>
+    <p>When a new client asks "are you a good guide?" there is no data to back it up. No catch history, no analytics, no track record. Just word of mouth and hope.</p>
+    <h3>3. Existing software doesn't fit</h3>
+    <p>The few platforms that exist are designed for large outfitters and lodges. They are expensive, confusing, and packed with features a solo guide will never use. Some take a percentage of every booking — a model that punishes guides for being successful.</p>
+    <div class="highlight">
+      <p>The founding insight: Brett Adams spent countless hours trying to optimize guide business workflows using basic spreadsheets. The problem wasn't effort — it was that the right tool simply didn't exist at an accessible price point.</p>
+    </div>
+  </div>
+
+  <!-- 3. The Solution -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <h2>The Solution</h2>
+    </div>
+    <p>GuideStride is built around one idea: <strong>make it feel like a phone app, not business software.</strong> Guides already use apps for everything. GuideStride fits into that mental model — fast, familiar, and designed for someone who has never used CRM software in their life.</p>
+    <h3>Core Features at Launch</h3>
+    <ul>
+      <li><strong>Client Management</strong> — contacts, trip history, outstanding balances</li>
+      <li><strong>Trip Scheduling & Calendar</strong> — schedule, manage, and track all trips</li>
+      <li><strong>Live Trip Mode</strong> — real-time fish logging, weather, photos, and notes from the water</li>
+      <li><strong>Payment Tracking</strong> — cash, Venmo, Zelle, card, check — collect at trip end</li>
+      <li><strong>Financial Analytics</strong> — revenue, outstanding, collection rate, YoY growth</li>
+      <li><strong>Fishing Analytics</strong> — avg fish per trip, best day of week, top locations, species breakdown</li>
+      <li><strong>Water Flow Data</strong> — real-time USGS river gauge data for trip planning</li>
+      <li><strong>Outstanding Balance Tracker</strong> — client-level drill-down on who owes what</li>
+    </ul>
+    <h3>Planned Features (Roadmap)</h3>
+    <ul>
+      <li>Stripe billing integration (August 2026)</li>
+      <li>Expense tracking and tax-season reporting</li>
+      <li>Google Calendar and Apple Calendar sync</li>
+      <li>Guide website builder with monthly hosting</li>
+      <li>Affiliate and pro deal marketplace for fishing gear brands</li>
+      <li>Native mobile app via App Store (Capacitor)</li>
+    </ul>
+  </div>
+
+  <!-- 4. Market Opportunity -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2>Market Opportunity</h2>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="value">50K</div><div class="label">Total US Guides (TAM)</div></div>
+      <div class="kpi"><div class="value blue">20K</div><div class="label">Independent Guides (SAM)</div></div>
+      <div class="kpi"><div class="value red">100</div><div class="label">Year 1 Target (SOM)</div></div>
+    </div>
+    <p>Our target is the independent, full-time or serious part-time guide who runs their own operation without the resources or budget for enterprise software. This segment is estimated at 20,000 guides nationally and is almost entirely unaddressed by quality, affordable software.</p>
+    <h3>Revenue at Scale</h3>
+    <table>
+      <thead><tr><th>Milestone</th><th>Guides</th><th>MRR</th><th>ARR</th></tr></thead>
+      <tbody>
+        <tr><td>Year 1 Goal</td><td>100</td><td>$2,000</td><td>$24,000</td></tr>
+        <tr><td>Year 2 Target</td><td>500</td><td>$10,000</td><td>$120,000</td></tr>
+        <tr><td>Year 3 Goal</td><td>1,000</td><td>$20,000</td><td>$240,000</td></tr>
+      </tbody>
+    </table>
+    <h3>Additional Revenue Streams (Year 2+)</h3>
+    <ul>
+      <li><strong>Website hosting</strong> — $20–35/month per guide site built by GuideStride</li>
+      <li><strong>Affiliate commissions</strong> — fishing gear brands, pro deals, referral partnerships</li>
+      <li><strong>In-app advertising</strong> — contextual, non-intrusive, fishing-relevant brands (Year 3+)</li>
+    </ul>
+  </div>
+
+  <!-- 5. Competitive Analysis -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <h2>Competitive Analysis</h2>
+    </div>
+    <table>
+      <thead><tr><th>Feature</th><th>GuideStride</th><th>The Guide Network</th><th>Spreadsheets</th></tr></thead>
+      <tbody>
+        <tr><td>Price</td><td>$20/month flat</td><td>$15/month</td><td>Free</td></tr>
+        <tr><td>Booking % cut</td><td class="check">None</td><td class="cross">Varies</td><td class="check">None</td></tr>
+        <tr><td>Target user</td><td>Solo independent guide</td><td>All sizes</td><td>Anyone</td></tr>
+        <tr><td>Live trip logging</td><td class="check">Yes</td><td class="cross">No</td><td class="cross">No</td></tr>
+        <tr><td>Water flow data</td><td class="check">Yes</td><td class="cross">No</td><td class="cross">No</td></tr>
+        <tr><td>Financial analytics</td><td class="check">Yes</td><td class="neutral">Limited</td><td class="cross">No</td></tr>
+        <tr><td>Mobile-first design</td><td class="check">Yes</td><td class="cross">No</td><td class="cross">No</td></tr>
+        <tr><td>Personal onboarding</td><td class="check">Yes</td><td class="cross">Self-serve</td><td class="cross">N/A</td></tr>
+      </tbody>
+    </table>
+    <h3>Our Key Advantages</h3>
+    <ul>
+      <li><strong>Live Trip Mode</strong> — no competitor offers real-time on-water logging</li>
+      <li><strong>Mobile-first</strong> — designed for a phone, not a desktop</li>
+      <li><strong>No booking percentage</strong> — guides keep 100% of what they earn</li>
+      <li><strong>Flat predictable pricing</strong> — no surprises, no tiers, no hidden fees</li>
+      <li><strong>Built by people who understand fishing</strong> — product decisions reflect real guide needs</li>
+      <li><strong>Personal onboarding call</strong> — every new guide gets a real human walkthrough</li>
+    </ul>
+    <div class="highlight">
+      <p>Honest weakness: The Guide Network is $5 cheaper and has been in the market longer. We counter this with a superior product, personal onboarding, and a direct relationship with every customer.</p>
+    </div>
+  </div>
+
+  <!-- 6. Business Model -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <h2>Business Model</h2>
+    </div>
+    <h3>Primary Revenue — SaaS Subscription</h3>
+    <ul>
+      <li>$20/month per guide, billed monthly</li>
+      <li>1-month free trial for all new signups (launching August 2026)</li>
+      <li>No contracts — cancel anytime</li>
+    </ul>
+    <div class="callout">
+      <p><strong>Pricing philosophy:</strong> GuideStride will never become expensive software. The brand promise is affordability. Positioned as a "Netflix subscription" — low enough to not think twice about, high enough to sustain and grow the business. We may lower to $15/month based on market feedback. We will not raise the price without adding significant new value.</p>
+    </div>
+    <h3>Secondary Revenue Streams (Year 2+)</h3>
+    <p><strong>Website Hosting:</strong> Guides who want a professional website built and hosted by GuideStride pay a monthly hosting fee ($20–35/month). GuideStride builds the site. Guides keep it as long as they're subscribed.</p>
+    <p><strong>Affiliate & Brand Partnerships:</strong> Partner with fishing gear manufacturers, fly shops, and outdoor brands. GuideStride negotiates pro deals and discounts for guides. We earn referral commissions. Guides get access to gear discounts. Brands get a direct channel to professional buyers.</p>
+    <p><strong>In-App Advertising (Year 3+):</strong> Contextual, non-intrusive ads from fishing-relevant brands shown within the dashboard and analytics. Never interrupts the guide's workflow.</p>
+  </div>
+
+  <!-- 7. Go-To-Market -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <h2>Go-To-Market Strategy</h2>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot">1</div>
+        <div class="timeline-content">
+          <h4>Phase 1 — Beta (June–July 2026)</h4>
+          <p>Onboard 5–10 guide friends as beta testers. Collect feedback, fix issues, refine onboarding. No charge during beta. Build the demo account and demo flow for sales calls.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot blue">2</div>
+        <div class="timeline-content">
+          <h4>Phase 2 — Paid Launch (August 2026)</h4>
+          <p>Activate Stripe billing and 1-month free trial. Personal outreach to guide network. Launch social media presence (Instagram, Facebook fishing groups, YouTube). Attend local fishing expos and tournaments.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot red">3</div>
+        <div class="timeline-content">
+          <h4>Phase 3 — Scale (September 2026 onward)</h4>
+          <p>Referral program — guides who refer another guide get a free month. Partnerships with guide associations. Content marketing targeting "how to run a fishing guide business." Paid social once unit economics are validated.</p>
+        </div>
+      </div>
+    </div>
+    <h3>Guide Acquisition Targets</h3>
+    <table>
+      <thead><tr><th>Month</th><th>Guides</th><th>MRR</th><th>Cumulative Revenue</th></tr></thead>
+      <tbody>
+        <tr><td>August 2026</td><td>5</td><td>$100</td><td>$100</td></tr>
+        <tr><td>September 2026</td><td>12</td><td>$240</td><td>$340</td></tr>
+        <tr><td>October 2026</td><td>20</td><td>$400</td><td>$740</td></tr>
+        <tr><td>November 2026</td><td>30</td><td>$600</td><td>$1,340</td></tr>
+        <tr><td>December 2026</td><td>40</td><td>$800</td><td>$2,140</td></tr>
+        <tr><td>March 2027</td><td>60</td><td>$1,200</td><td>—</td></tr>
+        <tr><td>June 2027</td><td>80</td><td>$1,600</td><td>—</td></tr>
+        <tr><td>August 2027</td><td>100</td><td>$2,000</td><td>~$18,000 ARR</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 8. Operations -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">8</div>
+      <h2>Operations Plan</h2>
+    </div>
+    <table>
+      <thead><tr><th>Role</th><th>Person</th><th>Responsibilities</th></tr></thead>
+      <tbody>
+        <tr><td>Operations & Marketing</td><td>Brett Adams</td><td>Product decisions, marketing strategy, content, business infrastructure</td></tr>
+        <tr><td>Director of Sales & CX</td><td>Kam Grassi</td><td>Demo calls, guide onboarding, customer support, retention, feedback</td></tr>
+      </tbody>
+    </table>
+    <p>Time commitment: <strong>2–3 hours per day per founder.</strong> Remote-first, self-directed operation with weekly sync.</p>
+    <h3>Onboarding Flow</h3>
+    <ol>
+      <li>Guide signs up at app.guidestride.com</li>
+      <li>Automated welcome email sent immediately</li>
+      <li>Kam follows up within 24 hours to schedule a 15-minute walkthrough call</li>
+      <li>Guide completes walkthrough and gets comfortable with core features</li>
+      <li>Check-in at Day 14 (end of trial)</li>
+      <li>Convert to paid or conduct personal retention conversation</li>
+    </ol>
+    <h3>Customer Support</h3>
+    <ul>
+      <li>Email support for all guides — target response under 24 hours</li>
+      <li>Personal phone and video calls for onboarding and cancellation saves</li>
+      <li>FAQ documentation and tutorial video library to reduce support volume</li>
+    </ul>
+  </div>
+
+  <!-- 9. Financial Plan -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">9</div>
+      <h2>Financial Plan</h2>
+    </div>
+    <h3>Startup Investment: $500 (Self-Funded)</h3>
+    <table>
+      <thead><tr><th>Item</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr><td>LLC Formation</td><td>~$200–300</td></tr>
+        <tr><td>Domain (guidestride.com)</td><td>$10/year</td></tr>
+        <tr><td>Google Workspace Email</td><td>$8/month</td></tr>
+        <tr><td>Apple Developer Account</td><td>$99/year (at App Store launch)</td></tr>
+        <tr><td>Initial Marketing Materials</td><td>Remaining budget</td></tr>
+      </tbody>
+    </table>
+    <h3>Monthly Operating Costs (at Launch)</h3>
+    <table>
+      <thead><tr><th>Expense</th><th>Monthly Cost</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Google Workspace</td><td>$8</td><td>Business email</td></tr>
+        <tr><td>Vercel (hosting)</td><td>$0</td><td>Free tier — upgrade at ~500 users</td></tr>
+        <tr><td>Supabase (database)</td><td>$0</td><td>Free tier — upgrade as needed</td></tr>
+        <tr><td>Resend (email)</td><td>$0</td><td>Free tier</td></tr>
+        <tr><td><strong>Total</strong></td><td><strong>$8/month</strong></td><td>Break-even at 1 paying guide</td></tr>
+      </tbody>
+    </table>
+    <div class="highlight">
+      <p>At $8/month in operating costs, GuideStride breaks even at 1 paying guide. Profit begins immediately at any subscription revenue. All profits reinvested in Year 1 to fund marketing, content, and product development.</p>
+    </div>
+  </div>
+
+  <!-- 10. Risk Analysis -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">10</div>
+      <h2>Risk Analysis</h2>
+    </div>
+    <table>
+      <thead><tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr><td>Slow initial sales</td><td class="risk-med">Medium</td><td class="risk-high">High</td><td>Personal demo calls, beta tester referrals, guide network leverage</td></tr>
+        <tr><td>Guide churns after trial</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>Day 14 personal check-in, discount offer, learn from feedback</td></tr>
+        <tr><td>Competitor copies features</td><td class="risk-med">Medium</td><td class="risk-low">Low</td><td>Speed of iteration, customer relationships, brand loyalty</td></tr>
+        <tr><td>Infrastructure costs spike</td><td class="risk-low">Low</td><td class="risk-med">Medium</td><td>Free tiers have significant headroom; upgrade only when revenue supports it</td></tr>
+        <tr><td>Guides resist technology</td><td class="risk-med">Medium</td><td class="risk-med">Medium</td><td>Personal onboarding, tutorial videos, extreme simplicity by design</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><strong>Biggest acknowledged risk:</strong> Sales velocity — getting in front of enough guides efficiently. Mitigation: Kam leads direct sales full-time, personal network is the starting pipeline, and the GuideStride demo flow is designed to convert in 15 minutes.</p>
+    </div>
+  </div>
+
+  <!-- 11. Roadmap -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">11</div>
+      <h2>Product Roadmap</h2>
+    </div>
+    <table>
+      <thead><tr><th>Quarter</th><th>Milestones</th></tr></thead>
+      <tbody>
+        <tr><td>Q3 2026</td><td>Stripe billing · Free trial activation · Tutorial video library · Beta feedback incorporated</td></tr>
+        <tr><td>Q4 2026</td><td>Expense tracking · Referral program · App Store submission · Calendar sync</td></tr>
+        <tr><td>Q1–Q2 2027</td><td>Guide website builder · Affiliate marketplace · First association partnership</td></tr>
+        <tr><td>Year 3</td><td>First full-time hire · In-app advertising · International markets (Canada, NZ, Australia)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 12. Vision -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">12</div>
+      <h2>Long-Term Vision</h2>
+    </div>
+    <p>In 5 years, GuideStride is the recognized platform for independent fishing guides across North America. The brand is known in guide circles the way Venmo is known for splitting bills — it's simply what you use.</p>
+    <p>The company runs with a team of 4–5, operates globally, and functions without requiring Brett and Kam in the day-to-day. Both founders spend 2–3 focused hours per day coaching the team, making product decisions, and pursuing strategic partnerships.</p>
+    <div class="callout">
+      <p><strong>The product moat is the data.</strong> Once a guide has a year of trip history, catch analytics, and client records in GuideStride, switching costs become very high. The guide who signs up today gets a platform that saves them hours every week. The guide who has been on GuideStride for 3 years has 3 years of irreplaceable data — and would never dream of leaving. That is the business.</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="doc-footer">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <img src="../public/logo.png" alt="GuideStride" style="width:28px; height:28px; border-radius:6px;" />
+      <strong>GuideStride</strong>
+    </div>
+    <p>Business Plan v1.0 · June 2026 · Confidential</p>
+    <p>guidestride.com</p>
+  </div>
+
+</div>
+</body>
+</html>
