@@ -32,7 +32,7 @@ export default async function OutstandingPage() {
   const byClient: Record<string, { name: string; clientId: string; trips: typeof allOutstanding }> = {}
   allOutstanding.forEach(t => {
     const clientId = t.client_id ?? 'unknown'
-    const name = (t.clients as { name: string } | null)?.name ?? 'No client'
+    const name = (t.clients as unknown as { name: string } | null)?.name ?? 'No client'
     if (!byClient[clientId]) byClient[clientId] = { name, clientId, trips: [] }
     byClient[clientId].trips.push(t)
   })
