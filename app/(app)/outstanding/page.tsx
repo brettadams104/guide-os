@@ -4,7 +4,11 @@ import { notFound } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
-export default async function OutstandingPage() {
+export default async function OutstandingPage({ searchParams }: { searchParams: Promise<{ back?: string }> }) {
+  const { back } = await searchParams
+  const backHref = back ?? '/analytics'
+  const backLabel = back === '/dashboard' ? '← Dashboard' : '← Analytics'
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) notFound()
@@ -48,7 +52,7 @@ export default async function OutstandingPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center gap-4">
-        <Link href="/analytics" className="text-slate-400 hover:text-slate-600 text-sm">← Analytics</Link>
+        <Link href={backHref} className="text-slate-400 hover:text-slate-600 text-sm">{backLabel}</Link>
         <h1 className="text-2xl font-bold text-slate-900">Outstanding Balances</h1>
       </div>
 

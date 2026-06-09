@@ -70,7 +70,7 @@ export default async function DashboardPage() {
         <StatCard label="Total Clients" value={totalClients ?? 0} />
         <StatCard label="Trips This Month" value={(monthTrips ?? []).length} />
         <StatCard label="Month Revenue" value={`$${monthRevenue.toFixed(0)}`} accent />
-        <StatCard label="Outstanding" value={`$${outstanding.toFixed(0)}`} sub="across all clients" />
+        <StatCard label="Outstanding" value={`$${outstanding.toFixed(0)}`} sub="across all clients" href="/outstanding?back=/dashboard" />
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
