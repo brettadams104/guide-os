@@ -23,7 +23,10 @@ export default async function ClientsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
+          <p className="text-slate-400 text-sm mt-0.5">{clientData.length} total client{clientData.length !== 1 ? 's' : ''}</p>
+        </div>
         <Link href="/clients/new" className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
           + Add Client
         </Link>
