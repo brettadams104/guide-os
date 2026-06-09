@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import { SpeciesDonut } from '@/components/charts/species-donut'
 import { FishByMoon } from '@/components/charts/fish-by-moon'
@@ -35,8 +37,7 @@ export default async function AnalyticsPage() {
     supabase.from('trips')
       .select('id, trip_date, price, amount_collected, clients(name)')
       .eq('guide_id', user!.id)
-      .in('status', ['scheduled', 'in_progress'])
-      .gt('price', 0),
+      .in('status', ['scheduled', 'in_progress']),
     supabase.from('trip_catches').select('species, count, trip_id'),
     supabase.from('trip_conditions').select('trip_id, moon_phase, pressure_trend'),
   ])
