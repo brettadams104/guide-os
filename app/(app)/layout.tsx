@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Sidebar } from './sidebar'
 import { BottomNav } from './bottom-nav'
+import { TourWrapper } from '@/components/tour-wrapper'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,15 +34,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Desktop sidebar — hidden on mobile */}
       <div className="hidden md:block">
         <Sidebar signOut={signOut} guideName={guide?.name ?? 'Guide'} />
       </div>
 
-      {/* Main content — padded for sidebar on desktop, padded for bottom nav on mobile */}
       <main className="md:pl-60 pb-20 md:pb-0 min-h-screen">
 
-        {/* Live trip banner — shows on every page while a trip is in progress */}
         {liveTrip && (
           <div className="bg-green-600 px-4 py-2.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -67,8 +65,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </main>
 
-      {/* Mobile bottom nav — hidden on desktop */}
       <BottomNav />
+      <TourWrapper userId={user.id} />
     </div>
   )
 }
