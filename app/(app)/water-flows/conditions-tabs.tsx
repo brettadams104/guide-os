@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
+import { saveGuideLocation } from '@/lib/actions/guide-location'
 import type { GaugeData } from './gauge-card'
 import { GaugeCard } from './gauge-card'
 import { GaugeSearch } from './gauge-search'
@@ -118,9 +119,131 @@ function FlowsTab({ gaugeCards, siteNos }: { gaugeCards: GaugeData[]; siteNos: s
   )
 }
 
+// ── Location switcher ─────────────────────────────────────────────────────────
+
+interface GeoResult { id: number; name: string; admin1: string | null; country: string; latitude: number; longitude: number }
+
+function LocationSwitcher({ currentLocation, onLocationChange }: {
+  currentLocation: string
+  onLocationChange: (weather: WeatherPayload, outlook: OutlookPayload | null, name: string, lat: number, lon: number) => void
+}) {
+  const [editing, setEditing]   = useState(false)
+  const [query,   setQuery]     = useState('')
+  const [results, setResults]   = useState<GeoResult[]>([])
+  const [fetching, setFetching] = useState(false)
+  const [saving,   setSaving]   = useState(false)
+  const [saved,    setSaved]    = useState(false)
+  const [pendingGeo, setPendingGeo] = useState<{ name: string; lat: number; lon: number } | null>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function handleInput(val: string) {
+    setQuery(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (val.trim().length < 2) { setResults([]); return }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(val)}&count=6&language=en&format=json`)
+        const data = await res.json()
+        setResults(data.results ?? [])
+      } catch { setResults([]) }
+    }, 300)
+  }
+
+  async function handleSelect(r: GeoResult) {
+    const name = [r.name, r.admin1, r.country].filter(Boolean).join(', ')
+    setResults([])
+    setEditing(false)
+    setQuery('')
+    setFetching(true)
+    setPendingGeo({ name, lat: r.latitude, lon: r.longitude })
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      const end   = new Date(Date.now() + 6 * 86400000).toISOString().split('T')[0]
+      const url   = `https://api.open-meteo.com/v1/forecast?latitude=${r.latitude}&longitude=${r.longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,surface_pressure,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,surface_pressure_mean&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&start_date=${today}&end_date=${end}`
+      const res   = await fetch(url)
+      const data  = await res.json()
+      const w: WeatherPayload = { ...data, location: name }
+      onLocationChange(w, null, name, r.latitude, r.longitude)
+    } catch {}
+    finally { setFetching(false) }
+  }
+
+  async function handleSaveDefault() {
+    if (!pendingGeo) return
+    setSaving(true)
+    await saveGuideLocation({ name: pendingGeo.name, lat: pendingGeo.lat, lon: pendingGeo.lon })
+    setSaving(false)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 3000)
+  }
+
+  return (
+    <div className="space-y-2">
+      {!editing ? (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {fetching
+              ? <div className="w-3 h-3 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
+              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            }
+            <p className="text-slate-500 text-sm">{pendingGeo?.name ?? currentLocation}</p>
+          </div>
+          <button onClick={() => setEditing(true)} className="text-xs text-sky-500 hover:text-sky-400 font-medium transition-colors">
+            Change location
+          </button>
+        </div>
+      ) : (
+        <div className="relative">
+          <input
+            autoFocus
+            type="text"
+            value={query}
+            onChange={e => handleInput(e.target.value)}
+            placeholder="Search city or town…"
+            className="w-full border border-sky-300 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+          />
+          <button onClick={() => { setEditing(false); setQuery(''); setResults([]) }} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs">Cancel</button>
+          {results.length > 0 && (
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+              {results.map(r => {
+                const label = [r.name, r.admin1, r.country].filter(Boolean).join(', ')
+                return (
+                  <button key={r.id} type="button" onClick={() => handleSelect(r)}
+                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-sky-50 border-b border-slate-100 last:border-0 transition-colors">
+                    <span className="font-medium text-slate-900">{r.name}</span>
+                    {(r.admin1 || r.country) && <span className="text-slate-400 ml-1">{[r.admin1, r.country].filter(Boolean).join(', ')}</span>}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+      {pendingGeo && !editing && (
+        <div className="flex items-center gap-2">
+          {saved
+            ? <p className="text-xs text-emerald-600 font-medium">✓ Saved as default location</p>
+            : <button onClick={handleSaveDefault} disabled={saving} className="text-xs text-slate-400 hover:text-slate-600 transition-colors">
+                {saving ? 'Saving…' : 'Save as default location'}
+              </button>
+          }
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Tab: Weather ───────────────────────────────────────────────────────────────
 
-function WeatherTab({ weather, outlook, loading }: { weather: WeatherPayload | null; outlook: OutlookPayload | null; loading: boolean }) {
+function WeatherTab({ weather: initialWeather, outlook: initialOutlook, loading }: { weather: WeatherPayload | null; outlook: OutlookPayload | null; loading: boolean }) {
+  const [weather, setWeather]   = useState(initialWeather)
+  const [outlook, setOutlook]   = useState(initialOutlook)
+
+  const handleLocationChange = useCallback((w: WeatherPayload, o: OutlookPayload | null) => {
+    setWeather(w)
+    setOutlook(o)
+  }, [])
+
   if (loading) return <LoadingSpinner label="Fetching weather…" />
   if (!weather) return <NoLocation />
 
@@ -137,7 +260,10 @@ function WeatherTab({ weather, outlook, loading }: { weather: WeatherPayload | n
 
   return (
     <div className="space-y-4">
-      <p className="text-slate-500 text-sm">{weather.location}</p>
+      <LocationSwitcher
+        currentLocation={weather.location}
+        onLocationChange={(w, o, _name, _lat, _lon) => handleLocationChange(w, o)}
+      />
 
       {/* Current conditions */}
       <div className="bg-[#0f1f35] rounded-2xl p-6 text-white">
