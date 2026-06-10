@@ -313,7 +313,7 @@ function NoLocation() {
 
 // ── Main exported component ────────────────────────────────────────────────────
 
-const TABS = ['Flows', 'Weather'] as const
+const TABS = ['Weather', 'Flows'] as const
 type TabName = typeof TABS[number]
 
 export function ConditionsTabs({
@@ -327,7 +327,7 @@ export function ConditionsTabs({
   weather: WeatherPayload | null
   outlook: OutlookPayload | null
 }) {
-  const [tab, setTab] = useState<TabName>('Flows')
+  const [tab, setTab] = useState<TabName>('Weather')
 
   return (
     <div className="space-y-4">
