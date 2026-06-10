@@ -1,9 +1,14 @@
 'use client'
 
-import { SpotlightTour } from './spotlight-tour'
+import dynamic from 'next/dynamic'
 
-// SpotlightTour is always mounted so it never loses step state during navigation.
-// It manages its own active/inactive state internally.
+// ssr:false means SpotlightTour only runs on the client — no hydration mismatch,
+// no state reset from server re-renders on desktop navigation.
+const SpotlightTour = dynamic(
+  () => import('./spotlight-tour').then(m => ({ default: m.SpotlightTour })),
+  { ssr: false }
+)
+
 export function TourWrapper({ userId: _userId }: { userId: string }) {
   return <SpotlightTour onDone={() => {}} />
 }
