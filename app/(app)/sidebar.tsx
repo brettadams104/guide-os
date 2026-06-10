@@ -14,7 +14,6 @@ const NAV = [
   { href: '/clients', label: 'Clients', icon: '◉' },
   { href: '/trips', label: 'Trips', icon: '◎' },
   { href: '/water-flows', label: 'Water Flows', icon: '≋' },
-  { href: '/calendar', label: 'Calendar', icon: '▦' },
   { href: '/analytics', label: 'Analytics', icon: '▲' },
 ]
 
