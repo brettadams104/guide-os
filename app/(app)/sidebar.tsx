@@ -11,10 +11,10 @@ interface Props {
 
 const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: '◈' },
-  { href: '/clients', label: 'Clients', icon: '◉' },
   { href: '/trips', label: 'Trips', icon: '◎' },
-  { href: '/water-flows', label: 'Water Flows', icon: '≋' },
+  { href: '/clients', label: 'Clients', icon: '◉' },
   { href: '/analytics', label: 'Analytics', icon: '▲' },
+  { href: '/water-flows', label: 'Water Flows', icon: '≋' },
 ]
 
 export function Sidebar({ signOut, guideName }: Props) {
