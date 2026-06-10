@@ -1,9 +1,9 @@
 'use client'
 
-import { SpotlightTour, useTourVisible } from './spotlight-tour'
+import { SpotlightTour } from './spotlight-tour'
 
-export function TourWrapper({ userId }: { userId: string }) {
-  const { visible, hide } = useTourVisible(userId)
-  if (!visible) return null
-  return <SpotlightTour onClose={hide} />
+// SpotlightTour is always mounted so it never loses step state during navigation.
+// It manages its own active/inactive state internally.
+export function TourWrapper({ userId: _userId }: { userId: string }) {
+  return <SpotlightTour onDone={() => {}} />
 }
