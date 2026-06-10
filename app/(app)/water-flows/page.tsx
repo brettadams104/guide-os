@@ -70,7 +70,7 @@ async function fetchWeather(lat: number, lon: number): Promise<WeatherPayload | 
   try {
     const today = new Date().toISOString().split('T')[0]
     const sevenDays = new Date(Date.now() + 6 * 86400000).toISOString().split('T')[0]
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,surface_pressure,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,surface_pressure_mean&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto&start_date=${today}&end_date=${sevenDays}`
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,surface_pressure,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,surface_pressure_mean&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&start_date=${today}&end_date=${sevenDays}`
     const res = await fetch(url, { next: { revalidate: 1800 } })
     if (!res.ok) return null
     return await res.json()

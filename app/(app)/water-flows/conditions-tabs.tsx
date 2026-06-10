@@ -193,8 +193,8 @@ function WeatherTab({ weather, loading }: { weather: WeatherPayload | null; load
                 <span className="text-lg">{weatherIcon(daily.weathercode[i] ?? 0)}</span>
                 <p className="text-xs text-slate-500 w-20">{weatherLabel(daily.weathercode[i] ?? 0)}</p>
               </div>
-              {(daily.precipitation_sum[i] ?? 0) > 0 && (
-                <p className="text-xs text-sky-500 font-medium w-12 text-center">{daily.precipitation_sum[i].toFixed(1)}"</p>
+              {(daily.precipitation_sum[i] ?? 0) >= 0.05 && (
+                <p className="text-xs text-sky-500 font-medium w-12 text-center">{daily.precipitation_sum[i].toFixed(2)}"</p>
               )}
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-bold text-slate-800">{Math.round(daily.temperature_2m_max[i] ?? 0)}°</span>
@@ -255,7 +255,7 @@ function TripOutlookTab({ outlook, loading }: { outlook: OutlookPayload | null; 
           </div>
           <div className="bg-white/5 rounded-xl p-3">
             <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Precipitation</p>
-            <p className="text-white font-semibold text-sm">{(todayRain ?? 0) > 0 ? `${(todayRain ?? 0).toFixed(2)}" expected` : 'None expected'}</p>
+            <p className="text-white font-semibold text-sm">{(todayRain ?? 0) >= 0.05 ? `${(todayRain ?? 0).toFixed(2)}" expected` : 'None expected'}</p>
           </div>
         </div>
       </div>
