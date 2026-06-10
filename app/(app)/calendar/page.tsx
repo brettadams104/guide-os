@@ -42,7 +42,7 @@ export default async function CalendarPage() {
   }))
 
   return (
-    <div className="space-y-6">
+    <div data-tour="calendar-content" className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">Calendar</h1>
         <Link href="/trips" className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">Manage Trips</Link>

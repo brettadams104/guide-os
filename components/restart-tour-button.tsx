@@ -6,10 +6,18 @@ import { SpotlightTour } from './spotlight-tour'
 export function RestartTourButton() {
   const [show, setShow] = useState(false)
 
+  function handleRestart() {
+    // Clear all tour storage so it starts fresh from welcome screen
+    localStorage.removeItem('gs_tour_done')
+    sessionStorage.removeItem('gs_tour_step')
+    sessionStorage.removeItem('gs_tour_started')
+    setShow(true)
+  }
+
   return (
     <>
       <button
-        onClick={() => setShow(true)}
+        onClick={handleRestart}
         className="flex items-center gap-2 border border-sky-200 text-sky-600 hover:bg-sky-50 font-semibold px-4 py-2.5 rounded-xl transition-colors text-sm"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -17,7 +25,7 @@ export function RestartTourButton() {
         </svg>
         Restart App Tour
       </button>
-      {show && <SpotlightTour userId="restart" onClose={() => setShow(false)} />}
+      {show && <SpotlightTour onClose={() => setShow(false)} />}
     </>
   )
 }
