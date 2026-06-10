@@ -174,7 +174,6 @@ export default async function WaterFlowsPage() {
     <div data-tour="water-flows-content" className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Conditions</h1>
-        <p className="text-slate-500 text-sm mt-0.5">River flows, weather forecast, and trip outlook</p>
       </div>
       <ConditionsTabs gaugeCards={gaugeCards} siteNos={siteNos} weather={weather} outlook={outlook} />
       <p className="text-xs text-slate-400 text-center">
