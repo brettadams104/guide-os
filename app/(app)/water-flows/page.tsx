@@ -82,7 +82,7 @@ export default async function WaterFlowsPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const [{ data: guide }, { data: gauges }] = await Promise.all([
-    supabase.from('guides').select('location').eq('id', user!.id).single(),
+    supabase.from('guides').select('location, location_lat, location_lon').eq('id', user!.id).single(),
     supabase.from('guide_water_gauges').select('*').eq('guide_id', user!.id).order('created_at'),
   ])
 
@@ -107,12 +107,18 @@ export default async function WaterFlowsPage() {
     ...(usgsData[g.site_no] ?? { siteName: '', cfs: null, gageHeight: null, lastUpdated: null, trend: null, history: [] }),
   }))
 
-  // Geocode and fetch weather if guide has a location set
+  // Use stored lat/lon if available, otherwise fall back to geocoding the location string
   let weather: WeatherPayload | null = null
   let outlook: OutlookPayload | null = null
 
+  const storedLat = (guide as any)?.location_lat as number | null
+  const storedLon = (guide as any)?.location_lon as number | null
+
   if (guide?.location) {
-    const geo = await geocodeLocation(guide.location)
+    const geo = (storedLat && storedLon)
+      ? { lat: storedLat, lon: storedLon, name: guide.location }
+      : await geocodeLocation(guide.location)
+
     if (geo) {
       const raw = await fetchWeather(geo.lat, geo.lon)
       if (raw) {

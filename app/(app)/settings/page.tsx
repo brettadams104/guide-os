@@ -4,6 +4,7 @@ import { addStaff, deleteStaff } from '@/lib/actions/trip-options'
 import { TimeSlotManager } from '@/components/time-slot-manager'
 import { AccountSettings } from '@/components/account-settings'
 import { DeleteAccountButton } from '@/components/delete-account-button'
+import { LocationPicker } from '@/components/location-picker'
 import { RestartTourButton } from '@/components/restart-tour-button'
 import { SpeciesPresetManager } from '@/components/species-preset-manager'
 import { LurePresetManager } from '@/components/lure-preset-manager'
@@ -53,7 +54,6 @@ export default async function SettingsPage() {
           { name: 'business_name', label: 'Business Name', defaultValue: guide?.business_name },
           { name: 'phone', label: 'Phone', defaultValue: (guide as any)?.phone },
           { name: 'address', label: 'Address', defaultValue: (guide as any)?.address },
-          { name: 'location', label: 'Default Location (for weather)', defaultValue: guide?.location },
         ].map(f => (
           <div key={f.name}>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">{f.label}</label>
@@ -62,6 +62,15 @@ export default async function SettingsPage() {
         ))}
         <button type="submit" className="w-full bg-sky-500 hover:bg-sky-400 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">Save Changes</button>
       </form>
+
+      {/* Weather Location */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-3">
+        <div>
+          <h2 className="font-semibold text-slate-900">Weather Location</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Used for weather forecasts and trip outlook. Search and select your city to make sure it's accurate.</p>
+        </div>
+        <LocationPicker currentLocation={guide?.location ?? null} />
+      </div>
 
       {/* Account */}
       <AccountSettings currentEmail={user!.email ?? ''} />
