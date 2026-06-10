@@ -128,9 +128,46 @@ function getTooltipStyle(rect: SpotlightRect, position: string, windowH: number,
   return { top, left, arrowPos, resolvedPos }
 }
 
+function WelcomeScreen({ onStart, onSkip }: { onStart: () => void; onSkip: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.75)' }}>
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
+        <div className="bg-[#0f1f35] px-8 pt-10 pb-8 text-center">
+          <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <h2 className="text-2xl font-black text-white leading-tight mb-3">
+            Welcome to GuideStride
+          </h2>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Before you dive in, let us show you around. This quick tour highlights the key features and walks you through exactly how the app works — takes about 2 minutes.
+          </p>
+        </div>
+        <div className="p-6 space-y-3">
+          <button
+            onClick={onStart}
+            className="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-3.5 rounded-2xl text-sm transition-colors"
+          >
+            Show Me Around →
+          </button>
+          <button
+            onClick={onSkip}
+            className="w-full text-slate-400 hover:text-slate-600 text-sm font-medium py-2 transition-colors"
+          >
+            Skip — I'll figure it out
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function SpotlightTour({ userId, onClose }: { userId: string; onClose: () => void }) {
   const router = useRouter()
   const pathname = usePathname()
+  const [showWelcome, setShowWelcome] = useState(true)
   const [step, setStep] = useState(0)
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null)
   const [ready, setReady] = useState(false)
@@ -204,6 +241,18 @@ export function SpotlightTour({ userId, onClose }: { userId: string; onClose: ()
   function handleSkip() {
     localStorage.setItem(STORAGE_KEY_PREFIX + userId, '1')
     onClose()
+  }
+
+  if (showWelcome) {
+    return (
+      <WelcomeScreen
+        onStart={() => setShowWelcome(false)}
+        onSkip={() => {
+          localStorage.setItem(STORAGE_KEY_PREFIX + userId, '1')
+          onClose()
+        }}
+      />
+    )
   }
 
   const PAD = 10
