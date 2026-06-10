@@ -120,7 +120,7 @@ function FlowsTab({ gaugeCards, siteNos }: { gaugeCards: GaugeData[]; siteNos: s
 
 // ── Tab: Weather ───────────────────────────────────────────────────────────────
 
-function WeatherTab({ weather, loading }: { weather: WeatherPayload | null; loading: boolean }) {
+function WeatherTab({ weather, outlook, loading }: { weather: WeatherPayload | null; outlook: OutlookPayload | null; loading: boolean }) {
   if (loading) return <LoadingSpinner label="Fetching weather…" />
   if (!weather) return <NoLocation />
 
@@ -202,29 +202,20 @@ function WeatherTab({ weather, loading }: { weather: WeatherPayload | null; load
           )
         })}
       </div>
+      {/* Outlook sections appended below forecast */}
+      {outlook && <OutlookSections outlook={outlook} />}
     </div>
   )
 }
 
-// ── Tab: Trip Outlook ──────────────────────────────────────────────────────────
+// ── Outlook sections (merged into Weather tab) ─────────────────────────────────
 
-function TripOutlookTab({ outlook, loading }: { outlook: OutlookPayload | null; loading: boolean }) {
-  if (loading) return <LoadingSpinner label="Building your trip outlook…" />
-  if (!outlook) return <NoLocation />
-
-  const { current, daily, moonPhase, moonIllumination, sunrise, sunset, yesterdayHigh, yesterdayLow, yesterdayWeather, pressureTrend, primaryGauge } = outlook
-
-  const today = daily.time[0]
-  const todayHigh = daily.temperature_2m_max[0]
-  const todayLow = daily.temperature_2m_min[0]
-  const todayWind = daily.windspeed_10m_max[0]
-  const todayRain = daily.precipitation_sum[0]
-  const todayCode = daily.weathercode[0]
+function OutlookSections({ outlook }: { outlook: OutlookPayload }) {
+  const { current, moonPhase, moonIllumination, sunrise, sunset, pressureTrend, primaryGauge } = outlook
 
   const pressureColor = pressureTrend === 'rising' ? 'text-emerald-500' : pressureTrend === 'falling' ? 'text-red-500' : 'text-amber-500'
   const pressureLabel = pressureTrend === 'rising' ? '↑ Rising' : pressureTrend === 'falling' ? '↓ Falling' : '→ Steady'
   const pressureNote = pressureTrend === 'rising' ? 'Fish tend to be more active with rising pressure' : pressureTrend === 'falling' ? 'Fish may be sluggish — pre-front activity possible' : 'Stable conditions — consistent bite expected'
-
   const moonNote = moonPhase === 'Full Moon' || moonPhase === 'New Moon'
     ? 'Major moon phase — solunar activity peaks, expect strong feeding windows'
     : moonPhase.includes('Quarter')
@@ -233,49 +224,22 @@ function TripOutlookTab({ outlook, loading }: { outlook: OutlookPayload | null; 
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-slate-500 text-sm">{outlook.location} · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-      </div>
 
-      {/* Conditions summary banner */}
-      <div className="bg-[#0f1f35] rounded-2xl p-5 text-white">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-4xl">{weatherIcon(current.weathercode, current.is_day === 1)}</span>
-          <div>
-            <p className="text-xl font-black">{weatherLabel(todayCode ?? current.weathercode)}</p>
-            <p className="text-slate-400 text-sm">{Math.round(todayHigh ?? current.temperature_2m)}° high · {Math.round(todayLow ?? current.temperature_2m - 15)}° low · {Math.round(todayWind ?? current.windspeed_10m)} mph wind</p>
+      {/* Sunrise / Sunset */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Sunrise & Sunset</p>
+        <div className="flex items-center justify-around">
+          <div className="text-center">
+            <p className="text-xs text-slate-400 mb-1">Sunrise</p>
+            <p className="font-bold text-slate-800">{sunrise}</p>
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white/5 rounded-xl p-3">
-            <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Sunrise / Sunset</p>
-            <p className="text-white font-semibold text-sm">{sunrise} → {sunset}</p>
-          </div>
-          <div className="bg-white/5 rounded-xl p-3">
-            <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Precipitation</p>
-            <p className="text-white font-semibold text-sm">{(todayRain ?? 0) >= 0.05 ? `${(todayRain ?? 0).toFixed(2)}" expected` : 'None expected'}</p>
+          <div className="text-slate-200 text-lg">→</div>
+          <div className="text-center">
+            <p className="text-xs text-slate-400 mb-1">Sunset</p>
+            <p className="font-bold text-slate-800">{sunset}</p>
           </div>
         </div>
       </div>
-
-      {/* Yesterday vs Today */}
-      {yesterdayHigh !== null && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Yesterday vs Today</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-slate-50 rounded-xl p-3">
-              <p className="text-xs text-slate-400 font-medium mb-2">Yesterday</p>
-              <p className="text-2xl font-black text-slate-700">{yesterdayHigh}°</p>
-              <p className="text-xs text-slate-500 mt-0.5">Low {yesterdayLow}° · {yesterdayWeather}</p>
-            </div>
-            <div className="bg-sky-50 rounded-xl p-3 border border-sky-100">
-              <p className="text-xs text-sky-600 font-medium mb-2">Today</p>
-              <p className="text-2xl font-black text-slate-800">{Math.round(todayHigh ?? 0)}°</p>
-              <p className="text-xs text-slate-500 mt-0.5">Low {Math.round(todayLow ?? 0)}° · {weatherLabel(todayCode ?? 0)}</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Barometric pressure */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5">
@@ -349,7 +313,7 @@ function NoLocation() {
 
 // ── Main exported component ────────────────────────────────────────────────────
 
-const TABS = ['Flows', 'Weather', 'Trip Outlook'] as const
+const TABS = ['Flows', 'Weather'] as const
 type TabName = typeof TABS[number]
 
 export function ConditionsTabs({
@@ -379,9 +343,8 @@ export function ConditionsTabs({
         ))}
       </div>
 
-      {tab === 'Flows'        && <FlowsTab gaugeCards={gaugeCards} siteNos={siteNos} />}
-      {tab === 'Weather'      && <WeatherTab weather={weather} loading={false} />}
-      {tab === 'Trip Outlook' && <TripOutlookTab outlook={outlook} loading={false} />}
+      {tab === 'Flows'   && <FlowsTab gaugeCards={gaugeCards} siteNos={siteNos} />}
+      {tab === 'Weather' && <WeatherTab weather={weather} outlook={outlook} loading={false} />}
     </div>
   )
 }

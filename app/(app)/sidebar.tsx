@@ -14,7 +14,7 @@ const NAV = [
   { href: '/trips', label: 'Trips', icon: '◎' },
   { href: '/clients', label: 'Clients', icon: '◉' },
   { href: '/analytics', label: 'Analytics', icon: '▲' },
-  { href: '/water-flows', label: 'Trip Outlook', icon: '≋' },
+  { href: '/water-flows', label: 'Conditions', icon: '≋' },
 ]
 
 export function Sidebar({ signOut, guideName }: Props) {
