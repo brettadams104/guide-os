@@ -37,6 +37,7 @@ export default function TripsPage() {
         {TABS.map(t => (
           <button
             key={t}
+            data-tour={t === 'Schedule' ? 'schedule-tab' : undefined}
             onClick={() => setTab(t)}
             className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
               tab === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
@@ -47,7 +48,7 @@ export default function TripsPage() {
         ))}
       </div>
 
-      {tab === 'Current Trips' && <UpcomingTab />}
+      {tab === 'Current Trips' && <div data-tour="current-trips"><UpcomingTab /></div>}
       {tab === 'Schedule' && <ScheduleTab />}
       {tab === 'Completed' && <CompletedTab />}
     </div>

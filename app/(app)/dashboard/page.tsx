@@ -67,14 +67,14 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div data-tour="dashboard-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label={`${now.getFullYear()} Trips`} value={yearTrips ?? 0} sub="completed this year" />
         <StatCard label="Trips This Month" value={(monthTrips ?? []).length} />
         <StatCard label="Month Revenue" value={`$${monthRevenue.toFixed(0)}`} accent />
         <StatCard label="Outstanding" value={`$${outstanding.toFixed(0)}`} sub="across all clients" href="/outstanding?back=/dashboard" />
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div data-tour="upcoming-trips" className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <h2 className="font-semibold text-slate-900">Upcoming Trips</h2>
           <Link href="/trips" className="text-sky-500 text-sm hover:text-sky-400">View all →</Link>

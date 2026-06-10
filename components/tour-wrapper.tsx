@@ -1,9 +1,9 @@
 'use client'
 
-import { useOnboardingTour, OnboardingTour } from './onboarding-tour'
+import { useSpotlightTour, SpotlightTour } from './spotlight-tour'
 
 export function TourWrapper({ userId }: { userId: string }) {
-  const { showTour, completeTour } = useOnboardingTour(userId)
+  const { showTour, closeTour } = useSpotlightTour(userId)
   if (!showTour) return null
-  return <OnboardingTour userId={userId} onClose={completeTour} />
+  return <SpotlightTour userId={userId} onClose={closeTour} />
 }

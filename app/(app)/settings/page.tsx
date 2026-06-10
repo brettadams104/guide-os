@@ -66,7 +66,7 @@ export default async function SettingsPage() {
       <AccountSettings currentEmail={user!.email ?? ''} />
 
       {/* Quick Catch Species */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+      <div data-tour="species" className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
         <div>
           <h2 className="font-semibold text-slate-900">Quick Catch Species</h2>
           <p className="text-xs text-slate-400 mt-0.5">These appear as one-tap buttons in Trip Mode when logging a catch</p>
@@ -75,7 +75,7 @@ export default async function SettingsPage() {
       </div>
 
       {/* Quick Lure / Bait Presets */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+      <div data-tour="lures" className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
         <div>
           <h2 className="font-semibold text-slate-900">Caught On Presets</h2>
           <p className="text-xs text-slate-400 mt-0.5">Lures and baits that appear as one-tap buttons when logging a catch in Trip Mode</p>
@@ -84,7 +84,7 @@ export default async function SettingsPage() {
       </div>
 
       {/* Offered Packages */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+      <div data-tour="packages" className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
         <div>
           <h2 className="font-semibold text-slate-900">Offered Packages</h2>
           <p className="text-xs text-slate-400 mt-0.5">Add the packages you offer — single day with times (Half Day, Full Day) or multi-day trips (3-Day Float)</p>

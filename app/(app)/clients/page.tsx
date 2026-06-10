@@ -31,7 +31,7 @@ export default async function ClientsPage() {
           + Add Client
         </Link>
       </div>
-      <ClientList clients={clientData} />
+      <div data-tour="clients-content"><ClientList clients={clientData} /></div>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { OnboardingTour } from './onboarding-tour'
+import { SpotlightTour } from './spotlight-tour'
 
 export function RestartTourButton() {
   const [show, setShow] = useState(false)
@@ -17,7 +17,7 @@ export function RestartTourButton() {
         </svg>
         Restart App Tour
       </button>
-      {show && <OnboardingTour userId="settings" onClose={() => setShow(false)} />}
+      {show && <SpotlightTour userId="restart" onClose={() => setShow(false)} />}
     </>
   )
 }

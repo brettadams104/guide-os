@@ -88,7 +88,7 @@ export default async function WaterFlowsPage() {
   }))
 
   return (
-    <div className="space-y-6">
+    <div data-tour="water-flows-content" className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Water Flows</h1>
