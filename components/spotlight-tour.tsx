@@ -164,17 +164,32 @@ function WelcomeScreen({ onStart, onSkip }: { onStart: () => void; onSkip: () =>
   )
 }
 
+const STEP_KEY = 'gs_tour_step'
+
 export function SpotlightTour({ userId, onClose }: { userId: string; onClose: () => void }) {
   const router = useRouter()
   const pathname = usePathname()
-  const [showWelcome, setShowWelcome] = useState(true)
-  const [step, setStep] = useState(0)
+
+  // Resume from saved step so remounts after page navigation don't reset the tour
+  const [step, setStep] = useState(() => {
+    if (typeof window === 'undefined') return 0
+    return parseInt(sessionStorage.getItem(STEP_KEY) ?? '0', 10)
+  })
+  const [showWelcome, setShowWelcome] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return sessionStorage.getItem(STEP_KEY) === null
+  })
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null)
   const [ready, setReady] = useState(false)
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const current = TOUR_STEPS[step]
   const isLast = step === TOUR_STEPS.length - 1
+
+  // Persist step so remounts after navigation resume correctly
+  useEffect(() => {
+    sessionStorage.setItem(STEP_KEY, step.toString())
+  }, [step])
 
   // Find and spotlight the target element
   const activateStep = useCallback((stepIdx: number, currentPath: string) => {
@@ -226,6 +241,7 @@ export function SpotlightTour({ userId, onClose }: { userId: string; onClose: ()
 
   function handleNext() {
     if (isLast) {
+      sessionStorage.removeItem(STEP_KEY)
       localStorage.setItem(STORAGE_KEY_PREFIX + userId, '1')
       router.push('/dashboard')
       onClose()
@@ -239,6 +255,7 @@ export function SpotlightTour({ userId, onClose }: { userId: string; onClose: ()
   }
 
   function handleSkip() {
+    sessionStorage.removeItem(STEP_KEY)
     localStorage.setItem(STORAGE_KEY_PREFIX + userId, '1')
     onClose()
   }
@@ -248,6 +265,7 @@ export function SpotlightTour({ userId, onClose }: { userId: string; onClose: ()
       <WelcomeScreen
         onStart={() => setShowWelcome(false)}
         onSkip={() => {
+          sessionStorage.removeItem(STEP_KEY)
           localStorage.setItem(STORAGE_KEY_PREFIX + userId, '1')
           onClose()
         }}
