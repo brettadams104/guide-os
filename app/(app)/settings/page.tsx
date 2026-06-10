@@ -87,7 +87,7 @@ export default async function SettingsPage() {
       <div data-tour="species" className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
         <div>
           <h2 className="font-semibold text-slate-900">Quick Catch Species</h2>
-          <p className="text-xs text-slate-400 mt-0.5">These appear as one-tap buttons in Trip Mode when logging a catch</p>
+          <p className="text-xs text-slate-400 mt-0.5">These appear as one-tap buttons in Trip Mode when logging a catch (add the species you typically target on your trips — e.g. Musky, Walleye, Bass)</p>
         </div>
         <SpeciesPresetManager presets={speciesPresets} />
       </div>
