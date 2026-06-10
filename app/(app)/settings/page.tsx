@@ -65,6 +65,24 @@ export default async function SettingsPage() {
       {/* Account */}
       <AccountSettings currentEmail={user!.email ?? ''} />
 
+      {/* Trip Packages */}
+      <div data-tour="packages" className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold text-slate-900">Trip Packages You Offer</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Add the packages you offer — single day with times (Half Day, Full Day) or multi-day trips (3-Day Float)</p>
+        </div>
+        <TimeSlotManager slots={(timeSlots ?? []) as any} />
+      </div>
+
+      {/* Lure / Bait Presets */}
+      <div data-tour="lures" className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold text-slate-900">Lures, Flies, or Bait Presets</h2>
+          <p className="text-xs text-slate-400 mt-0.5">These appear as one-tap buttons when logging a catch in Trip Mode</p>
+        </div>
+        <LurePresetManager presets={lurePresets} />
+      </div>
+
       {/* Quick Catch Species */}
       <div data-tour="species" className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
         <div>
@@ -72,24 +90,6 @@ export default async function SettingsPage() {
           <p className="text-xs text-slate-400 mt-0.5">These appear as one-tap buttons in Trip Mode when logging a catch</p>
         </div>
         <SpeciesPresetManager presets={speciesPresets} />
-      </div>
-
-      {/* Quick Lure / Bait Presets */}
-      <div data-tour="lures" className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-        <div>
-          <h2 className="font-semibold text-slate-900">Caught On Presets</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Lures and baits that appear as one-tap buttons when logging a catch in Trip Mode</p>
-        </div>
-        <LurePresetManager presets={lurePresets} />
-      </div>
-
-      {/* Offered Packages */}
-      <div data-tour="packages" className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-        <div>
-          <h2 className="font-semibold text-slate-900">Offered Packages</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Add the packages you offer — single day with times (Half Day, Full Day) or multi-day trips (3-Day Float)</p>
-        </div>
-        <TimeSlotManager slots={(timeSlots ?? []) as any} />
       </div>
 
       {/* Guides / Staff */}
