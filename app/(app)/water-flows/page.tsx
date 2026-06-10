@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { GaugeCard, type GaugeData } from './gauge-card'
-import { GaugeSearch } from './gauge-search'
+import type { GaugeData } from './gauge-card'
+import { getMoonPhase, getMoonIllumination, getPressureTrend } from '@/lib/weather'
+import SunCalc from 'suncalc'
+import { ConditionsTabs, type WeatherPayload, type OutlookPayload } from './conditions-tabs'
 
 interface USGSValue { value: string; dateTime: string }
 interface USGSTimeSeries {
@@ -11,63 +13,83 @@ interface USGSTimeSeries {
 
 function parseUSGS(timeSeries: USGSTimeSeries[]): Record<string, Omit<GaugeData, 'gaugeId' | 'siteNo' | 'displayName'>> {
   const result: Record<string, Omit<GaugeData, 'gaugeId' | 'siteNo' | 'displayName'>> = {}
-
   for (const ts of timeSeries) {
     const siteNo = ts.sourceInfo?.siteCode?.[0]?.value
     const siteName = ts.sourceInfo?.siteName ?? ''
     const paramCode = ts.variable?.variableCode?.[0]?.value
     const noDataVal = ts.variable?.noDataValue ?? -999999
     const rawValues: USGSValue[] = ts.values?.[0]?.value ?? []
-
     if (!siteNo) continue
     if (!result[siteNo]) result[siteNo] = { siteName, cfs: null, gageHeight: null, lastUpdated: null, trend: null, history: [] }
-
     const valid = rawValues.filter(v => parseFloat(v.value) !== noDataVal && parseFloat(v.value) >= 0)
-
     if (paramCode === '00060') {
       const latest = valid[valid.length - 1]
       result[siteNo].cfs = latest ? parseFloat(latest.value) : null
       result[siteNo].lastUpdated = latest?.dateTime ?? null
-
-      // Trend: compare latest to reading ~6h ago
       const sixHoursAgo = valid[Math.max(0, valid.length - 7)]
       if (latest && sixHoursAgo && latest !== sixHoursAgo) {
         const diff = parseFloat(latest.value) - parseFloat(sixHoursAgo.value)
         const pct = Math.abs(diff) / parseFloat(sixHoursAgo.value)
         result[siteNo].trend = pct < 0.05 ? 'steady' : diff > 0 ? 'rising' : 'falling'
       }
-
-      // Downsample to ~24 points for the sparkline
       const step = Math.max(1, Math.floor(valid.length / 24))
-      result[siteNo].history = valid
-        .filter((_, i) => i % step === 0)
-        .map(v => ({
-          label: new Date(v.dateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          cfs: parseFloat(v.value),
-        }))
+      result[siteNo].history = valid.filter((_, i) => i % step === 0).map(v => ({
+        label: new Date(v.dateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        cfs: parseFloat(v.value),
+      }))
     } else if (paramCode === '00065') {
       const latest = valid[valid.length - 1]
       result[siteNo].gageHeight = latest ? parseFloat(latest.value) : null
     }
   }
-
   return result
+}
+
+function weatherCodeToLabel(code: number): string {
+  if (code === 0) return 'Clear'
+  if (code <= 3) return 'Partly Cloudy'
+  if (code <= 48) return 'Foggy'
+  if (code <= 55) return 'Drizzle'
+  if (code <= 67) return 'Rain'
+  if (code <= 77) return 'Snow'
+  if (code <= 82) return 'Showers'
+  return 'Thunderstorm'
+}
+
+async function geocodeLocation(location: string): Promise<{ lat: number; lon: number; name: string } | null> {
+  try {
+    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`, { next: { revalidate: 86400 } })
+    const data = await res.json()
+    const r = data.results?.[0]
+    if (!r) return null
+    return { lat: r.latitude, lon: r.longitude, name: `${r.name}, ${r.admin1 ?? r.country}` }
+  } catch { return null }
+}
+
+async function fetchWeather(lat: number, lon: number): Promise<WeatherPayload | null> {
+  try {
+    const today = new Date().toISOString().split('T')[0]
+    const sevenDays = new Date(Date.now() + 6 * 86400000).toISOString().split('T')[0]
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,surface_pressure,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,surface_pressure_mean&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto&start_date=${today}&end_date=${sevenDays}`
+    const res = await fetch(url, { next: { revalidate: 1800 } })
+    if (!res.ok) return null
+    return await res.json()
+  } catch { return null }
 }
 
 export default async function WaterFlowsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: gauges } = await supabase
-    .from('guide_water_gauges')
-    .select('*')
-    .eq('guide_id', user!.id)
-    .order('created_at')
+  const [{ data: guide }, { data: gauges }] = await Promise.all([
+    supabase.from('guides').select('location').eq('id', user!.id).single(),
+    supabase.from('guide_water_gauges').select('*').eq('guide_id', user!.id).order('created_at'),
+  ])
 
   const savedGauges = gauges ?? []
   const siteNos = savedGauges.map(g => g.site_no)
 
-  // Fetch 7-day flow data from USGS for all saved gauges in one call
+  // Fetch USGS flow data
   let usgsData: Record<string, Omit<GaugeData, 'gaugeId' | 'siteNo' | 'displayName'>> = {}
   if (siteNos.length > 0) {
     try {
@@ -75,9 +97,7 @@ export default async function WaterFlowsPage() {
       const res = await fetch(url, { next: { revalidate: 300 } })
       const data = await res.json()
       usgsData = parseUSGS(data.value?.timeSeries ?? [])
-    } catch {
-      // USGS unavailable — show saved gauges with no data
-    }
+    } catch {}
   }
 
   const gaugeCards: GaugeData[] = savedGauges.map(g => ({
@@ -87,41 +107,73 @@ export default async function WaterFlowsPage() {
     ...(usgsData[g.site_no] ?? { siteName: '', cfs: null, gageHeight: null, lastUpdated: null, trend: null, history: [] }),
   }))
 
+  // Geocode and fetch weather if guide has a location set
+  let weather: WeatherPayload | null = null
+  let outlook: OutlookPayload | null = null
+
+  if (guide?.location) {
+    const geo = await geocodeLocation(guide.location)
+    if (geo) {
+      const raw = await fetchWeather(geo.lat, geo.lon)
+      if (raw) {
+        weather = { ...raw, location: geo.name }
+
+        // Build outlook extras
+        const now = new Date()
+        const moonPhase = getMoonPhase(now)
+        const moonIllumination = getMoonIllumination(now)
+        const sunTimes = SunCalc.getTimes(now, geo.lat, geo.lon)
+        const sunrise = sunTimes.sunrise.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        const sunset = sunTimes.sunset.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+
+        // Yesterday's weather
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+        let yesterdayHigh: number | null = null
+        let yesterdayLow: number | null = null
+        let yesterdayWeather: string | null = null
+        let pressureTrend: 'rising' | 'steady' | 'falling' = 'steady'
+        try {
+          const yUrl = `https://api.open-meteo.com/v1/forecast?latitude=${geo.lat}&longitude=${geo.lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,surface_pressure_mean&temperature_unit=fahrenheit&timezone=auto&start_date=${yesterday}&end_date=${yesterday}`
+          const yRes = await fetch(yUrl, { next: { revalidate: 3600 } })
+          if (yRes.ok) {
+            const yData = await yRes.json()
+            yesterdayHigh = Math.round(yData.daily?.temperature_2m_max?.[0] ?? 0)
+            yesterdayLow = Math.round(yData.daily?.temperature_2m_min?.[0] ?? 0)
+            yesterdayWeather = weatherCodeToLabel(yData.daily?.weathercode?.[0] ?? 0)
+            const yPressure = yData.daily?.surface_pressure_mean?.[0]
+            const todayPressure = raw.daily?.surface_pressure_mean?.[0]
+            if (yPressure && todayPressure) {
+              pressureTrend = getPressureTrend(todayPressure, yPressure)
+            }
+          }
+        } catch {}
+
+        outlook = {
+          ...weather,
+          moonPhase,
+          moonIllumination,
+          sunrise,
+          sunset,
+          yesterdayHigh,
+          yesterdayLow,
+          yesterdayWeather,
+          pressureTrend,
+          primaryGauge: gaugeCards[0] ?? null,
+        }
+      }
+    }
+  }
+
   return (
-    <div data-tour="water-flows-content" className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Water Flows</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Real-time river data from USGS</p>
-        </div>
-        <GaugeSearch existingSiteNos={siteNos} />
+    <div data-tour="water-flows-content" className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">Conditions</h1>
+        <p className="text-slate-500 text-sm mt-0.5">River flows, weather forecast, and trip outlook</p>
       </div>
-
-      {gaugeCards.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" className="mx-auto mb-4">
-            <path d="M3 18c0-2 2-4 4-4s4 2 6 2 4-2 6-2" />
-            <path d="M3 12c0-2 2-4 4-4s4 2 6 2 4-2 6-2" />
-            <path d="M3 6c0-2 2-4 4-4s4 2 6 2 4-2 6-2" />
-          </svg>
-          <p className="text-slate-600 font-semibold">No rivers saved yet</p>
-          <p className="text-slate-400 text-sm mt-1">Tap "Add River" to save the gauges you fish most.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {gaugeCards.map(gauge => (
-            <GaugeCard key={gauge.siteNo} gauge={gauge} />
-          ))}
-        </div>
-      )}
-
-      <div className="text-xs text-slate-400 text-center">
-        Data provided by the{' '}
-        <a href="https://waterservices.usgs.gov" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600">
-          USGS National Water Information System
-        </a>
-        {' '}· Updates every 5 minutes
-      </div>
+      <ConditionsTabs gaugeCards={gaugeCards} siteNos={siteNos} weather={weather} outlook={outlook} />
+      <p className="text-xs text-slate-400 text-center">
+        River data: <a href="https://waterservices.usgs.gov" target="_blank" rel="noopener noreferrer" className="underline">USGS</a> · Weather: <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer" className="underline">Open-Meteo</a>
+      </p>
     </div>
   )
 }
