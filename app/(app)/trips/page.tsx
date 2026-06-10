@@ -220,7 +220,7 @@ function ScheduleTab() {
 
         {/* Client search */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">Client <span className="text-slate-400 font-normal">(optional)</span></label>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Client</label>
           <ClientSearch
             clients={clients}
             onSelect={(id, name) => { setSelectedClientId(id); setNewClientName(name) }}
@@ -232,7 +232,7 @@ function ScheduleTab() {
           <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 space-y-3">
             <p className="text-xs font-semibold text-sky-700 uppercase tracking-wide">New Client Details</p>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Phone <span className="text-slate-400">(optional)</span></label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Phone</label>
               <PhoneInput name="new_phone" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white" />
             </div>
             {[
@@ -240,7 +240,7 @@ function ScheduleTab() {
               { name: 'new_address', label: 'Address', type: 'text', placeholder: 'City, State' },
             ].map(f => (
               <div key={f.name}>
-                <label className="block text-xs font-medium text-slate-600 mb-1">{f.label} <span className="text-slate-400">(optional)</span></label>
+                <label className="block text-xs font-medium text-slate-600 mb-1">{f.label}</label>
                 <input name={f.name} type={f.type} placeholder={f.placeholder} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white" />
               </div>
             ))}
@@ -315,18 +315,18 @@ function ScheduleTab() {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Notes</label>
           <textarea name="notes" rows={2} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" placeholder="Meeting spot, special requests..." />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Trip Price <span className="text-slate-400 font-normal">(optional)</span></label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Trip Price</label>
             <div className="relative"><span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
               <input name="price" type="number" min="0" step="0.01" placeholder="0.00" value={autoPrice} onChange={e => setAutoPrice(e.target.value)} className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Deposit <span className="text-slate-400 font-normal">(optional)</span></label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Deposit</label>
             <div className="relative"><span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
               <input name="deposit_paid" type="number" min="0" step="0.01" placeholder="0.00" className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
@@ -485,7 +485,7 @@ function LogDetailsTab() {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">Notes</label>
         <textarea name="notes" rows={3} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none" placeholder="How'd it go?" />
         <p className="text-xs text-slate-400 mt-2">Weather, moon phase, and pressure are fetched automatically.</p>
       </div>
