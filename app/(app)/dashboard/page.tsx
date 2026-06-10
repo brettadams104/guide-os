@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { StatCard } from '@/components/stat-card'
 import { CalendarClient } from '../calendar/calendar-client'
 import { TodayDate } from '@/components/today-date'
+import { AddEventModal } from '@/components/add-event-modal'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -16,7 +17,7 @@ export default async function DashboardPage() {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
   const yearStart = `${now.getFullYear()}-01-01`
 
-  const [{ count: yearTrips }, { data: monthTrips }, { data: allTrips }, { data: upcomingTrips }, { data: allTripEvents }] = await Promise.all([
+  const [{ count: yearTrips }, { data: monthTrips }, { data: allTrips }, { data: upcomingTrips }, { data: allTripEvents }, { data: guideEvents }] = await Promise.all([
     supabase.from('trips').select('*', { count: 'exact', head: true }).eq('guide_id', user!.id).gte('trip_date', yearStart).eq('status', 'completed'),
     supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id).gte('trip_date', monthStart),
     supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id),
@@ -24,6 +25,7 @@ export default async function DashboardPage() {
       .gte('trip_date', safeToday)
       .order('trip_date', { ascending: true }).limit(5),
     supabase.from('trips').select('id, trip_date, location, status, notes, clients(name)').eq('guide_id', user!.id).order('trip_date'),
+    supabase.from('guide_events').select('*').eq('guide_id', user!.id).order('event_date'),
   ])
 
   const monthRevenue = (monthTrips ?? []).reduce((sum, t) => sum + (t.amount_collected ?? 0), 0)
@@ -130,9 +132,14 @@ export default async function DashboardPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-slate-900">Calendar</h2>
-          <Link href="/calendar" className="text-sky-500 text-sm hover:text-sky-400">Full view →</Link>
+          <div className="flex items-center gap-3">
+            <AddEventModal />
+            <Link href="/trips?tab=schedule" className="text-sky-500 hover:text-sky-400 text-sm font-medium transition-colors">
+              + Schedule Trip
+            </Link>
+          </div>
         </div>
-        <CalendarClient events={calendarEvents} />
+        <CalendarClient events={calendarEvents} guideEvents={guideEvents ?? []} />
       </div>
     </div>
   )
