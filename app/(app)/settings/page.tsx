@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { addStaff, deleteStaff } from '@/lib/actions/trip-options'
 import { TimeSlotManager } from '@/components/time-slot-manager'
 import { AccountSettings } from '@/components/account-settings'
+import { DeleteAccountButton } from '@/components/delete-account-button'
 import { RestartTourButton } from '@/components/restart-tour-button'
 import { SpeciesPresetManager } from '@/components/species-preset-manager'
 import { LurePresetManager } from '@/components/lure-preset-manager'
@@ -125,6 +126,15 @@ export default async function SettingsPage() {
           <p className="text-sm text-slate-500 mt-1">Walk through the app features again at any time.</p>
         </div>
         <RestartTourButton />
+      </div>
+
+      {/* Danger Zone */}
+      <div className="bg-white rounded-2xl border border-red-100 p-6 space-y-3">
+        <div>
+          <h2 className="font-semibold text-red-600">Danger Zone</h2>
+          <p className="text-sm text-slate-500 mt-1">Permanently delete your account and all associated data. This cannot be undone.</p>
+        </div>
+        <DeleteAccountButton />
       </div>
 
     </div>
