@@ -187,18 +187,16 @@ function WeatherTab({ weather, loading }: { weather: WeatherPayload | null; load
           const date = new Date(d + 'T12:00:00')
           const dayLabel = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
           return (
-            <div key={d} className="flex items-center justify-between px-4 py-3">
-              <p className="text-sm font-medium text-slate-700 w-28">{dayLabel}</p>
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{weatherIcon(daily.weathercode[i] ?? 0)}</span>
-                <p className="text-xs text-slate-500 w-20">{weatherLabel(daily.weathercode[i] ?? 0)}</p>
-              </div>
-              {(daily.precipitation_sum[i] ?? 0) >= 0.05 && (
-                <p className="text-xs text-sky-500 font-medium w-12 text-center">{daily.precipitation_sum[i].toFixed(2)}"</p>
-              )}
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-bold text-slate-800">{Math.round(daily.temperature_2m_max[i] ?? 0)}°</span>
-                <span className="text-slate-400">{Math.round(daily.temperature_2m_min[i] ?? 0)}°</span>
+            <div key={d} className="flex items-center px-4 py-3 gap-3">
+              <p className="text-sm font-medium text-slate-700 w-24 shrink-0">{dayLabel}</p>
+              <span className="text-lg shrink-0">{weatherIcon(daily.weathercode[i] ?? 0)}</span>
+              <p className="text-xs text-slate-500 flex-1">{weatherLabel(daily.weathercode[i] ?? 0)}</p>
+              <p className="text-xs text-sky-500 font-medium w-14 text-right shrink-0">
+                {(daily.precipitation_sum[i] ?? 0) >= 0.05 ? `${daily.precipitation_sum[i].toFixed(2)}"` : ''}
+              </p>
+              <div className="flex items-center gap-2 text-sm shrink-0">
+                <span className="font-bold text-slate-800 w-8 text-right">{Math.round(daily.temperature_2m_max[i] ?? 0)}°</span>
+                <span className="text-slate-400 w-8 text-right">{Math.round(daily.temperature_2m_min[i] ?? 0)}°</span>
               </div>
             </div>
           )
