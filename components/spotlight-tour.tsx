@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { markOnboardingComplete } from '@/lib/actions/onboarding'
 
 const DONE_KEY = 'gs_tour_done'
 const STEP_KEY = 'gs_tour_step'
@@ -96,11 +97,14 @@ export function SpotlightTour({ onDone }: { onDone: () => void }) {
   useEffect(() => { sessionStorage.setItem(STEP_KEY, String(step)) }, [step])
 
   function finish() {
+    // Mark locally immediately so it disappears right away
     localStorage.setItem(DONE_KEY, '1')
     sessionStorage.removeItem(STEP_KEY)
     sessionStorage.removeItem(STARTED_KEY)
     setActive(false)
     onDone()
+    // Persist to Supabase so it never shows again on any device
+    markOnboardingComplete()
   }
 
   const findElement = useCallback((stepIdx: number, currentPath: string) => {

@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user) redirect('/login')
 
   const [{ data: guide }, { data: liveTrip }] = await Promise.all([
-    supabase.from('guides').select('name').eq('id', user.id).single(),
+    supabase.from('guides').select('name, onboarding_complete').eq('id', user.id).single(),
     supabase
       .from('trips')
       .select('id, trip_date, clients(name)')
@@ -24,6 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   ])
 
   const liveClient = (liveTrip?.clients as unknown as { name: string } | null)?.name ?? 'Current Trip'
+  const tourComplete = (guide as any)?.onboarding_complete === true
 
   async function signOut() {
     'use server'
@@ -66,7 +67,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </main>
 
       <BottomNav />
-      <TourWrapper userId={user.id} />
+      <TourWrapper userId={user.id} tourComplete={tourComplete} />
     </div>
   )
 }
