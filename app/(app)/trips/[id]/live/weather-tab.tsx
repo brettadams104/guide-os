@@ -274,28 +274,36 @@ export function WeatherTab({ defaultLocation }: { defaultLocation?: string }) {
     <div className="flex-1 overflow-y-auto">
       {/* Location search */}
       <div className="p-4" ref={searchRef}>
-        <div className="relative">
-          <input
-            type="text"
-            value={manualLocation}
-            onChange={e => handleLocationInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') { handleManualSearch(); setGeoOpen(false) } }}
-            placeholder="Search by city or zip code…"
-            className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
-          />
-          {geoOpen && geoResults.length > 0 && (
-            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
-              {geoResults.map(r => (
-                <button key={r.id} type="button" onClick={() => handleGeoSelect(r)}
-                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-sky-50 border-b border-slate-100 last:border-0 transition-colors">
-                  <span className="font-medium text-slate-900">{r.name}</span>
-                  {(r.admin1 || r.country) && (
-                    <span className="text-slate-400 ml-1">{[r.admin1, r.country].filter(Boolean).join(', ')}</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+        <div className="relative flex gap-2">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={manualLocation}
+              onChange={e => handleLocationInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { handleManualSearch(); setGeoOpen(false) } }}
+              placeholder="Search by city or zip code…"
+              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+            />
+            {geoOpen && geoResults.length > 0 && (
+              <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+                {geoResults.map(r => (
+                  <button key={r.id} type="button" onClick={() => handleGeoSelect(r)}
+                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-sky-50 border-b border-slate-100 last:border-0 transition-colors">
+                    <span className="font-medium text-slate-900">{r.name}</span>
+                    {(r.admin1 || r.country) && (
+                      <span className="text-slate-400 ml-1">{[r.admin1, r.country].filter(Boolean).join(', ')}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => { handleManualSearch(); setGeoOpen(false) }}
+            className="bg-sky-500 hover:bg-sky-400 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shrink-0"
+          >
+            Search
+          </button>
         </div>
         {activeLocationLabel && (
           <p className="text-xs text-slate-500 mt-1.5 px-0.5">
