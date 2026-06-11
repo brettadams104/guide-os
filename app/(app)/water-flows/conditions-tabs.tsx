@@ -535,6 +535,7 @@ export function ConditionsTabs({
           <button
             key={t}
             onClick={() => setTab(t)}
+            data-tour-tab={t.toLowerCase()}
             className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${tab === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
           >
             {t}
