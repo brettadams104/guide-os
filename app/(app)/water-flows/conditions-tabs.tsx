@@ -3,7 +3,12 @@
 import { useState, useRef, useCallback } from 'react'
 import { saveGuideLocation } from '@/lib/actions/guide-location'
 import { addWeatherLocation, deleteWeatherLocation } from '@/lib/actions/weather-locations'
-import { HourlyWeatherChart, type HourlyChartPoint } from '@/components/hourly-weather-chart'
+import dynamic from 'next/dynamic'
+import type { HourlyChartPoint } from '@/components/hourly-weather-chart'
+const HourlyWeatherChart = dynamic(
+  () => import('@/components/hourly-weather-chart').then(m => ({ default: m.HourlyWeatherChart })),
+  { ssr: false }
+)
 import type { GaugeData } from './gauge-card'
 import { GaugeCard } from './gauge-card'
 import { GaugeSearch } from './gauge-search'
@@ -282,22 +287,25 @@ function LocationSwitcher({ currentLocation, savedLocations, onLocationChange }:
 // ── Chart data builder ─────────────────────────────────────────────────────────
 
 function buildChartData(hourly: HourlyWeather, nowHour: number, nowDate: string): HourlyChartPoint[] {
-  return hourly.time
-    .filter(t => t.startsWith(nowDate))   // today only
-    .map((t, i) => {
-      const hour = parseInt(t.split('T')[1]?.split(':')[0] ?? '0', 10)
-      const fmt  = (h: number) => { const a = h >= 12 ? 'PM' : 'AM'; return `${h % 12 || 12}${a}` }
-      return {
-        label:         hour === nowHour ? 'Now' : fmt(hour),
-        isNow:         hour === nowHour,
-        temp:          Math.round(hourly.temperature_2m[i] ?? 0),
-        windSpeed:     Math.round(hourly.windspeed_10m[i] ?? 0),
-        windDir:       Math.round(hourly.winddirection_10m?.[i] ?? 0),
-        pressure:      hourly.surface_pressure?.[i] ?? 1013,
-        precipitation: parseFloat(((hourly.precipitation?.[i] ?? 0)).toFixed(2)),
-        cloudCover:    Math.round(hourly.cloudcover?.[i] ?? 0),
-      }
+  const fmt = (h: number) => { const a = h >= 12 ? 'PM' : 'AM'; return `${h % 12 || 12}${a}` }
+  const result: HourlyChartPoint[] = []
+
+  hourly.time.forEach((t, i) => {
+    if (!t.startsWith(nowDate)) return   // skip other days, preserve original index i
+    const hour = parseInt(t.split('T')[1]?.split(':')[0] ?? '0', 10)
+    result.push({
+      label:         hour === nowHour ? 'Now' : fmt(hour),
+      isNow:         hour === nowHour,
+      temp:          Math.round(hourly.temperature_2m[i] ?? 0),
+      windSpeed:     Math.round(hourly.windspeed_10m[i] ?? 0),
+      windDir:       Math.round((hourly as any).winddirection_10m?.[i] ?? 0),
+      pressure:      (hourly as any).surface_pressure?.[i] ?? 1013,
+      precipitation: parseFloat(((hourly as any).precipitation?.[i] ?? 0).toFixed(2)),
+      cloudCover:    Math.round((hourly as any).cloudcover?.[i] ?? 0),
     })
+  })
+
+  return result
 }
 
 // ── Tab: Weather ───────────────────────────────────────────────────────────────
