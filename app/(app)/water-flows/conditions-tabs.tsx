@@ -290,10 +290,17 @@ function WeatherTab({ weather: initialWeather, outlook: initialOutlook, savedLoc
 
   const { current, hourly, daily } = weather
   const now = new Date()
-  const currentHourIdx = hourly.time.findIndex(t => {
-    const d = new Date(t)
-    return d.getHours() === now.getHours() && d.toDateString() === now.toDateString()
+  const nowHour = now.getHours()
+  const nowDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+
+  // Parse directly from the string (e.g. "2026-06-10T14:00") to avoid timezone ambiguity
+  let currentHourIdx = hourly.time.findIndex(t => {
+    const [datePart, timePart] = t.split('T')
+    const hour = parseInt(timePart?.split(':')[0] ?? '-1', 10)
+    return datePart === nowDate && hour === nowHour
   })
+  if (currentHourIdx === -1) currentHourIdx = 0
+
   const nextHours = hourly.time.slice(currentHourIdx, currentHourIdx + 12)
   const nextTemps = hourly.temperature_2m.slice(currentHourIdx, currentHourIdx + 12)
   const nextPrecip = hourly.precipitation_probability.slice(currentHourIdx, currentHourIdx + 12)
