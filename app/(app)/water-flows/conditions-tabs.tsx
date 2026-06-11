@@ -22,7 +22,7 @@ interface HourlyWeather {
   weathercode: number[]
   windspeed_10m: number[]
   winddirection_10m: number[]
-  surface_pressure: number[]
+  pressure_msl: number[]
   precipitation: number[]
   cloudcover: number[]
 }
@@ -34,7 +34,7 @@ interface DailyWeather {
   weathercode: number[]
   windspeed_10m_max: number[]
   precipitation_sum: number[]
-  surface_pressure_mean: number[]
+  pressure_msl_mean: number[]
   sunrise?: string[]
   sunset?: string[]
 }
@@ -46,7 +46,7 @@ export interface WeatherPayload {
     relative_humidity_2m: number
     windspeed_10m: number
     winddirection_10m: number
-    surface_pressure: number
+    pressure_msl: number
     weathercode: number
     is_day: number
   }
@@ -148,7 +148,7 @@ async function fetchWeatherForLocation(lat: number, lon: number, name: string): 
   try {
     const today = localDateStr()
     const end   = localDateStr(6)
-    const url   = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,surface_pressure,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m,winddirection_10m,surface_pressure,precipitation,cloudcover&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,surface_pressure_mean,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&start_date=${today}&end_date=${end}`
+    const url   = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,pressure_msl,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m,winddirection_10m,pressure_msl,precipitation,cloudcover&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,pressure_msl_mean,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&start_date=${today}&end_date=${end}`
     const res   = await fetch(url)
     const data  = await res.json()
     return { ...data, location: name }
@@ -305,7 +305,7 @@ function buildChartData(hourly: HourlyWeather, nowHour: number): HourlyChartPoin
       temp:          Math.round(hourly.temperature_2m[i] ?? 0),
       windSpeed:     Math.round(hourly.windspeed_10m[i] ?? 0),
       windDir:       Math.round((hourly as any).winddirection_10m?.[i] ?? 0),
-      pressure:      (hourly as any).surface_pressure?.[i] ?? 1013,
+      pressure:      (hourly as any).pressure_msl?.[i] ?? 1013,
       precipitation: parseFloat(((hourly as any).precipitation?.[i] ?? 0).toFixed(2)),
       cloudCover:    Math.round((hourly as any).cloudcover?.[i] ?? 0),
     }
@@ -373,7 +373,7 @@ function WeatherTab({ weather: initialWeather, outlook: initialOutlook, savedLoc
           </div>
           <div className="text-center">
             <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Pressure</p>
-            <p className="text-white font-bold">{pressureHpa(current.surface_pressure)}</p>
+            <p className="text-white font-bold">{pressureHpa(current.pressure_msl)}</p>
           </div>
         </div>
       </div>
@@ -464,7 +464,7 @@ function OutlookSections({ outlook }: { outlook: OutlookPayload }) {
       <div className="bg-white rounded-2xl border border-slate-200 p-5">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Barometric Pressure</p>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-2xl font-black text-slate-800">{pressureHpa(current.surface_pressure)}</p>
+          <p className="text-2xl font-black text-slate-800">{pressureHpa(current.pressure_msl)}</p>
           <span className={`text-sm font-bold ${pressureColor}`}>{pressureLabel}</span>
         </div>
         <p className="text-xs text-slate-500 leading-relaxed">{pressureNote}</p>

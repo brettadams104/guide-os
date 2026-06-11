@@ -70,7 +70,7 @@ async function fetchWeather(lat: number, lon: number): Promise<WeatherPayload | 
   try {
     const today = safeToday()
     const sevenDays = safeDateOffset(6)
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,surface_pressure,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m,winddirection_10m,surface_pressure,precipitation,cloudcover&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,surface_pressure_mean,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&start_date=${today}&end_date=${sevenDays}`
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,pressure_msl,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m,winddirection_10m,pressure_msl,precipitation,cloudcover&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,pressure_msl_mean,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&start_date=${today}&end_date=${sevenDays}`
     const res = await fetch(url, { next: { revalidate: 1800 } })
     if (!res.ok) return null
     return await res.json()
@@ -140,15 +140,15 @@ export default async function WaterFlowsPage() {
         let yesterdayWeather: string | null = null
         let pressureTrend: 'rising' | 'steady' | 'falling' = 'steady'
         try {
-          const yUrl = `https://api.open-meteo.com/v1/forecast?latitude=${geo.lat}&longitude=${geo.lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,surface_pressure_mean&temperature_unit=fahrenheit&timezone=auto&start_date=${yesterday}&end_date=${yesterday}`
+          const yUrl = `https://api.open-meteo.com/v1/forecast?latitude=${geo.lat}&longitude=${geo.lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,pressure_msl_mean&temperature_unit=fahrenheit&timezone=auto&start_date=${yesterday}&end_date=${yesterday}`
           const yRes = await fetch(yUrl, { next: { revalidate: 3600 } })
           if (yRes.ok) {
             const yData = await yRes.json()
             yesterdayHigh = Math.round(yData.daily?.temperature_2m_max?.[0] ?? 0)
             yesterdayLow = Math.round(yData.daily?.temperature_2m_min?.[0] ?? 0)
             yesterdayWeather = weatherCodeToLabel(yData.daily?.weathercode?.[0] ?? 0)
-            const yPressure = yData.daily?.surface_pressure_mean?.[0]
-            const todayPressure = raw.daily?.surface_pressure_mean?.[0]
+            const yPressure = yData.daily?.pressure_msl_mean?.[0]
+            const todayPressure = raw.daily?.pressure_msl_mean?.[0]
             if (yPressure && todayPressure) {
               pressureTrend = getPressureTrend(todayPressure, yPressure)
             }

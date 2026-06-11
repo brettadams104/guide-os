@@ -63,7 +63,7 @@ export async function fetchWeatherForTrip(
   longitude: number
 ): Promise<WeatherData | null> {
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,winddirection_10m_dominant,surface_pressure_mean,sunrise,sunset&timezone=auto&start_date=${date}&end_date=${date}&temperature_unit=fahrenheit&windspeed_unit=mph`
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,winddirection_10m_dominant,pressure_msl_mean,sunrise,sunset&timezone=auto&start_date=${date}&end_date=${date}&temperature_unit=fahrenheit&windspeed_unit=mph`
 
     const res = await fetch(url, { next: { revalidate: 3600 } })
     if (!res.ok) return null
@@ -78,15 +78,15 @@ export async function fetchWeatherForTrip(
 
     // Pressure trend: compare to yesterday
     const yesterday = new Date(new Date(date).getTime() - 86400000).toISOString().split('T')[0]
-    const yesterdayUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=surface_pressure_mean&timezone=auto&start_date=${yesterday}&end_date=${date}&temperature_unit=fahrenheit`
+    const yesterdayUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=pressure_msl_mean&timezone=auto&start_date=${yesterday}&end_date=${date}&temperature_unit=fahrenheit`
     const yRes = await fetch(yesterdayUrl, { next: { revalidate: 3600 } })
     let pressureTrend: PressureTrend = 'steady'
     if (yRes.ok) {
       const yData = await yRes.json()
-      if (yData.daily?.surface_pressure_mean?.length >= 2) {
+      if (yData.daily?.pressure_msl_mean?.length >= 2) {
         pressureTrend = getPressureTrend(
-          yData.daily.surface_pressure_mean[1],
-          yData.daily.surface_pressure_mean[0]
+          yData.daily.pressure_msl_mean[1],
+          yData.daily.pressure_msl_mean[0]
         )
       }
     }
@@ -101,7 +101,7 @@ export async function fetchWeatherForTrip(
       weather: weatherCodeToLabel(daily.weathercode[idx]),
       wind_speed: Math.round(daily.windspeed_10m_max[idx]),
       wind_direction: windDegToDir(daily.winddirection_10m_dominant[idx]),
-      pressure: Math.round(daily.surface_pressure_mean[idx] * 100) / 100,
+      pressure: Math.round(daily.pressure_msl_mean[idx] * 100) / 100,
       pressure_trend: pressureTrend,
       moon_phase: moonPhase,
       moon_illumination: moonIllum,
