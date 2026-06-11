@@ -138,11 +138,17 @@ interface GeoResult { id: number; name: string; admin1: string | null; country: 
 
 export interface SavedWeatherLocation { id: string; name: string; lat: number; lon: number }
 
+function localDateStr(offsetDays = 0): string {
+  const d = new Date()
+  d.setDate(d.getDate() + offsetDays)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 async function fetchWeatherForLocation(lat: number, lon: number, name: string): Promise<WeatherPayload | null> {
   try {
-    const today = new Date().toISOString().split('T')[0]
-    const end   = new Date(Date.now() + 6 * 86400000).toISOString().split('T')[0]
-    const url   = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,surface_pressure,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,surface_pressure_mean&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&start_date=${today}&end_date=${end}`
+    const today = localDateStr()
+    const end   = localDateStr(6)
+    const url   = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,surface_pressure,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m,winddirection_10m,surface_pressure,precipitation,cloudcover&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,surface_pressure_mean,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&start_date=${today}&end_date=${end}`
     const res   = await fetch(url)
     const data  = await res.json()
     return { ...data, location: name }
@@ -391,8 +397,11 @@ function WeatherTab({ weather: initialWeather, outlook: initialOutlook, savedLoc
       <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100">
         <p className="px-4 pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">7-Day Forecast</p>
         {daily.time.map((d, i) => {
-          const date = new Date(d + 'T12:00:00')
-          const dayLabel = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+          const [yr, mo, dy] = d.split('-').map(Number)
+          const dayNames  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+          const monNames  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+          const dow       = new Date(Date.UTC(yr, mo - 1, dy)).getUTCDay()
+          const dayLabel  = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : `${dayNames[dow]}, ${monNames[mo - 1]} ${dy}`
           return (
             <div key={d} className="flex items-center px-4 py-3 gap-3">
               <p className="text-sm font-medium text-slate-700 w-24 shrink-0">{dayLabel}</p>

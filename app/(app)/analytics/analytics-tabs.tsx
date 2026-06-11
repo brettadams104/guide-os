@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { fmtMonthShort, fmtMonthYear, fmtMonthLong, fmtDate, fmtDateShort } from '@/lib/date-utils'
 import { AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { SpeciesDonut } from '@/components/charts/species-donut'
 import { FishByMoon } from '@/components/charts/fish-by-moon'
@@ -34,16 +35,16 @@ function buildFinancialData(filtered: any[], scheduled: any[] = []) {
   })
 
   const bestMonth = Object.entries(monthRevMap).sort((a, b) => b[1] - a[1])[0]
-  const bestMonthLabel = bestMonth ? new Date(bestMonth[0] + '-01').toLocaleString('default', { month: 'long', year: 'numeric' }) : '—'
+  const bestMonthLabel = bestMonth ? fmtMonthLong(bestMonth[0]) : '—'
   const bestMonthAmount = bestMonth ? bestMonth[1] : 0
 
   const revenueData = Object.entries(monthRevMap).sort().map(([m, revenue]) => ({
-    month: new Date(m + '-01').toLocaleString('default', { month: 'short' }),
+    month: fmtMonthShort(m),
     revenue,
   }))
 
   const financialsBarData = Object.keys({ ...monthRevMap, ...monthBilledMap }).sort().map(m => ({
-    month: new Date(m + '-01').toLocaleString('default', { month: 'short', year: '2-digit' }),
+    month: fmtMonthYear(m),
     revenue: monthRevMap[m] ?? 0,
     outstanding: Math.max(0, (monthBilledMap[m] ?? 0) - (monthRevMap[m] ?? 0)),
   }))
@@ -73,7 +74,7 @@ function buildFinancialData(filtered: any[], scheduled: any[] = []) {
 
   const avgByMonth = Object.entries(monthRevMap).sort().map(([m, rev]) => {
     const c = filtered.filter((t: any) => t.trip_date.startsWith(m)).length
-    return { month: new Date(m + '-01').toLocaleString('default', { month: 'short' }), revenue: c > 0 ? Math.round(rev / c) : 0 }
+    return { month: fmtMonthShort(m), revenue: c > 0 ? Math.round(rev / c) : 0 }
   })
 
   const outstanding = [

@@ -1,5 +1,6 @@
 import SunCalc from 'suncalc'
 import type { PressureTrend } from './types'
+import { fmtApiTime } from './date-utils'
 
 export function getMoonPhase(date: Date): string {
   const illum = SunCalc.getMoonIllumination(date)
@@ -62,7 +63,7 @@ export async function fetchWeatherForTrip(
   longitude: number
 ): Promise<WeatherData | null> {
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,winddirection_10m_dominant,surface_pressure_mean&timezone=auto&start_date=${date}&end_date=${date}&temperature_unit=fahrenheit&windspeed_unit=mph`
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,winddirection_10m_dominant,surface_pressure_mean,sunrise,sunset&timezone=auto&start_date=${date}&end_date=${date}&temperature_unit=fahrenheit&windspeed_unit=mph`
 
     const res = await fetch(url, { next: { revalidate: 3600 } })
     if (!res.ok) return null
@@ -90,10 +91,9 @@ export async function fetchWeatherForTrip(
       }
     }
 
-    // Sunrise/sunset
-    const sunTimes = SunCalc.getTimes(tripDate, latitude, longitude)
-    const sunrise = sunTimes.sunrise.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-    const sunset = sunTimes.sunset.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    // Sunrise/sunset — read from API response (already in local timezone via timezone=auto)
+    const sunrise = fmtApiTime(daily.sunrise?.[idx] ?? '')
+    const sunset  = fmtApiTime(daily.sunset?.[idx] ?? '')
 
     return {
       temp_high: Math.round(daily.temperature_2m_max[idx]),

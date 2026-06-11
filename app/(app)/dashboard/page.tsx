@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { StatCard } from '@/components/stat-card'
 import { CalendarClient } from '../calendar/calendar-client'
 import { TodayDate } from '@/components/today-date'
+import { safeToday } from '@/lib/date-utils'
 import { AddEventModal } from '@/components/add-event-modal'
 
 export default async function DashboardPage() {
@@ -12,17 +13,18 @@ export default async function DashboardPage() {
   // Subtract 12h from UTC to get a safe floor that covers all US timezones.
   // This ensures we never accidentally filter out today's trips when the server
   // clock is ahead of the guide's local time.
-  const safeToday = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const now = new Date()
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-  const yearStart = `${now.getFullYear()}-01-01`
+  const today      = safeToday()
+  const [yr, mo]   = today.split('-').map(Number)
+  const safeToday_ = today
+  const monthStart = `${yr}-${String(mo).padStart(2, '0')}-01`
+  const yearStart  = `${yr}-01-01`
 
   const [{ count: yearTrips }, { data: monthTrips }, { data: allTrips }, { data: upcomingTrips }, { data: allTripEvents }, { data: guideEvents }] = await Promise.all([
     supabase.from('trips').select('*', { count: 'exact', head: true }).eq('guide_id', user!.id).gte('trip_date', yearStart).eq('status', 'completed'),
     supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id).gte('trip_date', monthStart),
     supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id),
     supabase.from('trips').select('*, clients(name)').eq('guide_id', user!.id)
-      .gte('trip_date', safeToday)
+      .gte('trip_date', today)
       .order('trip_date', { ascending: true }).limit(5),
     supabase.from('trips').select('id, trip_date, location, status, notes, clients(name)').eq('guide_id', user!.id).order('trip_date'),
     supabase.from('guide_events').select('*').eq('guide_id', user!.id).order('event_date'),
@@ -70,7 +72,7 @@ export default async function DashboardPage() {
       </div>
 
       <div data-tour="dashboard-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label={`${now.getFullYear()} Trips`} value={yearTrips ?? 0} sub="completed this year" />
+        <StatCard label={`${yr} Trips`} value={yearTrips ?? 0} sub="completed this year" />
         <StatCard label="Trips This Month" value={(monthTrips ?? []).length} />
         <StatCard label="Month Revenue" value={`$${monthRevenue.toFixed(0)}`} accent />
         <StatCard label="Outstanding" value={`$${outstanding.toFixed(0)}`} sub="across all clients" href="/outstanding?back=/dashboard" />
