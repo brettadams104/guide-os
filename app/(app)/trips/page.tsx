@@ -9,7 +9,7 @@ function localDateStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { scheduleTrip, logTripDetails } from '@/lib/actions/trips'
 import { createClientRecord } from '@/lib/actions/clients'
 import { createClient } from '@/lib/supabase/client'
@@ -126,6 +126,7 @@ function UpcomingTab() {
 }
 
 function ScheduleTab() {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -186,7 +187,7 @@ function ScheduleTab() {
         clientId = data?.id ?? null
       }
 
-      await scheduleTrip({
+      const tripId = await scheduleTrip({
         client_id: clientId,
         trip_date: form.get('trip_date') as string,
         location: (form.get('location') as string) || null,
@@ -202,14 +203,7 @@ function ScheduleTab() {
       })
       const loc = form.get('location') as string
       if (loc?.trim()) saveLocation(loc.trim())
-      setSuccess(true)
-      setSelectedClientId(null)
-      setNewClientName(null)
-      setSelectedStaffId(null)
-      setCategorySelections({})
-      setAutoPrice('')
-      setStartTime('')
-      setEndTime('')
+      router.push(`/trips/${tripId}`)
       ;(e.target as HTMLFormElement).reset()
     } catch (err) {
       setError((err as Error).message)
@@ -220,11 +214,6 @@ function ScheduleTab() {
 
   return (
     <div className="max-w-xl space-y-5">
-      {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm font-medium">
-          Trip scheduled! It will appear in Upcoming.
-        </div>
-      )}
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
         <h2 className="font-semibold text-slate-900">Schedule a Trip</h2>
 
