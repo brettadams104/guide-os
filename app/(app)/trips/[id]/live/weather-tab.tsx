@@ -188,6 +188,42 @@ export function WeatherTab({ defaultLocation }: { defaultLocation?: string }) {
     }
   }
 
+  const [geoResults, setGeoResults] = useState<{ id: number; name: string; admin1: string | null; country: string; latitude: number; longitude: number }[]>([])
+  const [geoOpen, setGeoOpen] = useState(false)
+  const geoDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const searchRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setGeoOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  function handleLocationInput(val: string) {
+    setManualLocation(val)
+    if (geoDebounce.current) clearTimeout(geoDebounce.current)
+    if (val.trim().length < 2) { setGeoResults([]); setGeoOpen(false); return }
+    geoDebounce.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(val)}&count=6&language=en&format=json`)
+        const data = await res.json()
+        setGeoResults(data.results ?? [])
+        setGeoOpen(true)
+      } catch { setGeoResults([]) }
+    }, 300)
+  }
+
+  function handleGeoSelect(r: { name: string; admin1: string | null; country: string; latitude: number; longitude: number }) {
+    const label = [r.name, r.admin1, r.country].filter(Boolean).join(', ')
+    setManualLocation(label)
+    setActiveLocationLabel(label)
+    setLocation({ lat: r.latitude, lon: r.longitude })
+    setGeoResults([])
+    setGeoOpen(false)
+  }
+
   async function handleManualSearch() {
     const raw = manualLocation.trim()
     if (!raw) return
@@ -195,7 +231,6 @@ export function WeatherTab({ defaultLocation }: { defaultLocation?: string }) {
     setError(null)
 
     try {
-      // Zip code (US 5-digit)
       if (/^\d{5}$/.test(raw)) {
         const res = await fetch(`https://api.zippopotam.us/us/${raw}`)
         if (res.ok) {
@@ -214,10 +249,7 @@ export function WeatherTab({ defaultLocation }: { defaultLocation?: string }) {
         return
       }
 
-      // City name — strip "State" or "State, Country" suffix after a comma
-      // e.g. "Milwaukee, WI" → search "Milwaukee"
       const cityName = raw.includes(',') ? raw.split(',')[0].trim() : raw
-
       const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1`)
       const data = await res.json()
       if (data.results?.[0]) {
@@ -241,25 +273,35 @@ export function WeatherTab({ defaultLocation }: { defaultLocation?: string }) {
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Location search */}
-      <div className="p-4 space-y-2">
-        {activeLocationLabel && (
-          <p className="text-xs text-slate-500 font-medium px-0.5">
-            Showing weather for <span className="text-slate-800 font-semibold">{activeLocationLabel}</span>
-          </p>
-        )}
-        <div className="flex gap-2">
+      <div className="p-4" ref={searchRef}>
+        <div className="relative">
           <input
             type="text"
             value={manualLocation}
-            onChange={e => setManualLocation(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleManualSearch() }}
+            onChange={e => handleLocationInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { handleManualSearch(); setGeoOpen(false) } }}
             placeholder="Search by city or zip code…"
-            className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+            className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
           />
-          <button onClick={handleManualSearch} className="bg-sky-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-sky-400">
-            Search
-          </button>
+          {geoOpen && geoResults.length > 0 && (
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+              {geoResults.map(r => (
+                <button key={r.id} type="button" onClick={() => handleGeoSelect(r)}
+                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-sky-50 border-b border-slate-100 last:border-0 transition-colors">
+                  <span className="font-medium text-slate-900">{r.name}</span>
+                  {(r.admin1 || r.country) && (
+                    <span className="text-slate-400 ml-1">{[r.admin1, r.country].filter(Boolean).join(', ')}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+        {activeLocationLabel && (
+          <p className="text-xs text-slate-500 mt-1.5 px-0.5">
+            Showing weather for <span className="text-slate-700 font-semibold">{activeLocationLabel}</span>
+          </p>
+        )}
       </div>
 
       {/* Moon + Sun — no emojis */}
