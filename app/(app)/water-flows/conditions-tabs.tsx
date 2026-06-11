@@ -403,16 +403,18 @@ function WeatherTab({ weather: initialWeather, outlook: initialOutlook, savedLoc
           const dow       = new Date(Date.UTC(yr, mo - 1, dy)).getUTCDay()
           const dayLabel  = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : `${dayNames[dow]}, ${monNames[mo - 1]} ${dy}`
           return (
-            <div key={d} className="flex items-center px-4 py-3 gap-3">
-              <p className="text-sm font-medium text-slate-700 w-24 shrink-0">{dayLabel}</p>
+            <div key={d} className="flex items-center px-4 py-3 gap-2">
+              <p className="text-sm font-medium text-slate-700 w-20 shrink-0">{dayLabel}</p>
               <span className="text-lg shrink-0">{weatherIcon(daily.weathercode[i] ?? 0)}</span>
-              <p className="text-xs text-slate-500 flex-1">{weatherLabel(daily.weathercode[i] ?? 0)}</p>
-              <p className="text-xs text-sky-500 font-medium w-14 text-right shrink-0">
-                {(daily.precipitation_sum[i] ?? 0) >= 0.05 ? `${daily.precipitation_sum[i].toFixed(2)}"` : ''}
-              </p>
-              <div className="flex items-center gap-2 text-sm shrink-0">
-                <span className="font-bold text-slate-800 w-8 text-right">{Math.round(daily.temperature_2m_max[i] ?? 0)}°</span>
-                <span className="text-slate-400 w-8 text-right">{Math.round(daily.temperature_2m_min[i] ?? 0)}°</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-slate-500 truncate">{weatherLabel(daily.weathercode[i] ?? 0)}</p>
+                {(daily.precipitation_sum[i] ?? 0) >= 0.05 && (
+                  <p className="text-xs text-sky-500 font-medium">{daily.precipitation_sum[i].toFixed(2)}"</p>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 text-sm shrink-0">
+                <span className="font-bold text-slate-800">{Math.round(daily.temperature_2m_max[i] ?? 0)}°</span>
+                <span className="text-slate-400">{Math.round(daily.temperature_2m_min[i] ?? 0)}°</span>
               </div>
             </div>
           )
