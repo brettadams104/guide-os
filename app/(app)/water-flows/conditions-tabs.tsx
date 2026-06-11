@@ -465,9 +465,8 @@ function OutlookSections({ outlook }: { outlook: OutlookPayload }) {
       {/* Barometric pressure */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Barometric Pressure</p>
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2">
           <p className="text-2xl font-black text-slate-800">{pressureHpa(current.pressure_msl)}</p>
-          <span className={`text-sm font-bold ${pressureColor}`}>{pressureLabel}</span>
         </div>
         <p className="text-xs text-slate-500 leading-relaxed">{pressureNote}</p>
       </div>
