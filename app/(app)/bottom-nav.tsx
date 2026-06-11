@@ -7,14 +7,14 @@ const TABS = [
   { href: '/water-flows', label: 'Outlook', icon: '≋' },
   { href: '/trips', label: 'Trips', icon: '◎' },
   { href: '/dashboard', label: 'Home', icon: '◈' },
-  { href: '/analytics', label: 'Analytics', icon: 'chart' },
+  { href: '/analytics', label: 'Analytics', icon: 'barchart' },
   { href: '/profile', label: 'Profile', icon: '◉' },
 ]
 
-function LineChartIcon({ color }: { color: string }) {
+function BarChartIcon({ color }: { color: string }) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="22 12 18 8 13 13 9 9 2 16" />
+      <rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/>
     </svg>
   )
 }
@@ -35,8 +35,8 @@ export function BottomNav() {
               active ? 'text-sky-400' : 'text-slate-500'
             }`}
           >
-            {icon === 'chart'
-              ? <LineChartIcon color={color} />
+            {icon === 'barchart'
+              ? <BarChartIcon color={color} />
               : <span className="text-lg">{icon}</span>
             }
             {label}

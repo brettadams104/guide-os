@@ -13,7 +13,7 @@ const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: '◈' },
   { href: '/trips', label: 'Trips', icon: '◎' },
   { href: '/clients', label: 'Clients', icon: '◉' },
-  { href: '/analytics', label: 'Analytics', icon: '▲' },
+  { href: '/analytics', label: 'Analytics', icon: 'barchart' },
   { href: '/water-flows', label: 'Conditions', icon: '≋' },
 ]
 
@@ -40,7 +40,10 @@ export function Sidebar({ signOut, guideName }: Props) {
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              <span className="text-base">{icon}</span>
+              {icon === 'barchart'
+                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+                : <span className="text-base">{icon}</span>
+              }
               {label}
             </Link>
           )
