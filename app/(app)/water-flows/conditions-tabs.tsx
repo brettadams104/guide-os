@@ -468,29 +468,6 @@ function OutlookSections({ outlook }: { outlook: OutlookPayload }) {
         <p className="text-xs text-slate-500 leading-relaxed mt-2">{moonNote}</p>
       </div>
 
-      {/* River gauge */}
-      {primaryGauge && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">River Conditions · {primaryGauge.displayName}</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs text-slate-400 mb-1">Current Flow</p>
-              <p className="text-2xl font-black text-slate-800">{primaryGauge.cfs !== null ? `${primaryGauge.cfs.toLocaleString()}` : '—'}</p>
-              <p className="text-xs text-slate-400">CFS</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400 mb-1">Gage Height</p>
-              <p className="text-2xl font-black text-slate-800">{primaryGauge.gageHeight !== null ? primaryGauge.gageHeight.toFixed(2) : '—'}</p>
-              <p className="text-xs text-slate-400">feet</p>
-            </div>
-          </div>
-          {primaryGauge.trend && (
-            <p className={`text-xs font-semibold mt-3 ${primaryGauge.trend === 'rising' ? 'text-red-500' : primaryGauge.trend === 'falling' ? 'text-emerald-500' : 'text-amber-500'}`}>
-              {primaryGauge.trend === 'rising' ? '↑ Rising' : primaryGauge.trend === 'falling' ? '↓ Falling' : '→ Steady'} flow
-            </p>
-          )}
-        </div>
-      )}
     </div>
   )
 }
