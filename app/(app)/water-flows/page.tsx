@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { GaugeData } from './gauge-card'
 import { getMoonPhase, getMoonIllumination, getPressureTrend } from '@/lib/weather'
-import SunCalc from 'suncalc'
 import { ConditionsTabs, type WeatherPayload, type OutlookPayload } from './conditions-tabs'
 
 interface USGSValue { value: string; dateTime: string }
@@ -70,7 +69,7 @@ async function fetchWeather(lat: number, lon: number): Promise<WeatherPayload | 
   try {
     const today = new Date().toISOString().split('T')[0]
     const sevenDays = new Date(Date.now() + 6 * 86400000).toISOString().split('T')[0]
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,surface_pressure,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m,winddirection_10m,surface_pressure,precipitation,cloudcover&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,surface_pressure_mean&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&start_date=${today}&end_date=${sevenDays}`
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,windspeed_10m,winddirection_10m,surface_pressure,weathercode,is_day&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m,winddirection_10m,surface_pressure,precipitation,cloudcover&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,precipitation_sum,surface_pressure_mean,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&start_date=${today}&end_date=${sevenDays}`
     const res = await fetch(url, { next: { revalidate: 1800 } })
     if (!res.ok) return null
     return await res.json()
@@ -129,9 +128,19 @@ export default async function WaterFlowsPage() {
         const now = new Date()
         const moonPhase = getMoonPhase(now)
         const moonIllumination = getMoonIllumination(now)
-        const sunTimes = SunCalc.getTimes(now, geo.lat, geo.lon)
-        const sunrise = sunTimes.sunrise.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-        const sunset = sunTimes.sunset.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+
+        // Parse sunrise/sunset from API response (already in local timezone via timezone=auto)
+        // Format: "2026-06-10T05:32" → "5:32 AM"
+        function fmtApiTime(iso: string): string {
+          const t = iso?.split('T')[1] ?? ''
+          const [hStr, mStr] = t.split(':')
+          const h = parseInt(hStr ?? '0', 10)
+          const m = mStr ?? '00'
+          const ampm = h >= 12 ? 'PM' : 'AM'
+          return `${h % 12 || 12}:${m} ${ampm}`
+        }
+        const sunrise = fmtApiTime(raw.daily?.sunrise?.[0] ?? '')
+        const sunset  = fmtApiTime(raw.daily?.sunset?.[0] ?? '')
 
         // Yesterday's weather
         const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]

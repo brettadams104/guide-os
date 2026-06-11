@@ -35,6 +35,8 @@ interface DailyWeather {
   windspeed_10m_max: number[]
   precipitation_sum: number[]
   surface_pressure_mean: number[]
+  sunrise?: string[]
+  sunset?: string[]
 }
 
 export interface WeatherPayload {
@@ -286,14 +288,12 @@ function LocationSwitcher({ currentLocation, savedLocations, onLocationChange }:
 
 // ── Chart data builder ─────────────────────────────────────────────────────────
 
-function buildChartData(hourly: HourlyWeather, nowHour: number, nowDate: string): HourlyChartPoint[] {
+function buildChartData(hourly: HourlyWeather, nowHour: number): HourlyChartPoint[] {
   const fmt = (h: number) => { const a = h >= 12 ? 'PM' : 'AM'; return `${h % 12 || 12}${a}` }
-  const result: HourlyChartPoint[] = []
-
-  hourly.time.forEach((t, i) => {
-    if (!t.startsWith(nowDate)) return   // skip other days, preserve original index i
+  // API uses start_date=today so indices 0-23 are always today's 24 hours
+  return hourly.time.slice(0, 24).map((t, i) => {
     const hour = parseInt(t.split('T')[1]?.split(':')[0] ?? '0', 10)
-    result.push({
+    return {
       label:         hour === nowHour ? 'Now' : fmt(hour),
       isNow:         hour === nowHour,
       temp:          Math.round(hourly.temperature_2m[i] ?? 0),
@@ -302,10 +302,8 @@ function buildChartData(hourly: HourlyWeather, nowHour: number, nowDate: string)
       pressure:      (hourly as any).surface_pressure?.[i] ?? 1013,
       precipitation: parseFloat(((hourly as any).precipitation?.[i] ?? 0).toFixed(2)),
       cloudCover:    Math.round((hourly as any).cloudcover?.[i] ?? 0),
-    })
+    }
   })
-
-  return result
 }
 
 // ── Tab: Weather ───────────────────────────────────────────────────────────────
@@ -415,7 +413,7 @@ function WeatherTab({ weather: initialWeather, outlook: initialOutlook, savedLoc
       {outlook && <OutlookSections outlook={outlook} />}
 
       {/* Hourly detail chart */}
-      <HourlyWeatherChart data={buildChartData(hourly, nowHour, nowDate)} />
+      <HourlyWeatherChart data={buildChartData(hourly, nowHour)} />
     </div>
   )
 }
