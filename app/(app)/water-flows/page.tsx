@@ -81,9 +81,10 @@ export default async function WaterFlowsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: guide }, { data: gauges }] = await Promise.all([
+  const [{ data: guide }, { data: gauges }, { data: weatherLocations }] = await Promise.all([
     supabase.from('guides').select('location, location_lat, location_lon').eq('id', user!.id).single(),
     supabase.from('guide_water_gauges').select('*').eq('guide_id', user!.id).order('created_at'),
+    supabase.from('guide_weather_locations').select('*').eq('guide_id', user!.id).order('created_at'),
   ])
 
   const savedGauges = gauges ?? []
@@ -175,7 +176,7 @@ export default async function WaterFlowsPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Conditions</h1>
       </div>
-      <ConditionsTabs gaugeCards={gaugeCards} siteNos={siteNos} weather={weather} outlook={outlook} />
+      <ConditionsTabs gaugeCards={gaugeCards} siteNos={siteNos} weather={weather} outlook={outlook} savedWeatherLocations={weatherLocations ?? []} />
       <p className="text-xs text-slate-400 text-center">
         River data: <a href="https://waterservices.usgs.gov" target="_blank" rel="noopener noreferrer" className="underline">USGS</a> · Weather: <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer" className="underline">Open-Meteo</a>
       </p>
