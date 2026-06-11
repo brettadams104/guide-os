@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { TimeSelect } from '@/components/time-select'
 
 function localDateStr() {
   const d = new Date()
@@ -135,6 +136,8 @@ function ScheduleTab() {
   const [newClientName, setNewClientName] = useState<string | null>(null)
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null)
   const [autoPrice, setAutoPrice] = useState<string>('')
+  const [startTime, setStartTime] = useState<string>('')
+  const [endTime, setEndTime] = useState<string>('')
   const [categorySelections, setCategorySelections] = useState<Record<string, string>>({})
   const isNewClient = !!newClientName && !selectedClientId
 
@@ -193,6 +196,8 @@ function ScheduleTab() {
         time_slot_id: (form.get('time_slot_id') as string) || null,
         trip_type_id: null,
         assigned_staff_id: selectedStaffId,
+        start_time: startTime || null,
+        end_time: endTime || null,
       })
       setSuccess(true)
       setSelectedClientId(null)
@@ -200,6 +205,8 @@ function ScheduleTab() {
       setSelectedStaffId(null)
       setCategorySelections({})
       setAutoPrice('')
+      setStartTime('')
+      setEndTime('')
       ;(e.target as HTMLFormElement).reset()
     } catch (err) {
       setError((err as Error).message)
@@ -249,24 +256,36 @@ function ScheduleTab() {
 
         {/* Time slot */}
         {timeSlots.length > 0 && (
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Package</label>
-            <select
-              name="time_slot_id"
-              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-              onChange={e => {
-                const slot = timeSlots.find(s => s.id === e.target.value)
-                if (slot?.price) setAutoPrice(String(slot.price))
-                else setAutoPrice('')
-              }}
-            >
-              <option value="">Select a package...</option>
-              {timeSlots.map(s => (
-                <option key={s.id} value={s.id}>
-                  {s.label}{s.price ? ` — $${s.price.toFixed(0)}` : ''}{s.start_time && s.end_time ? ` (${s.start_time} – ${s.end_time})` : ''}
-                </option>
-              ))}
-            </select>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Package</label>
+              <select
+                name="time_slot_id"
+                className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                onChange={e => {
+                  const slot = timeSlots.find(s => s.id === e.target.value)
+                  if (slot?.price) setAutoPrice(String(slot.price))
+                  else setAutoPrice('')
+                  setStartTime(slot?.start_time ?? '')
+                  setEndTime(slot?.end_time ?? '')
+                }}
+              >
+                <option value="">Select a package...</option>
+                {timeSlots.map(s => (
+                  <option key={s.id} value={s.id}>{s.label}{s.price ? ` — $${s.price.toFixed(0)}` : ''}</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Start Time</label>
+                <TimeSelect value={startTime} onChange={setStartTime} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">End Time</label>
+                <TimeSelect value={endTime} onChange={setEndTime} />
+              </div>
+            </div>
           </div>
         )}
 

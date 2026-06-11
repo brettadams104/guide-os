@@ -34,15 +34,15 @@ export default async function DashboardPage() {
   // Fetch time slot + staff data separately (safe if migration not run)
   const slotResult = await supabase
     .from('trips')
-    .select('id, guide_time_slots(label, start_time, end_time), guide_staff(name)')
+    .select('id, start_time, end_time, guide_time_slots(label, start_time, end_time), guide_staff(name)')
     .eq('guide_id', user!.id)
   const slotMap: Record<string, { time_label: string | null; start_time: string | null; end_time: string | null; guide_name: string | null }> = {}
   ;(slotResult.error ? [] : slotResult.data ?? []).forEach((d: any) => {
     const slot = d.guide_time_slots
     slotMap[d.id] = {
       time_label: slot?.label ?? null,
-      start_time: slot?.start_time ?? null,
-      end_time: slot?.end_time ?? null,
+      start_time: d.start_time ?? slot?.start_time ?? null,
+      end_time: d.end_time ?? slot?.end_time ?? null,
       guide_name: d.guide_staff?.name ?? null,
     }
   })
