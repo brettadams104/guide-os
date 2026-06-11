@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { TimeSelect } from '@/components/time-select'
+import { TripLocationInput, saveLocation } from '@/components/trip-location-input'
 
 function localDateStr() {
   const d = new Date()
@@ -199,6 +200,8 @@ function ScheduleTab() {
         start_time: startTime || null,
         end_time: endTime || null,
       })
+      const loc = form.get('location') as string
+      if (loc?.trim()) saveLocation(loc.trim())
       setSuccess(true)
       setSelectedClientId(null)
       setNewClientName(null)
@@ -330,7 +333,7 @@ function ScheduleTab() {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
-            <input name="location" type="text" placeholder="Lake, river, bay..." className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            <TripLocationInput name="location" />
           </div>
         </div>
         <div>
