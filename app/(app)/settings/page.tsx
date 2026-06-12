@@ -7,6 +7,7 @@ import { DeleteAccountButton } from '@/components/delete-account-button'
 import { LocationPicker } from '@/components/location-picker'
 import { RestartTourButton } from '@/components/restart-tour-button'
 import { FaqSection } from '@/components/faq-section'
+import { FeedbackButton } from '@/components/feedback-button'
 import { SpeciesPresetManager } from '@/components/species-preset-manager'
 import { LurePresetManager } from '@/components/lure-preset-manager'
 
@@ -127,6 +128,15 @@ export default async function SettingsPage() {
           <input name="staff_name" type="text" placeholder="Guide name" required className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
           <button type="submit" className="border border-sky-300 text-sky-600 hover:bg-sky-50 font-medium px-4 py-2 rounded-xl transition-colors text-sm whitespace-nowrap">+ Add</button>
         </form>
+      </div>
+
+      {/* Contact / Feedback */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-3">
+        <div>
+          <h2 className="font-semibold text-slate-900">Contact Us</h2>
+          <p className="text-sm text-slate-500 mt-1">Have a question, found a bug, or want to suggest something? We read every message.</p>
+        </div>
+        <FeedbackButton />
       </div>
 
       {/* FAQ */}
