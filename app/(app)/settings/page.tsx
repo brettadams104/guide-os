@@ -6,6 +6,7 @@ import { AccountSettings } from '@/components/account-settings'
 import { DeleteAccountButton } from '@/components/delete-account-button'
 import { LocationPicker } from '@/components/location-picker'
 import { RestartTourButton } from '@/components/restart-tour-button'
+import { FaqSection } from '@/components/faq-section'
 import { SpeciesPresetManager } from '@/components/species-preset-manager'
 import { LurePresetManager } from '@/components/lure-preset-manager'
 
@@ -126,6 +127,15 @@ export default async function SettingsPage() {
           <input name="staff_name" type="text" placeholder="Guide name" required className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
           <button type="submit" className="border border-sky-300 text-sky-600 hover:bg-sky-50 font-medium px-4 py-2 rounded-xl transition-colors text-sm whitespace-nowrap">+ Add</button>
         </form>
+      </div>
+
+      {/* FAQ */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold text-slate-900">Frequently Asked Questions</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Quick answers to common questions about GuideStride</p>
+        </div>
+        <FaqSection />
       </div>
 
       {/* App Tour */}
