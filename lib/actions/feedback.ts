@@ -31,7 +31,7 @@ export async function submitFeedback({
     const resend = new Resend(apiKey)
     const { data, error: emailError } = await resend.emails.send({
       from:    'GuideStride <noreply@guidestride.com>',
-      to:      ['brett@guidestride.com', 'brettadams104@gmail.com'],
+      to:      'brett@guidestride.com',
       subject: `New ${category} from ${user.email ?? 'a guide'}`,
       html: `
         <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1e293b;">
