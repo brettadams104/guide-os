@@ -122,7 +122,7 @@ export default function LoginPage() {
           <form onSubmit={handleSignUp} className="space-y-4 bg-white/5 border border-white/10 rounded-2xl p-6">
             <div>
               <label className={labelClass}>Your Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} required className={inputClass} placeholder="Brett Adams" />
+              <input type="text" value={name} onChange={e => setName(e.target.value)} required className={inputClass} placeholder="John Smith" />
             </div>
             <div>
               <label className={labelClass}>Email</label>
