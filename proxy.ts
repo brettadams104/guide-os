@@ -71,6 +71,6 @@ export const config = {
      * - _next/image (image optimization)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      */
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.webp|.*\\.ico).*)',
   ],
 }
