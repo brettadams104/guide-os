@@ -3,7 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 
-const NOTIFY_EMAIL = 'brett@guidestride.com'
+const FROM_EMAIL   = 'GuideStride <contact@guidestride.com>'
+const NOTIFY_EMAIL = 'contact@guidestride.com'
 
 export async function submitFeedback({
   category,
@@ -29,7 +30,7 @@ export async function submitFeedback({
   if (process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const emailResult = await resend.emails.send({
-      from:    'GuideStride Feedback <feedback@guidestride.com>',
+      from:    FROM_EMAIL,
       to:      NOTIFY_EMAIL,
       subject: `[${category}] from ${user.email ?? 'a guide'}`,
       html: `
