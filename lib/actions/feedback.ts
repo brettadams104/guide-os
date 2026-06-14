@@ -34,13 +34,18 @@ export async function submitFeedback({
       to:      'brett@guidestride.com',
       subject: `New ${category} from ${user.email ?? 'a guide'}`,
       html: `
-        <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1e293b;">
-          <h2 style="margin: 0 0 4px;">New ${category}</h2>
-          <p style="margin: 0 0 20px; color: #64748b; font-size: 14px;">GuideStride Feedback</p>
-          <p style="font-size: 14px; margin: 0 0 6px;"><strong>From:</strong> ${user.email ?? 'Unknown'}</p>
-          <p style="font-size: 14px; margin: 0 0 20px;"><strong>Category:</strong> ${category}</p>
-          <div style="background: #f1f5f9; border-left: 4px solid #0ea5e9; padding: 16px; border-radius: 4px;">
-            <p style="margin: 0; font-size: 15px; white-space: pre-wrap;">${message}</p>
+        <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; color: #1e293b;">
+          <div style="background: #0f1f35; padding: 28px; text-align: center; border-radius: 12px 12px 0 0;">
+            <img src="https://app.guidestride.com/logo.png" alt="GuideStride" width="80" height="80" style="border-radius: 10px; display: block; margin: 0 auto;" />
+          </div>
+          <div style="padding: 28px; background: #ffffff; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0; border-top: none;">
+            <h2 style="margin: 0 0 4px; font-size: 20px;">New ${category}</h2>
+            <p style="margin: 0 0 24px; color: #64748b; font-size: 14px;">Submitted via GuideStride</p>
+            <p style="font-size: 14px; margin: 0 0 8px;"><strong>From:</strong> ${user.email ?? 'Unknown'}</p>
+            <p style="font-size: 14px; margin: 0 0 20px;"><strong>Category:</strong> ${category}</p>
+            <div style="background: #f1f5f9; border-left: 4px solid #0ea5e9; padding: 16px; border-radius: 4px;">
+              <p style="margin: 0; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+            </div>
           </div>
         </div>
       `,
