@@ -57,9 +57,19 @@ export async function logTripDetails(tripId: string, input: {
 }) {
   const supabase = await createClient()
 
+  // Fetch current amount so we ADD the new payment, not replace it
+  const { data: current } = await supabase.from('trips').select('amount_collected, price, tip_amount').eq('id', tripId).single()
+  const prevCollected = current?.amount_collected ?? 0
+  const prevTip       = current?.tip_amount ?? 0
+  const price         = current?.price ?? null
+  const newCollected  = price != null
+    ? Math.min(prevCollected + input.amount_collected, price)
+    : prevCollected + input.amount_collected
+  const newTip        = prevTip + input.tip_amount
+
   await supabase.from('trips').update({
-    amount_collected: input.amount_collected,
-    tip_amount: input.tip_amount,
+    amount_collected: newCollected,
+    tip_amount: newTip,
     payment_method: input.payment_method,
     notes: input.notes,
     ...(input.complete ? { status: 'completed' } : {}),
