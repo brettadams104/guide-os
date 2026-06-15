@@ -19,8 +19,9 @@ const TABS = ['Fishing', 'Financials'] as const
 type Tab = typeof TABS[number]
 
 function buildFinancialData(filtered: any[], scheduled: any[] = []) {
-  const totalRevenue = filtered.reduce((s: number, t: any) => s + (t.amount_collected ?? 0), 0)
-  const totalBilled = filtered.reduce((s: number, t: any) => s + (t.price ?? 0), 0)
+  const totalTips    = filtered.reduce((s: number, t: any) => s + (t.tip_amount ?? 0), 0)
+  const totalRevenue = filtered.reduce((s: number, t: any) => s + (t.amount_collected ?? 0) + (t.tip_amount ?? 0), 0)
+  const totalBilled  = filtered.reduce((s: number, t: any) => s + (t.price ?? 0), 0)
   const totalOutstanding = Math.max(0, totalBilled - totalRevenue)
   const count = filtered.length
   const avgPerTrip = count > 0 ? totalRevenue / count : 0
@@ -96,7 +97,7 @@ function buildFinancialData(filtered: any[], scheduled: any[] = []) {
       })),
   ].sort((a, b) => a.date.localeCompare(b.date))
 
-  return { totalRevenue, totalBilled, totalOutstanding, totalTrips: count, avgPerTrip, collectionRate, bestMonthLabel, bestMonthAmount, revenueData, financialsBarData, paymentData, packageData, topClients, avgByMonth, outstanding }
+  return { totalRevenue, totalTips, totalBilled, totalOutstanding, totalTrips: count, avgPerTrip, collectionRate, bestMonthLabel, bestMonthAmount, revenueData, financialsBarData, paymentData, packageData, topClients, avgByMonth, outstanding }
 }
 
 export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears, yoyData }: {
@@ -176,6 +177,11 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
               <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Best Month</p>
               <p className="text-xl font-black text-slate-900 mt-2">${fin.bestMonthAmount.toFixed(0)}</p>
               <p className="text-slate-400 text-xs mt-1">{fin.bestMonthLabel}</p>
+            </div>
+            <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-5">
+              <p className="text-xs text-emerald-600 uppercase tracking-widest font-semibold">Total Tips</p>
+              <p className="text-3xl font-black text-emerald-700 mt-2">${fin.totalTips.toFixed(0)}</p>
+              <p className="text-emerald-500 text-xs mt-1">across {fin.totalTrips} trips</p>
             </div>
             <div className="bg-white rounded-2xl border border-slate-200 p-5">
               <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Collection Rate</p>

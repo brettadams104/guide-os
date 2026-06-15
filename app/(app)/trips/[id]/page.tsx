@@ -92,6 +92,7 @@ export default async function TripDetailPage({ params, searchParams }: { params:
           price={trip.price}
           depositPaid={trip.deposit_paid ?? 0}
           amountCollected={trip.amount_collected ?? 0}
+          tipAmount={(trip as any).tip_amount ?? 0}
           venmoHandle={(guide as any)?.venmo_handle ?? null}
           cashappHandle={(guide as any)?.cashapp_handle ?? null}
           zelleContact={(guide as any)?.zelle_contact ?? null}

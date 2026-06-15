@@ -47,6 +47,7 @@ export async function scheduleTrip(input: {
 export async function logTripDetails(tripId: string, input: {
   catches: { species: string; count: number }[]
   amount_collected: number
+  tip_amount: number
   payment_method: PaymentMethod | null
   notes: string | null
   latitude?: number
@@ -58,6 +59,7 @@ export async function logTripDetails(tripId: string, input: {
 
   await supabase.from('trips').update({
     amount_collected: input.amount_collected,
+    tip_amount: input.tip_amount,
     payment_method: input.payment_method,
     notes: input.notes,
     ...(input.complete ? { status: 'completed' } : {}),

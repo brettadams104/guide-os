@@ -32,6 +32,7 @@ export function LogDetailsForm({ tripId, tripDate, defaultPrice }: Props) {
       await logTripDetails(tripId, {
         catches: catches.filter(c => c.species.trim()),
         amount_collected: Number(form.get('amount_collected') || 0),
+        tip_amount: Number(form.get('tip_amount') || 0),
         payment_method: (form.get('payment_method') as any) || null,
         notes: (form.get('notes') as string) || null,
         trip_date: tripDate,
@@ -105,6 +106,17 @@ export function LogDetailsForm({ tripId, tripDate, defaultPrice }: Props) {
             </div>
           </div>
           <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Tip</label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
+              <input name="tip_amount" type="number" min="0" step="0.01"
+                placeholder="0.00"
+                className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2">
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Payment Method</label>
             <select name="payment_method" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
               <option value="">Select...</option>

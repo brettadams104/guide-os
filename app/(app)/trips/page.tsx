@@ -409,9 +409,11 @@ function LogDetailsTab() {
       await logTripDetails(selected.id, {
         catches: catches.filter(c => c.species.trim()),
         amount_collected: Number(form.get('amount_collected') || 0),
+        tip_amount: Number(form.get('tip_amount') || 0),
         payment_method: (form.get('payment_method') as any) || null,
         notes: (form.get('notes') as string) || null,
         trip_date: selected.trip_date,
+        complete: true,
       })
       setSuccess(true)
       setSelected(null)

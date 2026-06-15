@@ -9,13 +9,14 @@ interface Props {
   price: number | null
   depositPaid: number
   amountCollected: number
+  tipAmount?: number
   venmoHandle?: string | null
   cashappHandle?: string | null
   zelleContact?: string | null
   paypalHandle?: string | null
 }
 
-export function TripCostCard({ tripId, price, depositPaid, amountCollected, venmoHandle, cashappHandle, zelleContact, paypalHandle }: Props) {
+export function TripCostCard({ tripId, price, depositPaid, amountCollected, tipAmount = 0, venmoHandle, cashappHandle, zelleContact, paypalHandle }: Props) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(String(amountCollected))
@@ -97,6 +98,12 @@ export function TripCostCard({ tripId, price, depositPaid, amountCollected, venm
               </button>
             )}
           </div>
+          {tipAmount > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-600">Tip</span>
+              <span className="font-medium text-emerald-600">${tipAmount.toFixed(0)}</span>
+            </div>
+          )}
           {outstanding > 0 && (
             <>
               <div className="flex justify-between text-sm font-semibold pt-0.5">
