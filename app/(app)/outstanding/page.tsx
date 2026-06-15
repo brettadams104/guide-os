@@ -82,7 +82,7 @@ export default async function OutstandingPage({ searchParams }: { searchParams: 
                 <div key={clientId} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                   {/* Client header */}
                   <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-                    <Link href={`/clients/${clientId}?back=/outstanding${back ? `?back=${back}` : ''}`} className="font-bold text-slate-900 hover:text-sky-600 transition-colors">
+                    <Link href={`/clients/${clientId}?back=/outstanding`} className="font-bold text-slate-900 hover:text-sky-600 transition-colors">
                       {name}
                     </Link>
                     <span className="font-black text-amber-600 text-lg">${clientTotal.toFixed(0)}</span>
