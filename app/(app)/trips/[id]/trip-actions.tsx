@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { deleteTrip } from '@/lib/actions/trips'
+import { createClient } from '@/lib/supabase/client'
 
 export function TripActions({ tripId }: { tripId: string; currentStatus: string }) {
   const router = useRouter()
-  const [confirming, setConfirming] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [confirming,   setConfirming]   = useState(false)
+  const [completing,   setCompleting]   = useState(false)
+  const [saving,       setSaving]       = useState(false)
+  const [error,        setError]        = useState<string | null>(null)
 
   async function handleDelete() {
     setSaving(true)
@@ -17,6 +19,15 @@ export function TripActions({ tripId }: { tripId: string; currentStatus: string 
       await deleteTrip(tripId)
       router.push('/trips')
     } catch { setError('Something went wrong'); setSaving(false) }
+  }
+
+  async function handleComplete() {
+    setCompleting(true)
+    try {
+      await createClient().from('trips').update({ status: 'completed' }).eq('id', tripId)
+      router.refresh()
+    } catch { setError('Something went wrong') }
+    finally { setCompleting(false) }
   }
 
   return (
@@ -29,6 +40,10 @@ export function TripActions({ tripId }: { tripId: string; currentStatus: string 
             className="w-full flex items-center justify-between border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
             <span>Reschedule / Edit Trip</span><span className="text-slate-400">→</span>
           </Link>
+          <button onClick={handleComplete} disabled={completing}
+            className="w-full flex items-center justify-between border border-emerald-200 rounded-xl px-4 py-3 text-sm font-medium text-emerald-700 hover:bg-emerald-50 transition-colors disabled:opacity-50">
+            <span>{completing ? 'Marking complete...' : 'Mark Trip as Completed'}</span><span className="text-emerald-400">✓</span>
+          </button>
           <button onClick={() => setConfirming(true)}
             className="w-full flex items-center justify-between border border-red-200 rounded-xl px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
             <span>Delete Trip</span><span className="text-red-400">→</span>
