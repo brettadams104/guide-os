@@ -101,22 +101,34 @@ function UpcomingTab() {
               {isToday ? `Today · ${dateLabel}` : dateLabel}
             </p>
             {dayTrips.map((trip: any) => (
-              <Link key={trip.id} href={`/trips/${trip.id}`}
-                className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-sky-300 transition-colors shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-bold text-slate-900 text-base">{trip.clients?.name ?? 'No client'}</p>
-                    {trip.location && <p className="text-slate-500 text-sm mt-0.5">{trip.location}</p>}
-                    {trip.price != null && (
-                      <p className="text-sm text-slate-500 mt-1">
-                        ${trip.price.toFixed(0)}{trip.deposit_paid > 0 ? ` · Deposit: $${trip.deposit_paid.toFixed(0)}` : ''}
-                      </p>
-                    )}
-                    {trip.notes && <p className="mt-1 text-xs text-slate-400 italic">{trip.notes}</p>}
+              <div key={trip.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <Link href={`/trips/${trip.id}`} className="block p-5 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-bold text-slate-900 text-base">{trip.clients?.name ?? 'No client'}</p>
+                      {trip.location && <p className="text-slate-500 text-sm mt-0.5">{trip.location}</p>}
+                      {trip.price != null && (
+                        <p className="text-sm text-slate-500 mt-1">
+                          ${trip.price.toFixed(0)}{trip.deposit_paid > 0 ? ` · Deposit: $${trip.deposit_paid.toFixed(0)}` : ''}
+                        </p>
+                      )}
+                      {trip.notes && <p className="mt-1 text-xs text-slate-400 italic">{trip.notes}</p>}
+                    </div>
+                    <span className="text-xs bg-sky-100 text-sky-700 font-medium px-2.5 py-1 rounded-full shrink-0 ml-3">Scheduled</span>
                   </div>
-                  <span className="text-xs bg-sky-100 text-sky-700 font-medium px-2.5 py-1 rounded-full shrink-0 ml-3">Scheduled</span>
+                </Link>
+                <div className="border-t border-slate-100 px-5 py-2.5 flex gap-3">
+                  <Link href={`/trips/${trip.id}`}
+                    className="flex-1 text-center text-xs font-semibold text-slate-500 hover:text-slate-700 py-1 transition-colors">
+                    View Trip
+                  </Link>
+                  <div className="w-px bg-slate-100" />
+                  <Link href={`/trips/${trip.id}/edit`}
+                    className="flex-1 text-center text-xs font-semibold text-sky-600 hover:text-sky-700 py-1 transition-colors">
+                    Reschedule / Edit
+                  </Link>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )
