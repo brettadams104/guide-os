@@ -27,7 +27,7 @@ export function TripActions({ tripId }: { tripId: string; currentStatus: string 
         <div className="space-y-2">
           <Link href={`/trips/${tripId}/edit`}
             className="w-full flex items-center justify-between border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-            <span>Edit Trip</span><span className="text-slate-400">→</span>
+            <span>Reschedule / Edit Trip</span><span className="text-slate-400">→</span>
           </Link>
           <button onClick={() => setConfirming(true)}
             className="w-full flex items-center justify-between border border-red-200 rounded-xl px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
