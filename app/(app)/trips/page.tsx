@@ -508,12 +508,18 @@ function LogDetailsTab() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Payment Method</label>
-            <select name="payment_method" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-              <option value="">Select...</option>
-              {['cash','card','venmo','zelle','check','other'].map(m => <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>)}
-            </select>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Tip</label>
+            <div className="relative"><span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
+              <input name="tip_amount" type="number" min="0" step="0.01" placeholder="0.00" className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
           </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Payment Method</label>
+          <select name="payment_method" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="">Select...</option>
+            {['cash','card','venmo','zelle','check','other'].map(m => <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>)}
+          </select>
         </div>
       </div>
 
