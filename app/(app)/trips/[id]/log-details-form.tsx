@@ -23,7 +23,7 @@ export function LogDetailsForm({ tripId, tripDate, defaultPrice }: Props) {
   }
   function removeCatch(i: number) { setCatches(p => p.filter((_, idx) => idx !== i)) }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>, complete = false) {
     e.preventDefault()
     setLoading(true)
     setError(null)
@@ -35,6 +35,7 @@ export function LogDetailsForm({ tripId, tripDate, defaultPrice }: Props) {
         payment_method: (form.get('payment_method') as any) || null,
         notes: (form.get('notes') as string) || null,
         trip_date: tripDate,
+        complete,
       })
       router.refresh()
       setOpen(false)
@@ -127,9 +128,16 @@ export function LogDetailsForm({ tripId, tripDate, defaultPrice }: Props) {
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
       <button type="submit" disabled={loading}
-        className="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-4 rounded-2xl text-sm transition-colors disabled:opacity-50">
-        {loading ? 'Saving & fetching conditions…' : 'Save Trip Details'}
+        className="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-3.5 rounded-2xl text-sm transition-colors disabled:opacity-50">
+        {loading ? 'Saving…' : 'Save Trip Details'}
       </button>
+
+      <button type="button" disabled={loading}
+        onClick={e => handleSubmit(e as any, true)}
+        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-2xl text-sm transition-colors disabled:opacity-50">
+        {loading ? 'Saving…' : 'Save & Complete Trip'}
+      </button>
+      <p className="text-xs text-slate-400 text-center -mt-1">Marks the trip as completed and moves it to your history</p>
     </form>
   )
 }

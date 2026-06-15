@@ -52,6 +52,7 @@ export async function logTripDetails(tripId: string, input: {
   latitude?: number
   longitude?: number
   trip_date: string
+  complete?: boolean
 }) {
   const supabase = await createClient()
 
@@ -59,7 +60,7 @@ export async function logTripDetails(tripId: string, input: {
     amount_collected: input.amount_collected,
     payment_method: input.payment_method,
     notes: input.notes,
-    status: 'completed',
+    ...(input.complete ? { status: 'completed' } : {}),
   }).eq('id', tripId)
 
   // Insert catches
