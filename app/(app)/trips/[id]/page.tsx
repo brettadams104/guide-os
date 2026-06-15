@@ -167,7 +167,13 @@ export default async function TripDetailPage({ params, searchParams }: { params:
 
       {/* Log Details — only for scheduled trips not yet started through Trip Mode */}
       {trip.status === 'scheduled' && !(trip as any).ended_at && (
-        <LogDetailsForm tripId={id} tripDate={trip.trip_date} defaultPrice={trip.price} />
+        <LogDetailsForm
+          tripId={id}
+          tripDate={trip.trip_date}
+          defaultPrice={trip.price}
+          depositPaid={trip.deposit_paid ?? 0}
+          amountCollected={trip.amount_collected ?? 0}
+        />
       )}
 
       <TripActions tripId={id} currentStatus={trip.status ?? 'scheduled'} />

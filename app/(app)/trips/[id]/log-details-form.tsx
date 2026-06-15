@@ -8,9 +8,11 @@ interface Props {
   tripId: string
   tripDate: string
   defaultPrice?: number | null
+  depositPaid?: number
+  amountCollected?: number
 }
 
-export function LogDetailsForm({ tripId, tripDate, defaultPrice }: Props) {
+export function LogDetailsForm({ tripId, tripDate, defaultPrice, depositPaid = 0, amountCollected = 0 }: Props) {
   const [open, setOpen] = useState(false)
   const [catches, setCatches] = useState([{ species: '', count: 1 }])
   const [loading, setLoading] = useState(false)
@@ -94,36 +96,64 @@ export function LogDetailsForm({ tripId, tripDate, defaultPrice }: Props) {
       {/* Payment */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
         <h3 className="font-semibold text-slate-900">Payment</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Amount Collected</label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
-              <input name="amount_collected" type="number" min="0" step="0.01"
-                defaultValue={defaultPrice ?? ''}
-                placeholder="0.00"
-                className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+
+        {/* Breakdown */}
+        {defaultPrice != null && (
+          <div className="space-y-2 pb-3 border-b border-slate-100">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">Trip Price</span>
+              <span className="font-medium text-slate-800">${defaultPrice.toFixed(2)}</span>
+            </div>
+            {depositPaid > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Deposit Received</span>
+                <span className="font-medium text-emerald-600">− ${depositPaid.toFixed(2)}</span>
+              </div>
+            )}
+            {amountCollected > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Previously Collected</span>
+                <span className="font-medium text-emerald-600">− ${amountCollected.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm font-bold pt-1 border-t border-slate-100">
+              <span className="text-slate-700">Balance Due</span>
+              <span className="text-slate-900">${Math.max(0, defaultPrice - depositPaid - amountCollected).toFixed(2)}</span>
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Tip</label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
-              <input name="tip_amount" type="number" min="0" step="0.01"
-                placeholder="0.00"
-                className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
-            </div>
+        )}
+
+        {/* Amount Collected */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Amount Collected</label>
+          <div className="relative">
+            <span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
+            <input name="amount_collected" type="number" min="0" step="0.01"
+              defaultValue={defaultPrice != null ? Math.max(0, defaultPrice - depositPaid - amountCollected) : ''}
+              placeholder="0.00"
+              className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Payment Method</label>
-            <select name="payment_method" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-              <option value="">Select...</option>
-              {['cash', 'card', 'venmo', 'zelle', 'check', 'other'].map(m => (
-                <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>
-              ))}
-            </select>
+
+        {/* Payment Method */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Payment Method</label>
+          <select name="payment_method" className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="">Select...</option>
+            {['cash', 'card', 'venmo', 'zelle', 'check', 'other'].map(m => (
+              <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Tip */}
+        <div className="pt-3 border-t border-slate-100">
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Tip <span className="text-slate-400 font-normal">(optional)</span></label>
+          <div className="relative">
+            <span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
+            <input name="tip_amount" type="number" min="0" step="0.01"
+              placeholder="0.00"
+              className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
           </div>
         </div>
       </div>
