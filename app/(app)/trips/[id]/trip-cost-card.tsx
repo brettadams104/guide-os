@@ -23,6 +23,8 @@ export function TripCostCard({ tripId, price, depositPaid, amountCollected, tipA
   const [saving, setSaving] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState('')
   const [payingSaving, setPayingSaving] = useState(false)
+  const [tipAmount2, setTipAmount2] = useState('')
+  const [tipSaving, setTipSaving] = useState(false)
 
   const outstanding = Math.max(0, (price ?? 0) - amountCollected)
   const isPaid = price != null && outstanding === 0
@@ -36,6 +38,18 @@ export function TripCostCard({ tripId, price, depositPaid, amountCollected, tipA
     await db.from('trips').update({ amount_collected: newCollected }).eq('id', tripId)
     setPaymentAmount('')
     setPayingSaving(false)
+    router.refresh()
+  }
+
+  async function handleTip() {
+    const amount = parseFloat(tipAmount2)
+    if (!amount || amount <= 0) return
+    setTipSaving(true)
+    const db = createClient()
+    const newTip = (tipAmount ?? 0) + amount
+    await db.from('trips').update({ tip_amount: newTip }).eq('id', tripId)
+    setTipAmount2('')
+    setTipSaving(false)
     router.refresh()
   }
 
@@ -141,6 +155,33 @@ export function TripCostCard({ tripId, price, depositPaid, amountCollected, tipA
               </div>
             </>
           )}
+          {/* Tip section — always visible */}
+          <div className="pt-2 border-t border-amber-100 space-y-2">
+            <p className="text-xs text-slate-500">Add a Tip</p>
+            <div className="flex gap-2 items-center">
+              <div className="relative flex-1">
+                <span className="absolute left-2.5 top-1.5 text-slate-400 text-xs">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={tipAmount2}
+                  onChange={e => setTipAmount2(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleTip() }}
+                  placeholder="0.00"
+                  className="w-full border border-slate-200 rounded-lg pl-6 pr-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+              <button
+                onClick={handleTip}
+                disabled={tipSaving || !tipAmount2 || parseFloat(tipAmount2) <= 0}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap"
+              >
+                {tipSaving ? '…' : 'Record'}
+              </button>
+            </div>
+          </div>
+
           {isPaid && (
             <p className="text-xs text-green-600 font-medium">Paid in full ✓</p>
           )}
