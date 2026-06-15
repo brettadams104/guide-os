@@ -103,8 +103,11 @@ export function TripCostCard({ tripId, price, depositPaid, amountCollected, venm
                 <span className="text-amber-600">Outstanding</span>
                 <span className="text-amber-600">${outstanding.toFixed(0)}</span>
               </div>
-              <div className="pt-2 border-t border-amber-100 space-y-3">
-                <p className="text-xs text-slate-500">Log a payment</p>
+              <div className="pt-2 border-t border-amber-100 space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <p className="text-xs text-slate-500">Log Payment</p>
+                  <p className="text-xs text-slate-400 italic">Payment processing coming soon</p>
+                </div>
                 <div className="flex gap-2 items-center">
                   <div className="relative flex-1">
                     <span className="absolute left-2.5 top-1.5 text-slate-400 text-xs">$</span>
@@ -128,44 +131,6 @@ export function TripCostCard({ tripId, price, depositPaid, amountCollected, venm
                     {payingSaving ? '…' : 'Record'}
                   </button>
                 </div>
-
-                {(venmoHandle || cashappHandle || zelleContact || paypalHandle) && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-slate-500">Request payment via</p>
-                    <div className="flex flex-col gap-2">
-                      {venmoHandle && (
-                        <a href={`https://venmo.com/?txn=pay&audience=private&recipients=${venmoHandle.replace('@','')}&amount=${outstanding}&note=Trip+Payment`}
-                          target="_blank" rel="noopener noreferrer"
-                          className="flex items-center justify-between bg-[#3d95ce] hover:opacity-90 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-opacity">
-                          <span>Venmo</span>
-                          <span className="opacity-80">{venmoHandle.startsWith('@') ? venmoHandle : '@'+venmoHandle}</span>
-                        </a>
-                      )}
-                      {cashappHandle && (
-                        <a href={`https://cash.app/${cashappHandle.startsWith('$') ? cashappHandle : '$'+cashappHandle}/${outstanding}`}
-                          target="_blank" rel="noopener noreferrer"
-                          className="flex items-center justify-between bg-[#00d632] hover:opacity-90 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-opacity">
-                          <span>Cash App</span>
-                          <span className="opacity-80">{cashappHandle.startsWith('$') ? cashappHandle : '$'+cashappHandle}</span>
-                        </a>
-                      )}
-                      {paypalHandle && (
-                        <a href={`https://paypal.me/${paypalHandle.replace('@','')}/${outstanding}`}
-                          target="_blank" rel="noopener noreferrer"
-                          className="flex items-center justify-between bg-[#003087] hover:opacity-90 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-opacity">
-                          <span>PayPal</span>
-                          <span className="opacity-80">@{paypalHandle.replace('@','')}</span>
-                        </a>
-                      )}
-                      {zelleContact && (
-                        <div className="flex items-center justify-between bg-[#6d1ed4] text-white text-xs font-semibold px-3 py-2 rounded-lg">
-                          <span>Zelle</span>
-                          <span className="opacity-80">{zelleContact}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             </>
           )}
