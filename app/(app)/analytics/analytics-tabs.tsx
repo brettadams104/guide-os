@@ -19,11 +19,12 @@ const TABS = ['Fishing', 'Financials'] as const
 type Tab = typeof TABS[number]
 
 function buildFinancialData(filtered: any[], scheduled: any[] = []) {
+  const allTrips         = [...filtered, ...(scheduled ?? [])]
   const totalTips        = filtered.reduce((s: number, t: any) => s + (t.tip_amount ?? 0), 0)
   const totalCollected   = filtered.reduce((s: number, t: any) => s + (t.amount_collected ?? 0), 0)
   const totalRevenue     = totalCollected + totalTips
   const totalBilled      = filtered.reduce((s: number, t: any) => s + (t.price ?? 0), 0)
-  const totalOutstanding = Math.max(0, totalBilled - totalCollected) // tips don't offset what's owed
+  const totalOutstanding = allTrips.reduce((s: number, t: any) => s + Math.max(0, (t.price ?? 0) - (t.amount_collected ?? 0)), 0)
   const count = filtered.length
   const avgPerTrip = count > 0 ? totalRevenue / count : 0
   const collectionRate = totalBilled > 0 ? Math.round((totalRevenue / totalBilled) * 100) : 100

@@ -22,7 +22,7 @@ export default async function DashboardPage() {
   const [{ count: yearTrips }, { data: monthTrips }, { data: allTrips }, { data: upcomingTrips }, { data: allTripEvents }, { data: guideEvents }] = await Promise.all([
     supabase.from('trips').select('*', { count: 'exact', head: true }).eq('guide_id', user!.id).gte('trip_date', yearStart).eq('status', 'completed'),
     supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id).gte('trip_date', monthStart),
-    supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id).eq('status', 'completed'),
+    supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id),
     supabase.from('trips').select('*, clients(name)').eq('guide_id', user!.id)
       .gte('trip_date', today)
       .order('trip_date', { ascending: true }).limit(5),
