@@ -134,10 +134,11 @@ export function TripCostCard({ tripId, price, depositPaid, amountCollected, venm
                     <p className="text-xs text-slate-500">Request payment via</p>
                     <div className="flex flex-col gap-2">
                       {venmoHandle && (
-                        <a href={`venmo://paycharge?txn=pay&recipients=${venmoHandle.replace('@','')}&amount=${outstanding}&note=Trip+Payment`}
+                        <a href={`https://venmo.com/?txn=pay&audience=private&recipients=${venmoHandle.replace('@','')}&amount=${outstanding}&note=Trip+Payment`}
+                          target="_blank" rel="noopener noreferrer"
                           className="flex items-center justify-between bg-[#3d95ce] hover:opacity-90 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-opacity">
                           <span>Venmo</span>
-                          <span className="opacity-80">{venmoHandle}</span>
+                          <span className="opacity-80">{venmoHandle.startsWith('@') ? venmoHandle : '@'+venmoHandle}</span>
                         </a>
                       )}
                       {cashappHandle && (
