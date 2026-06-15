@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { fmtMonthShort, fmtMonthYear, fmtMonthLong, fmtDate, fmtDateShort } from '@/lib/date-utils'
 import { AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { SpeciesDonut } from '@/components/charts/species-donut'
@@ -110,8 +110,21 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
   allYears: number[]
   yoyData: Record<number, number[]>
 }) {
-  const [tab, setTab] = useState<Tab>('Fishing')
+  const [tab, setTab] = useState<Tab>(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('tab')
+      if (p === 'Financials') return 'Financials'
+    }
+    return 'Fishing'
+  })
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
+
+  function switchTab(t: Tab) {
+    setTab(t)
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', t)
+    window.history.replaceState(null, '', url.toString())
+  }
 
   const {
     speciesData, moonData, pressureData, monthFishData, totalFish, totalTrips,
@@ -131,7 +144,7 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
       {/* Main tab toggle */}
       <div data-tour="analytics-tabs" className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
         {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)}
+          <button key={t} onClick={() => switchTab(t)}
             data-tour-tab={t.toLowerCase()}
             className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${tab === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
           >{t}</button>
