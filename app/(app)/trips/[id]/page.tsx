@@ -15,11 +15,12 @@ export default async function TripDetailPage({ params, searchParams }: { params:
   const backLabel = back?.startsWith('/clients') ? '← Client' : '← Trips'
   const supabase = await createClient()
 
-  const { data: trip } = await supabase
-    .from('trips')
-    .select('*, clients(name, phone, email), trip_catches(*), trip_photos(*), trip_conditions(*)')
-    .eq('id', id)
-    .single()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const [{ data: trip }, { data: guide }] = await Promise.all([
+    supabase.from('trips').select('*, clients(name, phone, email), trip_catches(*), trip_photos(*), trip_conditions(*)').eq('id', id).single(),
+    supabase.from('guides').select('venmo_handle, cashapp_handle, zelle_contact, paypal_handle').eq('id', user!.id).single(),
+  ])
 
   if (!trip) notFound()
 
@@ -91,6 +92,10 @@ export default async function TripDetailPage({ params, searchParams }: { params:
           price={trip.price}
           depositPaid={trip.deposit_paid ?? 0}
           amountCollected={trip.amount_collected ?? 0}
+          venmoHandle={(guide as any)?.venmo_handle ?? null}
+          cashappHandle={(guide as any)?.cashapp_handle ?? null}
+          zelleContact={(guide as any)?.zelle_contact ?? null}
+          paypalHandle={(guide as any)?.paypal_handle ?? null}
         />
       </div>
 

@@ -130,6 +130,42 @@ export default async function SettingsPage() {
         </form>
       </div>
 
+      {/* Payment Info */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold text-slate-900">Payment Info</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Add your payment handles so clients can pay you directly from the trip page</p>
+        </div>
+        <form action={async (fd: FormData) => {
+          'use server'
+          const sb = await createClient()
+          const { data: { user: u } } = await sb.auth.getUser()
+          await sb.from('guides').update({
+            venmo_handle:  (fd.get('venmo_handle')  as string)?.trim() || null,
+            cashapp_handle:(fd.get('cashapp_handle') as string)?.trim() || null,
+            zelle_contact: (fd.get('zelle_contact')  as string)?.trim() || null,
+            paypal_handle: (fd.get('paypal_handle')  as string)?.trim() || null,
+          }).eq('id', u!.id)
+          revalidatePath('/settings')
+        }} className="space-y-3">
+          {[
+            { name: 'venmo_handle',   label: 'Venmo',   placeholder: '@your-username',       defaultValue: (guide as any)?.venmo_handle   ?? '' },
+            { name: 'cashapp_handle', label: 'Cash App',placeholder: '$your-cashtag',        defaultValue: (guide as any)?.cashapp_handle ?? '' },
+            { name: 'zelle_contact',  label: 'Zelle',   placeholder: 'Email or phone number', defaultValue: (guide as any)?.zelle_contact  ?? '' },
+            { name: 'paypal_handle',  label: 'PayPal',  placeholder: 'your-username',        defaultValue: (guide as any)?.paypal_handle  ?? '' },
+          ].map(f => (
+            <div key={f.name} className="flex items-center gap-3">
+              <span className="text-sm font-medium text-slate-600 w-20 shrink-0">{f.label}</span>
+              <input name={f.name} type="text" placeholder={f.placeholder} defaultValue={f.defaultValue}
+                className="flex-1 border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+          ))}
+          <button type="submit" className="border border-sky-300 text-sky-600 hover:bg-sky-50 font-medium px-4 py-2 rounded-xl transition-colors text-sm">
+            Save Payment Info
+          </button>
+        </form>
+      </div>
+
       {/* Contact / Feedback */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-3">
         <div>
