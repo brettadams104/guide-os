@@ -30,7 +30,7 @@ export default async function AnalyticsPage() {
 
   const [{ data: trips }, { data: scheduledTrips }, { data: catches }, { data: conditions }] = await Promise.all([
     supabase.from('trips')
-      .select('id, trip_date, location, amount_collected, price, payment_method, client_id, time_slot_id, started_at, ended_at, clients(name), guide_time_slots(label)')
+      .select('id, trip_date, location, amount_collected, tip_amount, price, payment_method, client_id, time_slot_id, started_at, ended_at, clients(name), guide_time_slots(label)')
       .eq('guide_id', user!.id)
       .eq('status', 'completed')
       .order('trip_date', { ascending: false }),
