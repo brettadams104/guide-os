@@ -114,7 +114,15 @@ function UpcomingTab() {
                       )}
                       {trip.notes && <p className="mt-1 text-xs text-slate-400 italic">{trip.notes}</p>}
                     </div>
-                    <span className="text-xs bg-sky-100 text-sky-700 font-medium px-2.5 py-1 rounded-full shrink-0 ml-3">Scheduled</span>
+                    <div className="flex flex-col items-end gap-2 ml-3 shrink-0">
+                      <span className="text-xs bg-sky-100 text-sky-700 font-medium px-2.5 py-1 rounded-full">Scheduled</span>
+                      {trip.price != null && (() => {
+                        const owed = Math.max(0, (trip.price ?? 0) - (trip.amount_collected ?? 0))
+                        return owed > 0
+                          ? <span className="text-xs bg-amber-50 text-amber-700 font-semibold px-2.5 py-1 rounded-full border border-amber-200">Owes ${owed.toFixed(0)}</span>
+                          : <span className="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-1 rounded-full border border-emerald-200">Paid in Full</span>
+                      })()}
+                    </div>
                   </div>
                 </Link>
                 <div className="border-t border-slate-100 px-5 py-2.5 flex gap-3">
