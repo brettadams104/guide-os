@@ -107,18 +107,18 @@ export function LogDetailsForm({ tripId, tripDate, defaultPrice, depositPaid = 0
             {depositPaid > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Deposit Received</span>
-                <span className="font-medium text-emerald-600">− ${depositPaid.toFixed(2)}</span>
+                <span className="font-medium text-slate-600">${depositPaid.toFixed(2)}</span>
               </div>
             )}
             {amountCollected > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Previously Collected</span>
-                <span className="font-medium text-emerald-600">− ${amountCollected.toFixed(2)}</span>
+                <span className="text-slate-500">Collected to Date</span>
+                <span className="font-medium text-emerald-600">${amountCollected.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between text-sm font-bold pt-1 border-t border-slate-100">
               <span className="text-slate-700">Balance Due</span>
-              <span className="text-slate-900">${Math.max(0, defaultPrice - depositPaid - amountCollected).toFixed(2)}</span>
+              <span className="text-amber-600">${Math.max(0, defaultPrice - amountCollected).toFixed(2)}</span>
             </div>
           </div>
         )}
@@ -129,7 +129,7 @@ export function LogDetailsForm({ tripId, tripDate, defaultPrice, depositPaid = 0
           <div className="relative">
             <span className="absolute left-3.5 top-2.5 text-slate-400 text-sm">$</span>
             <input name="amount_collected" type="number" min="0" step="0.01"
-              defaultValue={defaultPrice != null ? Math.max(0, defaultPrice - depositPaid - amountCollected) : ''}
+              defaultValue={defaultPrice != null ? Math.max(0, defaultPrice - amountCollected) : ''}
               placeholder="0.00"
               className="w-full border border-slate-200 rounded-xl pl-7 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
           </div>
