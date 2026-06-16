@@ -18,6 +18,27 @@ const US_STATES = [
 
 interface Site { siteNo: string; name: string }
 
+function parseRDB(text: string, nameFilter: string): Site[] {
+  const lines = text.split('\n')
+  const dataLines = lines.filter(l => !l.startsWith('#') && l.trim())
+  if (dataLines.length < 3) return []
+  const headers = dataLines[0].split('\t').map(h => h.trim())
+  return dataLines
+    .slice(2)
+    .map(line => {
+      const vals = line.split('\t')
+      return Object.fromEntries(headers.map((h, i) => [h, (vals[i] ?? '').trim()]))
+    })
+    .filter(s => s.site_no && s.station_nm)
+    .filter(s => !nameFilter || s.station_nm.toLowerCase().includes(nameFilter.toLowerCase()))
+    .slice(0, 30)
+    .map(s => ({ siteNo: s.site_no, name: s.station_nm }))
+}
+
+function toTitleCase(str: string) {
+  return str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+}
+
 export function GaugeSearch({ existingSiteNos }: { existingSiteNos: string[] }) {
   const [mode, setMode] = useState<'state' | 'siteNo'>('state')
   const [state, setState] = useState('')
@@ -35,16 +56,21 @@ export function GaugeSearch({ existingSiteNos }: { existingSiteNos: string[] }) 
     setResults([])
     setError(null)
     try {
-      const params = new URLSearchParams()
-      if (mode === 'siteNo') params.set('siteNo', siteNoInput)
-      else { params.set('state', state); params.set('name', nameFilter) }
-      const res = await fetch(`/api/usgs/search?${params}`)
-      if (!res.ok) throw new Error('Search failed')
-      const data = await res.json()
-      if (data.length === 0) setError('No gauges found. Try a different state or name.')
-      setResults(data)
+      // Call USGS directly from the browser — avoids Vercel server IP blocks
+      let url: string
+      if (mode === 'siteNo') {
+        url = `https://waterservices.usgs.gov/nwis/site/?format=rdb&sites=${siteNoInput.trim()}&siteOutput=basic`
+      } else {
+        url = `https://waterservices.usgs.gov/nwis/site/?format=rdb&stateCd=${state}&siteType=ST&siteStatus=active&parameterCd=00060&siteOutput=basic`
+      }
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`USGS returned ${res.status}`)
+      const text = await res.text()
+      const sites = parseRDB(text, mode === 'state' ? nameFilter : '')
+      if (sites.length === 0) setError('No gauges found. Try a different state or name.')
+      setResults(sites)
     } catch {
-      setError('Search failed. Please try again.')
+      setError('Search failed. Check your connection and try again.')
     } finally {
       setSearching(false)
     }
@@ -58,15 +84,10 @@ export function GaugeSearch({ existingSiteNos }: { existingSiteNos: string[] }) 
     setAdding(null)
   }
 
-  function toTitleCase(str: string) {
-    return str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
-  }
-
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
       <h2 className="font-bold text-slate-900">Add a River</h2>
 
-      {/* Mode toggle */}
       <div className="flex gap-2">
         {(['state', 'siteNo'] as const).map(m => (
           <button key={m} onClick={() => { setMode(m); setResults([]); setError(null) }}
@@ -117,9 +138,7 @@ export function GaugeSearch({ existingSiteNos }: { existingSiteNos: string[] }) 
             <li key={site.siteNo} className="p-3 space-y-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 truncate">
-                    {toTitleCase(site.name)}
-                  </p>
+                  <p className="text-sm font-semibold text-slate-900 truncate">{toTitleCase(site.name)}</p>
                   <p className="text-xs text-slate-400">Site #{site.siteNo}</p>
                 </div>
                 {added.has(site.siteNo) ? (
