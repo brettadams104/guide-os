@@ -27,7 +27,7 @@ function buildFinancialData(filtered: any[], scheduled: any[] = []) {
   const totalOutstanding = allTrips.reduce((s: number, t: any) => s + Math.max(0, (t.price ?? 0) - (t.amount_collected ?? 0)), 0)
   const count = filtered.length
   const avgPerTrip = count > 0 ? totalRevenue / count : 0
-  const collectionRate = totalBilled > 0 ? Math.round((totalRevenue / totalBilled) * 100) : 100
+  const collectionRate = totalBilled > 0 ? Math.min(100, Math.round((totalCollected / totalBilled) * 100)) : 100
 
   const monthRevMap: Record<string, number> = {}
   const monthBilledMap: Record<string, number> = {}
