@@ -66,11 +66,13 @@ export function GaugeSearch({ existingSiteNos }: { existingSiteNos: string[] }) 
       const res = await fetch(url)
       if (!res.ok) throw new Error(`USGS returned ${res.status}`)
       const text = await res.text()
+      console.log('USGS raw response (first 500 chars):', text.slice(0, 500))
       const sites = parseRDB(text, mode === 'state' ? nameFilter : '')
-      if (sites.length === 0) setError('No gauges found. Try a different state or name.')
+      console.log('Parsed sites:', sites.length, sites.slice(0, 2))
+      if (sites.length === 0) setError(`No gauges found. (Response length: ${text.length} chars)`)
       setResults(sites)
-    } catch {
-      setError('Search failed. Check your connection and try again.')
+    } catch (e: any) {
+      setError(`Search failed: ${e?.message ?? 'unknown error'}`)
     } finally {
       setSearching(false)
     }
