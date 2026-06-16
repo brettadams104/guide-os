@@ -154,12 +154,12 @@ export default function LoginPage() {
           </form>
         )}
 
-      </div>
-
-      <p className="text-slate-600 text-xs text-center mt-6">
+      <p className="text-slate-500 text-xs text-center">
         By using GuideStride you agree to our{' '}
         <a href="/privacy" target="_blank" className="text-sky-400 hover:text-sky-300 underline">Privacy Policy</a>
       </p>
+
+      </div>
     </div>
   )
 }
