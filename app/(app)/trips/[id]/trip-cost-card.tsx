@@ -125,7 +125,7 @@ export function TripCostCard({ tripId, price, depositPaid, amountCollected, tipA
                 <span className="text-amber-600">${outstanding.toFixed(0)}</span>
               </div>
               <div className="pt-2 border-t border-amber-100 space-y-2">
-                <div className="flex items-baseline justify-between">
+                <div className="flex sm:flex-row flex-col sm:items-baseline sm:justify-between gap-0.5">
                   <p className="text-xs text-slate-500">Log Payment</p>
                   <p className="text-xs text-slate-400 italic">Payment processing coming soon</p>
                 </div>
