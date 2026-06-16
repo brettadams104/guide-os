@@ -53,7 +53,7 @@ export default async function TripDetailPage({ params, searchParams }: { params:
       </div>
 
       {/* Start / Resume Trip */}
-      {!(trip as any).ended_at && (
+      {(trip as any).status !== 'completed' && !(trip as any).ended_at && (
         <div className={`rounded-2xl p-4 ${isLive ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200'}`}>
           {isLive ? (
             <div className="flex items-center justify-between">
