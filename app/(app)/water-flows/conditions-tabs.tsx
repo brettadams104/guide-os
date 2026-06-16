@@ -112,10 +112,8 @@ function pressureHpa(hpa: number): string {
 function FlowsTab({ gaugeCards, siteNos }: { gaugeCards: GaugeData[]; siteNos: string[] }) {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-slate-500 text-sm">Real-time USGS river gauge data</p>
-        <GaugeSearch existingSiteNos={siteNos} />
-      </div>
+      <GaugeSearch existingSiteNos={siteNos} />
+
       {gaugeCards.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" className="mx-auto mb-4">
@@ -128,6 +126,11 @@ function FlowsTab({ gaugeCards, siteNos }: { gaugeCards: GaugeData[]; siteNos: s
       ) : (
         gaugeCards.map(g => <GaugeCard key={g.gaugeId} gauge={g} />)
       )}
+
+      <p className="text-xs text-slate-400 text-center flex items-center justify-center gap-1.5 pt-2">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Real-time USGS river gauge data
+      </p>
     </div>
   )
 }

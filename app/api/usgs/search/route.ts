@@ -5,21 +5,25 @@ export async function GET(req: NextRequest) {
   const name = req.nextUrl.searchParams.get('name') ?? ''
   const siteNo = req.nextUrl.searchParams.get('siteNo') ?? ''
 
-  // Direct site number lookup
-  if (siteNo) {
-    const url = `https://api.waterservices.usgs.gov/nwis/site/?format=rdb&sites=${siteNo.trim()}&siteOutput=basic`
+  try {
+    if (siteNo) {
+      const url = `https://waterservices.usgs.gov/nwis/site/?format=rdb&sites=${siteNo.trim()}&siteOutput=basic`
+      const res = await fetch(url, { cache: 'no-store' })
+      if (!res.ok) return Response.json([])
+      const text = await res.text()
+      return Response.json(parseRDB(text, ''))
+    }
+
+    if (!state) return Response.json([])
+
+    const url = `https://waterservices.usgs.gov/nwis/site/?format=rdb&stateCd=${state}&siteType=ST&siteStatus=active&parameterCd=00060&siteOutput=basic`
     const res = await fetch(url, { cache: 'no-store' })
+    if (!res.ok) return Response.json([])
     const text = await res.text()
-    const sites = parseRDB(text, '')
-    return Response.json(sites)
+    return Response.json(parseRDB(text, name))
+  } catch {
+    return Response.json([])
   }
-
-  if (!state) return Response.json([])
-
-  const url = `https://api.waterservices.usgs.gov/nwis/site/?format=rdb&stateCd=${state}&siteType=ST&siteStatus=active&parameterCd=00060&hasDataTypeCd=iv&siteOutput=basic`
-  const res = await fetch(url, { cache: 'no-store' })
-  const text = await res.text()
-  return Response.json(parseRDB(text, name))
 }
 
 function parseRDB(text: string, nameFilter: string) {
