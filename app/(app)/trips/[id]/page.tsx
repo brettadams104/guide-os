@@ -82,11 +82,34 @@ export default async function TripDetailPage({ params, searchParams }: { params:
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Client</p>
-          <p className="font-bold text-slate-900 mt-1">{client?.name ?? '—'}</p>
+      {/* Mobile: stack client → contact → cost. Desktop: client+contact left, cost right */}
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
+
+        {/* Left col: client name + contact combined */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+          <div>
+            <p className="text-xs text-slate-500 uppercase tracking-wide">Client</p>
+            <p className="font-bold text-slate-900 mt-1">{client?.name ?? '—'}</p>
+          </div>
+          {client && (client.phone || client.email) && (
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              {client.phone && (
+                <a href={`tel:${client.phone}`} className="flex items-center gap-3 text-sm">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.26h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.85a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
+                  <span className="text-sky-600 font-medium hover:text-sky-500">{client.phone}</span>
+                </a>
+              )}
+              {client.email && (
+                <a href={`mailto:${client.email}`} className="flex items-center gap-3 text-sm">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+                  <span className="text-sky-600 font-medium hover:text-sky-500">{client.email}</span>
+                </a>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Right col: trip cost */}
         <TripCostCard
           tripId={id}
           price={trip.price}
@@ -99,27 +122,6 @@ export default async function TripDetailPage({ params, searchParams }: { params:
           paypalHandle={(guide as any)?.paypal_handle ?? null}
         />
       </div>
-
-      {/* Client contact */}
-      {client && (client.phone || client.email) && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
-          <h2 className="font-semibold text-slate-900 mb-3">Client Contact</h2>
-          <div className="space-y-2">
-            {client.phone && (
-              <a href={`tel:${client.phone}`} className="flex items-center gap-3 text-sm">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.26h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.85a16 16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
-                <span className="text-sky-600 font-medium hover:text-sky-500">{client.phone}</span>
-              </a>
-            )}
-            {client.email && (
-              <a href={`mailto:${client.email}`} className="flex items-center gap-3 text-sm">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
-                <span className="text-sky-600 font-medium hover:text-sky-500">{client.email}</span>
-              </a>
-            )}
-          </div>
-        </div>
-      )}
 
       {conditions && (
         <div className="space-y-3">
