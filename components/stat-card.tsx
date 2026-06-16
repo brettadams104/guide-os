@@ -5,19 +5,24 @@ interface Props {
   value: string | number
   sub?: string
   accent?: boolean
+  warning?: boolean
   href?: string
 }
 
-export function StatCard({ label, value, sub, accent, href }: Props) {
-  const className = `rounded-2xl border p-6 ${accent ? 'bg-sky-500 border-sky-400' : 'bg-white border-slate-200'} ${href ? 'hover:opacity-80 transition-opacity cursor-pointer' : ''}`
+export function StatCard({ label, value, sub, accent, warning, href }: Props) {
+  const className = `rounded-2xl border p-6 ${
+    accent   ? 'bg-sky-500 border-sky-400' :
+    warning  ? 'bg-amber-50 border-amber-200' :
+    'bg-white border-slate-200'
+  } ${href ? 'hover:opacity-80 transition-opacity cursor-pointer' : ''}`
 
   const content = (
     <>
-      <p className={`text-xs font-semibold uppercase tracking-widest ${accent ? 'text-sky-100' : 'text-slate-500'}`}>
+      <p className={`text-xs font-semibold uppercase tracking-widest ${accent ? 'text-sky-100' : warning ? 'text-amber-600' : 'text-slate-500'}`}>
         {label}
       </p>
-      <p className={`text-3xl font-bold mt-2 ${accent ? 'text-white' : 'text-slate-900'}`}>{value}</p>
-      {sub && <p className={`text-xs mt-1 ${accent ? 'text-sky-200' : 'text-slate-400'}`}>{sub}</p>}
+      <p className={`text-3xl font-bold mt-2 ${accent ? 'text-white' : warning ? 'text-amber-600' : 'text-slate-900'}`}>{value}</p>
+      {sub && <p className={`text-xs mt-1 ${accent ? 'text-sky-200' : warning ? 'text-amber-500' : 'text-slate-400'}`}>{sub}</p>}
     </>
   )
 

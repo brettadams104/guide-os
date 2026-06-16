@@ -75,7 +75,7 @@ export default async function DashboardPage() {
         <StatCard label={`${yr} Trips`} value={yearTrips ?? 0} sub="completed this year" />
         <StatCard label="Trips This Month" value={(monthTrips ?? []).length} />
         <StatCard label="Month Revenue" value={`$${monthRevenue.toFixed(0)}`} accent />
-        <StatCard label="Outstanding" value={`$${outstanding.toFixed(0)}`} sub="across all clients" href="/outstanding?back=/dashboard" />
+        <StatCard label="Outstanding" value={`$${outstanding.toFixed(0)}`} sub="across all clients" href="/outstanding?back=/dashboard" warning={outstanding > 0} />
       </div>
 
       <div data-tour="upcoming-trips" className="bg-white rounded-2xl border border-slate-200 overflow-hidden">

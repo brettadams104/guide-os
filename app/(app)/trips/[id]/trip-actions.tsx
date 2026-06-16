@@ -49,7 +49,7 @@ export function TripActions({ tripId, currentStatus }: { tripId: string; current
                 : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
             }`}>
             <span>{completing ? '...' : isCompleted ? 'Unmark as Completed' : 'Mark Trip as Completed'}</span>
-            <span className={isCompleted ? 'text-slate-400' : 'text-emerald-400'}>{isCompleted ? '↩' : '✓'}</span>
+            <span className={isCompleted ? 'text-slate-400' : 'text-emerald-400'}>{isCompleted ? '' : '✓'}</span>
           </button>
           <button onClick={() => setConfirming(true)}
             className="w-full flex items-center justify-between border border-red-200 rounded-xl px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
