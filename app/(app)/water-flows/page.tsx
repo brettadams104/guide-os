@@ -94,7 +94,7 @@ export default async function WaterFlowsPage() {
   let usgsData: Record<string, Omit<GaugeData, 'gaugeId' | 'siteNo' | 'displayName'>> = {}
   if (siteNos.length > 0) {
     try {
-      const url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${siteNos.join(',')}&parameterCd=00060,00065&period=P7D&siteStatus=all`
+      const url = `https://api.waterservices.usgs.gov/nwis/iv/?format=json&sites=${siteNos.join(',')}&parameterCd=00060,00065&period=P7D&siteStatus=all`
       const res = await fetch(url, { next: { revalidate: 300 } })
       const data = await res.json()
       usgsData = parseUSGS(data.value?.timeSeries ?? [])

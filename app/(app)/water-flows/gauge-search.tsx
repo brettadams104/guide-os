@@ -57,13 +57,19 @@ export function GaugeSearch({ existingSiteNos }: { existingSiteNos: string[] }) 
   return (
     <div>
       {!open ? (
-        <button
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add River
-        </button>
+        <div className="space-y-2">
+          <button
+            onClick={() => setOpen(true)}
+            className="flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add River
+          </button>
+          <p className="text-xs text-slate-400 flex items-center gap-1.5">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Real-time USGS river gauge data
+          </p>
+        </div>
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
           <div className="flex items-center justify-between">
