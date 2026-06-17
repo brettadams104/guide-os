@@ -90,22 +90,11 @@ export default async function WaterFlowsPage() {
   const savedGauges = gauges ?? []
   const siteNos = savedGauges.map(g => g.site_no)
 
-  // Fetch USGS flow data
-  let usgsData: Record<string, Omit<GaugeData, 'gaugeId' | 'siteNo' | 'displayName'>> = {}
-  if (siteNos.length > 0) {
-    try {
-      const url = `https://api.waterservices.usgs.gov/nwis/iv/?format=json&sites=${siteNos.join(',')}&parameterCd=00060,00065&period=P7D&siteStatus=all`
-      const res = await fetch(url, { next: { revalidate: 300 } })
-      const data = await res.json()
-      usgsData = parseUSGS(data.value?.timeSeries ?? [])
-    } catch {}
-  }
-
-  const gaugeCards: GaugeData[] = savedGauges.map(g => ({
+  // Pass base info only — live USGS data is fetched client-side in GaugeList
+  const gaugeCards = savedGauges.map(g => ({
     gaugeId: g.id,
     siteNo: g.site_no,
     displayName: g.display_name,
-    ...(usgsData[g.site_no] ?? { siteName: '', cfs: null, gageHeight: null, lastUpdated: null, trend: null, history: [] }),
   }))
 
   // Use stored lat/lon if available, otherwise fall back to geocoding the location string

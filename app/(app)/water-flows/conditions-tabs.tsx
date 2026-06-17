@@ -10,8 +10,8 @@ const HourlyWeatherChart = dynamic(
   { ssr: false }
 )
 import type { GaugeData } from './gauge-card'
-import { GaugeCard } from './gauge-card'
 import { GaugeSearch } from './gauge-search'
+import { GaugeList } from './gauge-list'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -64,7 +64,7 @@ export interface OutlookPayload extends WeatherPayload {
   yesterdayLow: number | null
   yesterdayWeather: string | null
   pressureTrend: 'rising' | 'steady' | 'falling'
-  primaryGauge: GaugeData | null
+  primaryGauge: { gaugeId: string; siteNo: string; displayName: string } | null
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -109,23 +109,11 @@ function pressureHpa(hpa: number): string {
 
 // ── Tab: Flows ─────────────────────────────────────────────────────────────────
 
-function FlowsTab({ gaugeCards, siteNos }: { gaugeCards: GaugeData[]; siteNos: string[] }) {
+function FlowsTab({ gaugeCards, siteNos }: { gaugeCards: { gaugeId: string; siteNo: string; displayName: string }[]; siteNos: string[] }) {
   return (
     <div className="space-y-4">
       <GaugeSearch existingSiteNos={siteNos} />
-
-      {gaugeCards.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" className="mx-auto mb-4">
-            <path d="M3 18c0-2 2-4 4-4s4 2 6 2 4-2 6-2" />
-            <path d="M3 12c0-2 2-4 4-4s4 2 6 2 4-2 6-2" />
-          </svg>
-          <p className="text-slate-500 font-medium mb-1">No gauges saved yet</p>
-          <p className="text-slate-400 text-sm">Search for a river or stream above to get started.</p>
-        </div>
-      ) : (
-        gaugeCards.map(g => <GaugeCard key={g.gaugeId} gauge={g} />)
-      )}
+      <GaugeList gauges={gaugeCards} />
 
       <p className="text-xs text-slate-400 text-center flex items-center justify-center gap-1.5 pt-2">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -523,7 +511,7 @@ export function ConditionsTabs({
   outlook,
   savedWeatherLocations,
 }: {
-  gaugeCards: GaugeData[]
+  gaugeCards: { gaugeId: string; siteNo: string; displayName: string }[]
   siteNos: string[]
   weather: WeatherPayload | null
   outlook: OutlookPayload | null
