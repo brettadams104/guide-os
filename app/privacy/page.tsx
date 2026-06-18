@@ -21,7 +21,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-white font-bold text-base mb-3">1. Who We Are</h2>
-            <p>GuideStride is a trip management and business tool built for professional fishing guides. We are operated as an independent product. If you have questions about this policy, contact us at <a href="mailto:contact@guidestride.com" className="text-sky-400 hover:text-sky-300">contact@guidestride.com</a>.</p>
+            <p>GuideStride is a trip management and business tool built for professional fishing guides. GuideStride is a product of <strong className="text-white">Ethical Edge Inc.</strong>, a registered corporation. If you have questions about this policy, contact us at <a href="mailto:contact@guidestride.com" className="text-sky-400 hover:text-sky-300">contact@guidestride.com</a>.</p>
           </section>
 
           <section>
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-white/10">
-          <p className="text-slate-500 text-xs">© 2026 GuideStride. All rights reserved.</p>
+          <p className="text-slate-500 text-xs">© 2026 Ethical Edge Inc. All rights reserved. GuideStride is a product of Ethical Edge Inc.</p>
         </div>
 
       </div>
