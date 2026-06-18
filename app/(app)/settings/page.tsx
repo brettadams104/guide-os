@@ -169,7 +169,7 @@ export default async function SettingsPage() {
       {/* Footer */}
       <p className="text-xs text-slate-400 text-center pb-4">
         <a href="/privacy" target="_blank" className="hover:text-slate-600 underline transition-colors">Privacy Policy</a>
-        {' · '}© 2026 GuideStride
+        {' · '}© 2026 Ethical Edge Inc.
       </p>
 
     </div>
