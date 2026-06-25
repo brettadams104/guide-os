@@ -75,7 +75,7 @@ const TABS = [
 
 export function LiveTabBar({ tripId, activeTab }: { tripId: string; activeTab: string }) {
   return (
-    <nav className="bg-[#0f1f35] border-t border-white/10 flex shrink-0">
+    <nav className="fixed bottom-0 inset-x-0 bg-[#0f1f35] border-t border-white/10 flex z-50 md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {TABS.map(({ key, label, Icon }) => (
         <Link
           key={key}

@@ -86,7 +86,7 @@ export default async function TripLivePage({ params, searchParams }: {
       </div>
 
       {/* Tab content */}
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex-1 overflow-hidden flex flex-col pb-20">
         {tab === 'weather' && <WeatherTab defaultLocation={guideLocation} />}
         {tab === 'fish' && (
           <FishLogTab
