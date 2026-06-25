@@ -278,11 +278,10 @@ export function SpotlightTour({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="fixed inset-0 z-40 pointer-events-none">
-      {/* Dark overlay — clickable to close */}
+      {/* Dark overlay — visual only, doesn't block clicks on nav/buttons */}
       <div
-        className="absolute inset-0 pointer-events-auto"
+        className="absolute inset-0 pointer-events-none"
         style={{ boxShadow: hl ? '0 0 0 9999px rgba(0,0,0,0.65)' : '0 0 0 9999px rgba(0,0,0,0.65)' }}
-        onClick={finish}
       />
 
       {/* Spotlight ring around element */}
