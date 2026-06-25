@@ -25,7 +25,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 bg-[#0f1f35] border-t border-white/10 flex z-50 md:hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
+    <nav className="fixed bottom-0 inset-x-0 bg-[#0f1f35] border-t border-white/10 flex z-50 md:hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
       {TABS.map(({ href, label, icon }) => {
         const active = pathname === href || pathname.startsWith(href + '/')
         const color  = active ? '#38bdf8' : '#64748b'

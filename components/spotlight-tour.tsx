@@ -308,14 +308,14 @@ export function SpotlightTour({ onDone }: { onDone: () => void }) {
           <div className="h-1 bg-sky-500 transition-all duration-300" style={{ width: `${((step + 1) / TOUR_STEPS.length) * 100}%` }} />
         </div>
 
-        <div className="p-4">
+        <div className="p-3">
           {/* Page breadcrumb + step count */}
-          <div className="flex items-center justify-between mb-3">
-            <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 text-xs font-semibold px-2.5 py-1 rounded-full">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <div className="flex items-center justify-between mb-2">
+            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5 rounded-full">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
               </svg>
-              {current.page}
+              <span className="text-xs">{current.page}</span>
             </span>
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-400">{step + 1} / {TOUR_STEPS.length}</span>
@@ -324,13 +324,13 @@ export function SpotlightTour({ onDone }: { onDone: () => void }) {
           </div>
 
           {/* Title & description */}
-          <h3 className="font-black text-slate-900 text-base leading-tight mb-1.5">{current.title}</h3>
-          <p className="text-slate-500 text-sm leading-relaxed mb-3">{current.description}</p>
+          <h3 className="font-bold text-slate-900 text-sm leading-tight mb-1">{current.title}</h3>
+          <p className="text-slate-500 text-xs leading-relaxed mb-2">{current.description}</p>
 
           {/* Dot indicators */}
-          <div className="flex justify-center gap-1 mb-3">
+          <div className="flex justify-center gap-1 mb-2">
             {TOUR_STEPS.map((_, i) => (
-              <div key={i} className={`rounded-full transition-all ${i === step ? 'w-4 h-1.5 bg-sky-500' : 'w-1.5 h-1.5 bg-slate-200'}`} />
+              <div key={i} className={`rounded-full transition-all ${i === step ? 'w-3 h-1 bg-sky-500' : 'w-1 h-1 bg-slate-300'}`} />
             ))}
           </div>
 
@@ -339,7 +339,7 @@ export function SpotlightTour({ onDone }: { onDone: () => void }) {
             {step > 0 && (
               <button
                 onClick={() => setStep(s => s - 1)}
-                className="flex-1 border border-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl text-sm hover:bg-slate-50 transition-colors"
+                className="flex-1 border border-slate-200 text-slate-600 font-semibold py-2 rounded-lg text-xs hover:bg-slate-50 transition-colors"
               >
                 Back
               </button>
@@ -349,7 +349,7 @@ export function SpotlightTour({ onDone }: { onDone: () => void }) {
                 if (isLast) { finish(); router.push('/dashboard') }
                 else setStep(s => s + 1)
               }}
-              className="flex-1 bg-sky-500 hover:bg-sky-400 text-white font-bold py-2.5 rounded-xl text-sm transition-colors"
+              className="flex-1 bg-sky-500 hover:bg-sky-400 text-white font-bold py-2 rounded-lg text-xs transition-colors"
             >
               {isLast ? 'Done ✓' : 'Next →'}
             </button>
