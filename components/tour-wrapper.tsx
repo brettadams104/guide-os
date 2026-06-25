@@ -8,7 +8,6 @@ const SpotlightTour = dynamic(
 )
 
 export function TourWrapper({ userId: _userId, tourComplete }: { userId: string; tourComplete: boolean }) {
-  // If Supabase says tour is done, never show it — no localStorage check needed
-  if (tourComplete) return null
-  return <SpotlightTour onDone={() => {}} />
+  // Tour disabled for stability - will rebuild as image-based slideshow later
+  return null
 }
