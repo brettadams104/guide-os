@@ -64,21 +64,24 @@ export function CollectPayment({ tripId, price, alreadyCollected }: Props) {
       {remaining > 0 ? (
         <>
           {/* Payment method */}
-          <div className="flex flex-wrap gap-2">
-            {METHODS.map(m => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMethod(m)}
-                className={`px-3.5 py-2 rounded-full text-sm font-medium border transition-colors ${
-                  method === m
-                    ? 'bg-[#0f1f35] text-white border-[#0f1f35]'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-400'
-                }`}
-              >
-                {m}
-              </button>
-            ))}
+          <div>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {METHODS.map(m => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMethod(m)}
+                  className={`px-3.5 py-2 rounded-full text-sm font-medium border transition-colors ${
+                    method === m
+                      ? 'bg-[#0f1f35] text-white border-[#0f1f35]'
+                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-400'
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-slate-400 italic">Payment processing coming soon</p>
           </div>
 
           {/* Amount */}

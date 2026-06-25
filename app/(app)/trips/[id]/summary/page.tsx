@@ -12,14 +12,6 @@ function formatDuration(startedAt: string, endedAt: string | null): string {
   return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 
-function MailIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block mr-2">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <polyline points="2,4 12,13 22,4" />
-    </svg>
-  )
-}
 
 export default async function TripSummaryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -47,16 +39,6 @@ export default async function TripSummaryPage({ params }: { params: Promise<{ id
   const duration = formatDuration((trip as any).started_at, (trip as any).ended_at ?? null)
 
   const date = new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-  const catchSummary = Object.entries(speciesMap).map(([s, c]) => `  • ${s}: ${c}`).join('\n') || '  • No fish logged'
-  const recapBody = encodeURIComponent(
-    `Hi ${client?.name ?? 'there'},\n\nThank you for fishing with us on ${date}!\n\n` +
-    `Total Fish: ${totalFish}\n${catchSummary}\n\n` +
-    `Time on Water: ${duration}\n` +
-    (conditions ? `Conditions: ${conditions.weather ?? ''} ${conditions.temp_high ?? ''}°F\n` : '') +
-    ((trip as any).live_notes ? `\nNotes:\n${(trip as any).live_notes}\n` : '') +
-    `\nWe hope to see you again soon!\n`
-  )
-  const mailtoLink = `mailto:${client?.email ?? ''}?subject=${encodeURIComponent(`Your Trip Recap — ${date}`)}&body=${recapBody}`
 
   return (
     <div className="max-w-xl mx-auto p-4 space-y-6 pb-10">
@@ -136,15 +118,8 @@ export default async function TripSummaryPage({ params }: { params: Promise<{ id
         <CollectPayment tripId={id} price={price} alreadyCollected={alreadyCollected} />
       )}
 
-      {/* Send recap + back */}
-      <div className="space-y-3">
-        {client?.email && (
-          <a href={mailtoLink}
-            className="flex items-center justify-center w-full bg-[#0f1f35] hover:bg-[#1a3254] text-white font-bold py-4 rounded-2xl text-sm transition-colors">
-            <MailIcon />
-            Send Recap to {client.name}
-          </a>
-        )}
+      {/* Back to trip detail */}
+      <div>
         <Link href={`/trips/${id}`}
           className="block w-full border border-slate-200 text-slate-600 font-medium py-3 rounded-2xl text-center text-sm hover:bg-slate-50 transition-colors">
           View Trip Detail
