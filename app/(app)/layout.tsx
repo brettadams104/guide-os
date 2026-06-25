@@ -5,7 +5,7 @@ import { Sidebar } from './sidebar'
 import { BottomNav } from './bottom-nav'
 import { TourWrapper } from '@/components/tour-wrapper'
 
-export const revalidate = 60
+export const revalidate = 3600
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()

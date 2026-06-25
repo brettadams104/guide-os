@@ -19,45 +19,18 @@ export default async function DashboardPage() {
   const monthStart = `${yr}-${String(mo).padStart(2, '0')}-01`
   const yearStart  = `${yr}-01-01`
 
-  const [{ count: yearTrips }, { data: monthTrips }, { data: allTrips }, { data: upcomingTrips }, { data: allTripEvents }, { data: guideEvents }] = await Promise.all([
+  const [{ count: yearTrips }, { data: upcomingTrips }, { data: allTrips }] = await Promise.all([
     supabase.from('trips').select('*', { count: 'exact', head: true }).eq('guide_id', user!.id).gte('trip_date', yearStart).eq('status', 'completed'),
-    supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id).gte('trip_date', monthStart),
-    supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id),
     supabase.from('trips').select('*, clients(name)').eq('guide_id', user!.id)
       .gte('trip_date', today)
       .order('trip_date', { ascending: true }).limit(5),
-    supabase.from('trips').select('id, trip_date, location, status, notes, clients(name)').eq('guide_id', user!.id).order('trip_date'),
-    supabase.from('guide_events').select('*').eq('guide_id', user!.id).order('event_date'),
+    supabase.from('trips').select('price, amount_collected').eq('guide_id', user!.id),
   ])
 
-  const monthRevenue = (monthTrips ?? []).reduce((sum, t) => sum + (t.amount_collected ?? 0), 0)
+  const monthTrips = (allTrips ?? []).filter(t => t.trip_date >= monthStart)
+  const monthRevenue = monthTrips.reduce((sum, t) => sum + (t.amount_collected ?? 0), 0)
   const outstanding = (allTrips ?? []).reduce((sum, t) => sum + Math.max(0, (t.price ?? 0) - (t.amount_collected ?? 0)), 0)
 
-  // Fetch time slot + staff data separately (safe if migration not run)
-  const slotResult = await supabase
-    .from('trips')
-    .select('id, start_time, end_time, guide_time_slots(label, start_time, end_time), guide_staff(name)')
-    .eq('guide_id', user!.id)
-  const slotMap: Record<string, { time_label: string | null; start_time: string | null; end_time: string | null; guide_name: string | null }> = {}
-  ;(slotResult.error ? [] : slotResult.data ?? []).forEach((d: any) => {
-    const slot = d.guide_time_slots
-    slotMap[d.id] = {
-      time_label: slot?.label ?? null,
-      start_time: d.start_time ?? slot?.start_time ?? null,
-      end_time: d.end_time ?? slot?.end_time ?? null,
-      guide_name: d.guide_staff?.name ?? null,
-    }
-  })
-
-  const calendarEvents = (allTripEvents ?? []).map(t => ({
-    id: t.id,
-    trip_date: t.trip_date,
-    client_name: (t.clients as unknown as { name: string } | null)?.name ?? null,
-    location: t.location,
-    status: (t.status as string) ?? 'scheduled',
-    notes: t.notes ?? null,
-    ...(slotMap[t.id] ?? { time_label: null, start_time: null, end_time: null, guide_name: null }),
-  }))
 
   return (
     <div className="space-y-8">

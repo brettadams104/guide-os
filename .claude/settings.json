@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/sydneycollins/Desktop/guide-os && git add -A && git commit -m 'Auto-commit from Claude Code' && git push 2>/dev/null || true",
+            "statusMessage": "Committing and pushing to GitHub..."
+          }
+        ]
+      }
+    ]
+  }
+}
