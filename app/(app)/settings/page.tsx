@@ -5,7 +5,6 @@ import { TimeSlotManager } from '@/components/time-slot-manager'
 import { AccountSettings } from '@/components/account-settings'
 import { DeleteAccountButton } from '@/components/delete-account-button'
 import { LocationPicker } from '@/components/location-picker'
-import { RestartTourButton } from '@/components/restart-tour-button'
 import { FaqSection } from '@/components/faq-section'
 import { FeedbackButton } from '@/components/feedback-button'
 import { SpeciesPresetManager } from '@/components/species-preset-manager'
@@ -148,16 +147,7 @@ export default async function SettingsPage() {
         <FaqSection />
       </div>
 
-      {/* App Tour */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-        <div>
-          <h2 className="font-semibold text-slate-900">App Tour</h2>
-          <p className="text-sm text-slate-500 mt-1">Walk through the app features again at any time.</p>
-        </div>
-        <RestartTourButton />
-      </div>
-
-      {/* Danger Zone */}
+{/* Danger Zone */}
       <div className="bg-white rounded-2xl border border-red-100 p-6 space-y-3">
         <div>
           <h2 className="font-semibold text-red-600">Danger Zone</h2>
