@@ -5,7 +5,7 @@ import { Sidebar } from './sidebar'
 import { BottomNav } from './bottom-nav'
 import { TourWrapper } from '@/components/tour-wrapper'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -39,7 +39,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Sidebar signOut={signOut} guideName={guide?.name ?? 'Guide'} />
       </div>
 
-      <main className="md:pl-60 pb-20 md:pb-0 min-h-screen">
+      <main className="md:pl-60 pb-24 md:pb-0 min-h-screen">
 
         {liveTrip && (
           <div className="bg-green-600 px-4 py-2.5 flex items-center justify-between gap-3">

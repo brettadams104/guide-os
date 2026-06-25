@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { markOnboardingComplete } from '@/lib/actions/onboarding'
 
@@ -205,20 +205,21 @@ export function SpotlightTour({ onDone }: { onDone: () => void }) {
     function attempt() {
       const el = document.querySelector(current.selector) as HTMLElement | null
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        requestAnimationFrame(() => {
+          el.scrollIntoView({ behavior: 'auto', block: 'center' })
 
-        // Run any tab-switching action BEFORE highlighting
-        if (current.action?.startsWith('tab:')) {
-          const tabName = current.action.split(':')[1]
-          const btn = document.querySelector(`[data-tour-tab="${tabName}"]`) as HTMLElement | null
-          if (btn) btn.click()
-        }
+          if (current.action?.startsWith('tab:')) {
+            const tabName = current.action.split(':')[1]
+            const btn = document.querySelector(`[data-tour-tab="${tabName}"]`) as HTMLElement | null
+            if (btn) btn.click()
+          }
 
-        setTimeout(() => {
-          const r = el.getBoundingClientRect()
-          setRect({ top: r.top, left: r.left, width: r.width, height: r.height })
-          setReady(true)
-        }, 350)
+          setTimeout(() => {
+            const r = el.getBoundingClientRect()
+            setRect({ top: r.top, left: r.left, width: r.width, height: r.height })
+            setReady(true)
+          }, 200)
+        })
       } else if (tries < 30) {
         tries++
         retryRef.current = setTimeout(attempt, 100)
@@ -237,16 +238,28 @@ export function SpotlightTour({ onDone }: { onDone: () => void }) {
     return findAndHighlight()
   }, [active, showWelcome, step, pathname, findAndHighlight])
 
-  // Reposition on resize/scroll
+  // Reposition on resize/scroll (debounced for performance)
   useEffect(() => {
     if (!active || !current) return
+    let rafId: number | null = null
     function reposition() {
       const el = document.querySelector(current.selector)
-      if (el) { const r = el.getBoundingClientRect(); setRect({ top: r.top, left: r.left, width: r.width, height: r.height }) }
+      if (el) {
+        const r = el.getBoundingClientRect()
+        setRect({ top: r.top, left: r.left, width: r.width, height: r.height })
+      }
     }
-    window.addEventListener('resize', reposition)
-    window.addEventListener('scroll', reposition, true)
-    return () => { window.removeEventListener('resize', reposition); window.removeEventListener('scroll', reposition, true) }
+    function throttledReposition() {
+      if (rafId) cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(reposition)
+    }
+    window.addEventListener('resize', throttledReposition)
+    window.addEventListener('scroll', throttledReposition, { capture: true, passive: true })
+    return () => {
+      window.removeEventListener('resize', throttledReposition)
+      window.removeEventListener('scroll', throttledReposition, { capture: true })
+      if (rafId) cancelAnimationFrame(rafId)
+    }
   }, [active, current])
 
   if (!active) return null
@@ -264,7 +277,7 @@ export function SpotlightTour({ onDone }: { onDone: () => void }) {
   const { style: tooltipStyle } = hl ? clampTooltip(hl, wW, wH) : { style: { position: 'fixed' as const, bottom: 16, left: 16, right: 16, top: 'auto', width: 'auto' } }
 
   return (
-    <div className="fixed inset-0 z-[60] pointer-events-none">
+    <div className="fixed inset-0 z-40 pointer-events-none">
       {/* Dark overlay — clickable to close */}
       <div
         className="absolute inset-0 pointer-events-auto"
