@@ -19,20 +19,19 @@ export default async function DashboardPage() {
   const monthStart = `${yr}-${String(mo).padStart(2, '0')}-01`
   const yearStart  = `${yr}-01-01`
 
-  const [{ count: yearTrips }, { data: upcomingTrips }, { data: allTrips }, { data: allTripEvents }] = await Promise.all([
+  const [{ count: yearTrips }, { data: upcomingTrips }, { data: allTrips }] = await Promise.all([
     supabase.from('trips').select('*', { count: 'exact', head: true }).eq('guide_id', user!.id).gte('trip_date', yearStart).eq('status', 'completed'),
     supabase.from('trips').select('*, clients(name)').eq('guide_id', user!.id)
       .gte('trip_date', today)
       .order('trip_date', { ascending: true }).limit(5),
-    supabase.from('trips').select('trip_date, price, amount_collected').eq('guide_id', user!.id),
-    supabase.from('trips').select('id, trip_date, location, status, notes, clients(name)').eq('guide_id', user!.id).order('trip_date'),
+    supabase.from('trips').select('id, trip_date, location, status, notes, price, amount_collected, clients(name)').eq('guide_id', user!.id).order('trip_date'),
   ])
 
   const monthTrips = (allTrips ?? []).filter(t => t.trip_date >= monthStart)
   const monthRevenue = monthTrips.reduce((sum, t) => sum + (t.amount_collected ?? 0), 0)
   const outstanding = (allTrips ?? []).reduce((sum, t) => sum + Math.max(0, (t.price ?? 0) - (t.amount_collected ?? 0)), 0)
 
-  const calendarEvents = (allTripEvents ?? []).map(t => ({
+  const calendarEvents = (allTrips ?? []).map(t => ({
     id: t.id,
     trip_date: t.trip_date,
     client_name: (t.clients as unknown as { name: string } | null)?.name ?? null,

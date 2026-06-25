@@ -25,7 +25,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 bg-[#0f1f35] border-t border-white/10 flex z-50 md:hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
+    <nav className="fixed bottom-0 inset-x-0 bg-[#0f1f35] border-t border-white/10 flex z-50 md:hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
       {TABS.map(({ href, label, icon }) => {
         const active = pathname === href || pathname.startsWith(href + '/')
         const color  = active ? '#38bdf8' : '#64748b'
@@ -33,7 +33,7 @@ export function BottomNav() {
           <Link
             key={href}
             href={href}
-            className={`flex-1 flex flex-col items-center justify-center gap-0 py-1.5 px-0 text-[10px] font-semibold transition-colors min-w-0 ${
+            className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 px-0 text-xs font-semibold transition-colors min-w-0 active:scale-95 ${
               active ? 'text-sky-400' : 'text-slate-500'
             }`}
           >
@@ -41,7 +41,7 @@ export function BottomNav() {
               ? <BarChartIcon color={color} />
               : <span className="text-lg leading-none">{icon}</span>
             }
-            <span className="truncate w-full text-center leading-tight">{label}</span>
+            <span className="line-clamp-1 text-center max-w-[60px]">{label}</span>
           </Link>
         )
       })}
