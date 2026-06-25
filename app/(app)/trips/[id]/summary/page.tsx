@@ -41,7 +41,7 @@ export default async function TripSummaryPage({ params }: { params: Promise<{ id
   const date = new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
 
   return (
-    <div className="max-w-xl mx-auto p-4 space-y-6 pb-10">
+    <div className="max-w-xl mx-auto p-4 space-y-6 pb-32">
 
       {/* Header */}
       <div className="text-center pt-4">
