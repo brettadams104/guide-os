@@ -117,11 +117,11 @@ function clampTooltip(rect: Rect, wW: number, wH: number) {
   const PAD = 12
   const tW  = Math.min(320, wW - PAD * 2)
   const tH  = 260
-  const NAV_HEIGHT = 80
+  const NAV_HEIGHT = 100
 
   if (wW < 500) {
-    const top = Math.max(PAD, wH / 2 - tH / 2)
-    return { style: { position: 'fixed' as const, top, left: PAD, right: PAD, bottom: `calc(${NAV_HEIGHT}px + ${PAD}px)`, width: 'auto', maxHeight: `${wH - NAV_HEIGHT - PAD * 2}px`, overflow: 'auto' as const } }
+    const bottom = NAV_HEIGHT
+    return { style: { position: 'fixed' as const, bottom, left: PAD, right: PAD, top: 'auto', width: 'auto', maxHeight: `${wH - NAV_HEIGHT - PAD * 2}px`, overflow: 'auto' as const } }
   }
 
   const spaceBelow = wH - rect.top - rect.height
