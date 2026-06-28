@@ -113,9 +113,9 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
   const [tab, setTab] = useState<Tab>(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search).get('tab')
-      if (p === 'Financials') return 'Financials'
+      if (p === 'Fishing') return 'Fishing'
     }
-    return 'Fishing'
+    return 'Financials'
   })
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
 
