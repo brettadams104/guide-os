@@ -25,7 +25,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 bg-[#0f1f35] border-t border-white/10 flex z-50 md:hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
+    <nav className="fixed bottom-0 inset-x-0 bg-[#0f1f35] border-t border-white/10 flex z-50 md:hidden pt-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
       {TABS.map(({ href, label, icon }) => {
         const active = pathname === href || pathname.startsWith(href + '/')
         const color  = active ? '#38bdf8' : '#64748b'
@@ -33,7 +33,7 @@ export function BottomNav() {
           <Link
             key={href}
             href={href}
-            className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5 px-0 text-xs font-semibold transition-colors min-w-0 active:scale-95 ${
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-1 text-xs font-semibold transition-colors min-w-0 ${
               active ? 'text-sky-400' : 'text-slate-500'
             }`}
           >
