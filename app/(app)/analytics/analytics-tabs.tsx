@@ -15,7 +15,7 @@ import { YoYChart } from '@/components/charts/yoy-chart'
 import { PaymentMethodDonut } from '@/components/charts/payment-method-donut'
 import Link from 'next/link'
 
-const TABS = ['Fishing', 'Financials'] as const
+const TABS = ['Financials', 'Fishing'] as const
 type Tab = typeof TABS[number]
 
 function buildFinancialData(filtered: any[], scheduled: any[] = []) {
