@@ -183,6 +183,18 @@ export default async function AnalyticsPage() {
     yoyData[year][monthIdx] += t.amount_collected ?? 0
   })
 
+  // ── Year-over-year avg fish per trip ──────────────────────────────────────
+  const yoyFishData: Record<number, (number | null)[]> = {}
+  ;(trips ?? []).forEach(t => {
+    const year = parseInt(t.trip_date.slice(0, 4))
+    const monthIdx = parseInt(t.trip_date.slice(5, 7)) - 1
+    if (!yoyFishData[year]) yoyFishData[year] = Array(12).fill({ trips: 0, fish: 0 })
+    const current = yoyFishData[year][monthIdx] as any
+    const trips_count = (current?.trips ?? 0) + 1
+    const fish_count = (current?.fish ?? 0) + ((catches ?? []).filter(c => c.trip_id === t.id).reduce((s, c) => s + c.count, 0))
+    yoyFishData[year][monthIdx] = trips_count > 0 ? Math.round((fish_count / trips_count) * 10) / 10 : 0
+  })
+
   const allTimeFinancial = buildFinancialData(trips ?? [], scheduledTrips ?? [])
 
   const fishingData = {
@@ -190,6 +202,7 @@ export default async function AnalyticsPage() {
     avgFishPerTrip, bestTrip, successRate, totalHours: Math.round(totalHours * 10) / 10,
     timeOfDayData, dayOfWeekData, topLocations, packageFishData, avgFishTrend,
     hasLiveCatchData: (liveCatches ?? []).length > 0,
+    yoyFishData,
   }
 
   return (

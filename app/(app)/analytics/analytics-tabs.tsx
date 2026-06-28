@@ -129,7 +129,7 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
   const {
     speciesData, moonData, pressureData, monthFishData, totalFish, totalTrips,
     avgFishPerTrip, bestTrip, successRate, timeOfDayData, dayOfWeekData,
-    topLocations, packageFishData, avgFishTrend, hasLiveCatchData,
+    topLocations, packageFishData, avgFishTrend, hasLiveCatchData, yoyFishData,
   } = fishingData
 
   const filtered = useMemo(() =>
@@ -323,24 +323,11 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* Avg fish per trip trend */}
-            {avgFishTrend.length > 1 && (
+            {Object.keys(yoyFishData).length > 1 && (
               <div className="bg-white rounded-2xl border border-slate-200 p-6 md:col-span-2">
-                <h2 className="font-bold text-slate-900 mb-1">Avg Fish Per Trip — Monthly Trend</h2>
-                <p className="text-xs text-slate-400 mb-4">Are your catches improving season over season?</p>
-                <ResponsiveContainer width="100%" height={180}>
-                  <AreaChart data={avgFishTrend}>
-                    <defs>
-                      <linearGradient id="fishGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="month" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis hide />
-                    <Tooltip formatter={(v: unknown) => [`${v} fish`, 'Avg per trip']} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-                    <Area type="monotone" dataKey="avg" stroke="#0ea5e9" strokeWidth={2} fill="url(#fishGrad)" dot={false} activeDot={{ r: 4 }} />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <h2 className="font-bold text-slate-900 mb-1">Avg Fish Per Trip — Year-Over-Year</h2>
+                <p className="text-xs text-slate-400 mb-4">Compare average catches across years</p>
+                <YoYChart data={yoyFishData} />
               </div>
             )}
 
