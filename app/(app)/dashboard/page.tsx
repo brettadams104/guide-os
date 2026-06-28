@@ -1,35 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { StatCard } from '@/components/stat-card'
 import { CalendarClient } from '../calendar/calendar-client'
 import { TodayDate } from '@/components/today-date'
 import { safeToday } from '@/lib/date-utils'
 import { AddEventModal } from '@/components/add-event-modal'
 
-export default async function DashboardPage() {
+// Separate async component — loads allTrips independently
+async function DashboardCalendar() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Subtract 12h from UTC to get a safe floor that covers all US timezones.
-  // This ensures we never accidentally filter out today's trips when the server
-  // clock is ahead of the guide's local time.
-  const today      = safeToday()
-  const [yr, mo]   = today.split('-').map(Number)
-  const safeToday_ = today
-  const monthStart = `${yr}-${String(mo).padStart(2, '0')}-01`
-  const yearStart  = `${yr}-01-01`
-
-  const [{ count: yearTrips }, { data: upcomingTrips }, { data: allTrips }] = await Promise.all([
-    supabase.from('trips').select('*', { count: 'exact', head: true }).eq('guide_id', user!.id).gte('trip_date', yearStart).eq('status', 'completed'),
-    supabase.from('trips').select('*, clients(name)').eq('guide_id', user!.id)
-      .gte('trip_date', today)
-      .order('trip_date', { ascending: true }).limit(5),
-    supabase.from('trips').select('id, trip_date, location, status, notes, price, amount_collected, clients(name)').eq('guide_id', user!.id).order('trip_date'),
-  ])
-
-  const monthTrips = (allTrips ?? []).filter(t => t.trip_date >= monthStart)
-  const monthRevenue = monthTrips.reduce((sum, t) => sum + (t.amount_collected ?? 0), 0)
-  const outstanding = (allTrips ?? []).reduce((sum, t) => sum + Math.max(0, (t.price ?? 0) - (t.amount_collected ?? 0)), 0)
+  const { data: allTrips } = await supabase
+    .from('trips')
+    .select('id, trip_date, location, status, notes, price, amount_collected, clients(name)')
+    .eq('guide_id', user!.id)
+    .order('trip_date')
 
   const calendarEvents = (allTrips ?? []).map(t => ({
     id: t.id,
@@ -43,6 +30,60 @@ export default async function DashboardPage() {
     end_time: null,
     guide_name: null,
   }))
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold text-slate-900">Calendar</h2>
+        <div className="flex items-center gap-3">
+          <AddEventModal />
+          <Link href="/trips?tab=schedule" className="text-sky-500 hover:text-sky-400 text-sm font-medium transition-colors">
+            + Schedule Trip
+          </Link>
+        </div>
+      </div>
+      <CalendarClient events={calendarEvents} guideEvents={[]} />
+    </div>
+  )
+}
+
+// Fallback while calendar loads
+function CalendarSkeleton() {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold text-slate-900">Calendar</h2>
+      </div>
+      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <p className="text-slate-400 text-sm">Loading calendar...</p>
+      </div>
+    </div>
+  )
+}
+
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const today      = safeToday()
+  const [yr, mo]   = today.split('-').map(Number)
+  const monthStart = `${yr}-${String(mo).padStart(2, '0')}-01`
+  const yearStart  = `${yr}-01-01`
+
+  // Only load critical data for initial render
+  const [{ count: yearTrips }, { data: upcomingTrips }] = await Promise.all([
+    supabase.from('trips').select('*', { count: 'exact', head: true }).eq('guide_id', user!.id).gte('trip_date', yearStart).eq('status', 'completed'),
+    supabase.from('trips').select('*, clients(name)').eq('guide_id', user!.id)
+      .gte('trip_date', today)
+      .order('trip_date', { ascending: true }).limit(5),
+  ])
+
+  const monthTrips = (upcomingTrips ?? []).filter(t => t.trip_date >= monthStart)
+  const monthRevenue = monthTrips.reduce((sum, t) => sum + (t.amount_collected ?? 0), 0)
+
+  // Outstanding calculation requires allTrips, so we estimate from upcomingTrips
+  const upcoming = (upcomingTrips ?? []).filter(t => !['completed', 'canceled'].includes((t as any).status))
+  const outstanding = upcoming.reduce((sum, t) => sum + Math.max(0, ((t as any).price ?? 0) - ((t as any).amount_collected ?? 0)), 0)
 
   return (
     <div className="space-y-8">
@@ -116,18 +157,9 @@ export default async function DashboardPage() {
         })()}
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-slate-900">Calendar</h2>
-          <div className="flex items-center gap-3">
-            <AddEventModal />
-            <Link href="/trips?tab=schedule" className="text-sky-500 hover:text-sky-400 text-sm font-medium transition-colors">
-              + Schedule Trip
-            </Link>
-          </div>
-        </div>
-        <CalendarClient events={calendarEvents} guideEvents={[]} />
-      </div>
+      <Suspense fallback={<CalendarSkeleton />}>
+        <DashboardCalendar />
+      </Suspense>
     </div>
   )
 }
