@@ -71,19 +71,21 @@ export default async function DashboardPage() {
   const yearStart  = `${yr}-01-01`
 
   // Only load critical data for initial render
-  const [{ count: yearTrips }, { data: upcomingTrips }] = await Promise.all([
+  const [{ count: yearTrips }, { data: upcomingTrips }, { data: allTrips }] = await Promise.all([
     supabase.from('trips').select('*', { count: 'exact', head: true }).eq('guide_id', user!.id).gte('trip_date', yearStart).eq('status', 'completed'),
     supabase.from('trips').select('*, clients(name)').eq('guide_id', user!.id)
       .gte('trip_date', today)
       .order('trip_date', { ascending: true }).limit(5),
+    supabase.from('trips').select('id, price, amount_collected, status').eq('guide_id', user!.id),
   ])
 
   const monthTrips = (upcomingTrips ?? []).filter(t => t.trip_date >= monthStart)
   const monthRevenue = monthTrips.reduce((sum, t) => sum + (t.amount_collected ?? 0), 0)
 
-  // Outstanding calculation requires allTrips, so we estimate from upcomingTrips
-  const upcoming = (upcomingTrips ?? []).filter(t => !['completed', 'canceled'].includes((t as any).status))
-  const outstanding = upcoming.reduce((sum, t) => sum + Math.max(0, ((t as any).price ?? 0) - ((t as any).amount_collected ?? 0)), 0)
+  // Calculate outstanding across all trips (completed + scheduled)
+  const outstanding = (allTrips ?? [])
+    .filter(t => !['canceled'].includes((t as any).status))
+    .reduce((sum, t) => sum + Math.max(0, ((t as any).price ?? 0) - ((t as any).amount_collected ?? 0)), 0)
 
   return (
     <div className="space-y-8">
