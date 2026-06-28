@@ -327,7 +327,7 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
               <div className="bg-white rounded-2xl border border-slate-200 p-6 md:col-span-2">
                 <h2 className="font-bold text-slate-900 mb-1">Avg Fish Per Trip — Year-Over-Year</h2>
                 <p className="text-xs text-slate-400 mb-4">Compare average catches across years</p>
-                <YoYChart data={yoyFishData} />
+                <YoYChart data={yoyFishData} formatValue={(v) => `${v} fish`} />
               </div>
             )}
 
