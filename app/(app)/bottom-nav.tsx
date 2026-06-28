@@ -13,8 +13,8 @@ const TABS = [
 
 function BarChartIcon({ color }: { color: string }) {
   return (
-    <span className="text-lg leading-none flex items-center justify-center" style={{ height: '1.125rem' }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <span className="text-2xl leading-none flex items-center justify-center" style={{ height: '1.75rem' }}>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/>
       </svg>
     </span>
@@ -33,13 +33,13 @@ export function BottomNav() {
           <Link
             key={href}
             href={href}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-1 text-xs font-semibold transition-colors min-w-0 ${
+            className={`flex-1 flex flex-col items-center justify-center gap-2 py-4 px-1 text-sm font-semibold transition-colors min-w-0 ${
               active ? 'text-sky-400' : 'text-slate-500'
             }`}
           >
             {icon === 'barchart'
               ? <BarChartIcon color={color} />
-              : <span className="text-lg leading-none">{icon}</span>
+              : <span className="text-2xl leading-none">{icon}</span>
             }
             <span className="line-clamp-1 text-center max-w-[60px]">{label}</span>
           </Link>
