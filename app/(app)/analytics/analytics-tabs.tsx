@@ -319,10 +319,10 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
             </div>
           </div>
 
-          {/* Charts row 1 */}
+          {/* Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            {/* Avg fish per trip trend */}
+            {/* 1. Avg fish per trip trend */}
             {Object.keys(yoyFishData).length > 1 && (
               <div className="bg-white rounded-2xl border border-slate-200 p-6 md:col-span-2">
                 <h2 className="font-bold text-slate-900 mb-1">Avg Fish Per Trip — Year-Over-Year</h2>
@@ -331,6 +331,45 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
               </div>
             )}
 
+            {/* 2. Species breakdown */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6">
+              <h2 className="font-semibold text-slate-900 mb-4">Species Breakdown</h2>
+              <SpeciesDonut data={speciesData} />
+            </div>
+
+            {/* 3. Top locations */}
+            {topLocations.length > 0 && (
+              <div className="bg-white rounded-2xl border border-slate-200 p-6">
+                <h2 className="font-bold text-slate-900 mb-1">Top Fishing Spots</h2>
+                <p className="text-xs text-slate-400 mb-4">Your most productive waters by total fish</p>
+                <ResponsiveContainer width="100%" height={Math.max(140, topLocations.length * 36)}>
+                  <BarChart data={topLocations} layout="vertical" barSize={22}>
+                    <XAxis type="number" hide />
+                    <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip formatter={(v: unknown) => [`${v} fish`, '']} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                    <Bar dataKey="fish" fill="#0ea5e9" radius={[0, 6, 6, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* 4. Package fish performance */}
+            {packageFishData.length > 0 && (
+              <div className="bg-white rounded-2xl border border-slate-200 p-6">
+                <h2 className="font-bold text-slate-900 mb-1">Avg Fish by Package</h2>
+                <p className="text-xs text-slate-400 mb-4">Which packages produce the best fishing?</p>
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={packageFishData} barSize={32}>
+                    <XAxis dataKey="package" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis hide />
+                    <Tooltip formatter={(v: unknown) => [`${v} avg fish`, '']} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                    <Bar dataKey="avgFish" fill="#0f1f35" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Other charts */}
             {/* Time of day */}
             {hasLiveCatchData && (
               <div className="bg-white rounded-2xl border border-slate-200 p-6">
@@ -347,8 +386,26 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
               </div>
             )}
 
-            {/* Best day of week */}
+            {/* Fish by month */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6">
+              <h2 className="font-semibold text-slate-900 mb-4">Fish Caught by Month</h2>
+              <FishByMonth data={monthFishData} />
+            </div>
+
+            {/* Moon phase */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6">
+              <h2 className="font-semibold text-slate-900 mb-4">Avg Fish by Moon Phase</h2>
+              <FishByMoon data={moonData} />
+            </div>
+
+            {/* Pressure trend */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6">
+              <h2 className="font-semibold text-slate-900 mb-4">Avg Fish by Pressure Trend</h2>
+              <FishByPressure data={pressureData} />
+            </div>
+
+            {/* Best day of week - LAST */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 md:col-span-2">
               <h2 className="font-bold text-slate-900 mb-1">Best Day of the Week</h2>
               <p className="text-xs text-slate-400 mb-4">Average fish per trip by day — great for scheduling</p>
               <ResponsiveContainer width="100%" height={180}>
@@ -367,62 +424,6 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
                 </BarChart>
               </ResponsiveContainer>
               <p className="text-xs text-slate-400 mt-2 text-center">Darkest bar = best day</p>
-            </div>
-
-            {/* Top locations */}
-            {topLocations.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-6">
-                <h2 className="font-bold text-slate-900 mb-1">Top Fishing Spots</h2>
-                <p className="text-xs text-slate-400 mb-4">Your most productive waters by total fish</p>
-                <ResponsiveContainer width="100%" height={Math.max(140, topLocations.length * 36)}>
-                  <BarChart data={topLocations} layout="vertical" barSize={22}>
-                    <XAxis type="number" hide />
-                    <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <Tooltip formatter={(v: unknown) => [`${v} fish`, '']} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-                    <Bar dataKey="fish" fill="#0ea5e9" radius={[0, 6, 6, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            {/* Package fish performance */}
-            {packageFishData.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-6">
-                <h2 className="font-bold text-slate-900 mb-1">Avg Fish by Package</h2>
-                <p className="text-xs text-slate-400 mb-4">Which packages produce the best fishing?</p>
-                <ResponsiveContainer width="100%" height={180}>
-                  <BarChart data={packageFishData} barSize={32}>
-                    <XAxis dataKey="package" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis hide />
-                    <Tooltip formatter={(v: unknown) => [`${v} avg fish`, '']} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-                    <Bar dataKey="avgFish" fill="#0f1f35" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            {/* Species breakdown */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900 mb-4">Species Breakdown</h2>
-              <SpeciesDonut data={speciesData} />
-            </div>
-
-            {/* Fish by month */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900 mb-4">Fish Caught by Month</h2>
-              <FishByMonth data={monthFishData} />
-            </div>
-
-            {/* Moon phase */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900 mb-4">Avg Fish by Moon Phase</h2>
-              <FishByMoon data={moonData} />
-            </div>
-
-            {/* Pressure trend */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 className="font-semibold text-slate-900 mb-4">Avg Fish by Pressure Trend</h2>
-              <FishByPressure data={pressureData} />
             </div>
           </div>
         </div>
