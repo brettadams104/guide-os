@@ -8,37 +8,21 @@ export default async function CalendarPage() {
 
   const { data: trips } = await supabase
     .from('trips')
-    .select('id, trip_date, location, status, notes, clients(name)')
+    .select('id, trip_date, location, status, notes, clients(name), guide_time_slots(label, start_time, end_time), guide_staff(name)')
     .eq('guide_id', user!.id)
     .order('trip_date')
 
-  // Try to fetch time slot + staff info separately (safe — won't break if columns don't exist)
-  const detailResult = await supabase
-    .from('trips')
-    .select('id, guide_time_slots(label, start_time, end_time), guide_staff(name)')
-    .eq('guide_id', user!.id)
-    .order('trip_date')
-  const tripDetails = detailResult.error ? null : detailResult.data
-
-  const detailMap: Record<string, { time_label: string | null; start_time: string | null; end_time: string | null; guide_name: string | null }> = {}
-  ;(tripDetails ?? []).forEach((d: any) => {
-    const slot = d.guide_time_slots as { label: string; start_time: string | null; end_time: string | null } | null
-    detailMap[d.id] = {
-      time_label: slot?.label ?? null,
-      start_time: slot?.start_time ?? null,
-      end_time: slot?.end_time ?? null,
-      guide_name: (d.guide_staff as { name: string } | null)?.name ?? null,
-    }
-  })
-
-  const events = (trips ?? []).map(t => ({
+  const events = (trips ?? []).map((t: any) => ({
     id: t.id,
     trip_date: t.trip_date,
     client_name: (t.clients as unknown as { name: string } | null)?.name ?? null,
     location: t.location,
-    status: t.status as string ?? 'scheduled',
+    status: (t.status as string) ?? 'scheduled',
     notes: t.notes,
-    ...(detailMap[t.id] ?? { time_label: null, start_time: null, end_time: null, guide_name: null }),
+    time_label: (t.guide_time_slots as { label: string; start_time: string | null; end_time: string | null } | null)?.label ?? null,
+    start_time: (t.guide_time_slots as { label: string; start_time: string | null; end_time: string | null } | null)?.start_time ?? null,
+    end_time: (t.guide_time_slots as { label: string; start_time: string | null; end_time: string | null } | null)?.end_time ?? null,
+    guide_name: (t.guide_staff as { name: string } | null)?.name ?? null,
   }))
 
   return (

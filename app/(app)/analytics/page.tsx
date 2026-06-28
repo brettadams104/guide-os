@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 600
 
 import { createClient } from '@/lib/supabase/server'
 import { SpeciesDonut } from '@/components/charts/species-donut'
