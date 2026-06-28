@@ -4,17 +4,17 @@ import dynamic from 'next/dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { AnalyticsTabs } from './analytics-tabs'
 
-// Lazy-load chart components (they're only shown in tabs, no need to load upfront)
-const SpeciesDonut = dynamic(() => import('@/components/charts/species-donut').then(m => ({ default: m.SpeciesDonut })))
-const FishByMoon = dynamic(() => import('@/components/charts/fish-by-moon').then(m => ({ default: m.FishByMoon })))
-const FishByPressure = dynamic(() => import('@/components/charts/fish-by-pressure').then(m => ({ default: m.FishByPressure })))
-const FishByMonth = dynamic(() => import('@/components/charts/fish-by-month').then(m => ({ default: m.FishByMonth })))
-const FinancialsBar = dynamic(() => import('@/components/charts/financials-bar').then(m => ({ default: m.FinancialsBar })))
-const PaymentMethodDonut = dynamic(() => import('@/components/charts/payment-method-donut').then(m => ({ default: m.PaymentMethodDonut })))
-const RevenueAreaChart = dynamic(() => import('@/components/charts/revenue-area-chart').then(m => ({ default: m.RevenueAreaChart })))
-const RevenueByPackage = dynamic(() => import('@/components/charts/revenue-by-package').then(m => ({ default: m.RevenueByPackage })))
-const TopClientsChart = dynamic(() => import('@/components/charts/top-clients-chart').then(m => ({ default: m.TopClientsChart })))
-const YoYChart = dynamic(() => import('@/components/charts/yoy-chart').then(m => ({ default: m.YoYChart })))
+// Lazy-load chart components (load client-side in background without blocking page)
+const SpeciesDonut = dynamic(() => import('@/components/charts/species-donut').then(m => ({ default: m.SpeciesDonut })), { ssr: false })
+const FishByMoon = dynamic(() => import('@/components/charts/fish-by-moon').then(m => ({ default: m.FishByMoon })), { ssr: false })
+const FishByPressure = dynamic(() => import('@/components/charts/fish-by-pressure').then(m => ({ default: m.FishByPressure })), { ssr: false })
+const FishByMonth = dynamic(() => import('@/components/charts/fish-by-month').then(m => ({ default: m.FishByMonth })), { ssr: false })
+const FinancialsBar = dynamic(() => import('@/components/charts/financials-bar').then(m => ({ default: m.FinancialsBar })), { ssr: false })
+const PaymentMethodDonut = dynamic(() => import('@/components/charts/payment-method-donut').then(m => ({ default: m.PaymentMethodDonut })), { ssr: false })
+const RevenueAreaChart = dynamic(() => import('@/components/charts/revenue-area-chart').then(m => ({ default: m.RevenueAreaChart })), { ssr: false })
+const RevenueByPackage = dynamic(() => import('@/components/charts/revenue-by-package').then(m => ({ default: m.RevenueByPackage })), { ssr: false })
+const TopClientsChart = dynamic(() => import('@/components/charts/top-clients-chart').then(m => ({ default: m.TopClientsChart })), { ssr: false })
+const YoYChart = dynamic(() => import('@/components/charts/yoy-chart').then(m => ({ default: m.YoYChart })), { ssr: false })
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
