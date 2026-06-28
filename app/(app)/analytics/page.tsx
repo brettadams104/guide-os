@@ -1,17 +1,20 @@
 export const revalidate = 600
 
+import dynamic from 'next/dynamic'
 import { createClient } from '@/lib/supabase/server'
-import { SpeciesDonut } from '@/components/charts/species-donut'
-import { FishByMoon } from '@/components/charts/fish-by-moon'
-import { FishByPressure } from '@/components/charts/fish-by-pressure'
-import { FishByMonth } from '@/components/charts/fish-by-month'
-import { FinancialsBar } from '@/components/charts/financials-bar'
-import { PaymentMethodDonut } from '@/components/charts/payment-method-donut'
-import { RevenueAreaChart } from '@/components/charts/revenue-area-chart'
-import { RevenueByPackage } from '@/components/charts/revenue-by-package'
-import { TopClientsChart } from '@/components/charts/top-clients-chart'
-import { YoYChart } from '@/components/charts/yoy-chart'
 import { AnalyticsTabs } from './analytics-tabs'
+
+// Lazy-load chart components (they're only shown in tabs, no need to load upfront)
+const SpeciesDonut = dynamic(() => import('@/components/charts/species-donut').then(m => ({ default: m.SpeciesDonut })))
+const FishByMoon = dynamic(() => import('@/components/charts/fish-by-moon').then(m => ({ default: m.FishByMoon })))
+const FishByPressure = dynamic(() => import('@/components/charts/fish-by-pressure').then(m => ({ default: m.FishByPressure })))
+const FishByMonth = dynamic(() => import('@/components/charts/fish-by-month').then(m => ({ default: m.FishByMonth })))
+const FinancialsBar = dynamic(() => import('@/components/charts/financials-bar').then(m => ({ default: m.FinancialsBar })))
+const PaymentMethodDonut = dynamic(() => import('@/components/charts/payment-method-donut').then(m => ({ default: m.PaymentMethodDonut })))
+const RevenueAreaChart = dynamic(() => import('@/components/charts/revenue-area-chart').then(m => ({ default: m.RevenueAreaChart })))
+const RevenueByPackage = dynamic(() => import('@/components/charts/revenue-by-package').then(m => ({ default: m.RevenueByPackage })))
+const TopClientsChart = dynamic(() => import('@/components/charts/top-clients-chart').then(m => ({ default: m.TopClientsChart })))
+const YoYChart = dynamic(() => import('@/components/charts/yoy-chart').then(m => ({ default: m.YoYChart })))
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 600
 
 export default async function OutstandingPage({ searchParams }: { searchParams: Promise<{ back?: string }> }) {
   const { back } = await searchParams
