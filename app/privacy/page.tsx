@@ -14,7 +14,7 @@ export default function PrivacyPage() {
         <div className="mb-12">
           <Link href="/" className="text-sky-400 text-sm hover:text-sky-300 transition-colors">← GuideStride</Link>
           <h1 className="text-3xl font-black text-white mt-6">Privacy Policy</h1>
-          <p className="text-slate-400 text-sm mt-2">Last updated: June 15, 2026</p>
+          <p className="text-slate-400 text-sm mt-2">Last updated: June 28, 2026</p>
         </div>
 
         <div className="space-y-10 text-slate-300 text-sm leading-relaxed">
