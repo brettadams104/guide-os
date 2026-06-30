@@ -40,10 +40,6 @@ const FAQS = [
     a: 'Open the Analytics page and tap the Financials tab. You\'ll see total revenue, collection rate, best month, outstanding balances, and year-over-year comparisons. You can also filter by year.',
   },
   {
-    q: 'Can I restart the app tour if I want to see it again?',
-    a: 'Yes — scroll to the bottom of this Settings page and tap "Restart App Tour" under App Tour. It will walk you through every feature from the beginning.',
-  },
-  {
     q: 'What happens to my data if I delete my account?',
     a: 'Deleting your account permanently removes all your trips, clients, catches, photos, and financial data. This cannot be undone. Make sure to export anything you need before deleting.',
   },
