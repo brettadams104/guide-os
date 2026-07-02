@@ -299,7 +299,7 @@ export function AnalyticsTabs({ fishingData, allTrips, scheduledTrips, allYears,
             <div className="bg-white rounded-2xl border border-slate-200 p-5">
               <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Avg Per Trip</p>
               <p className="text-3xl font-black text-slate-900 mt-2">{avgFishPerTrip}</p>
-              <p className="text-slate-400 text-xs mt-1">fish per outing</p>
+              <p className="text-slate-400 text-xs mt-1">Fish per outing</p>
             </div>
             <div className="bg-white rounded-2xl border border-slate-200 p-5">
               <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Success Rate</p>
