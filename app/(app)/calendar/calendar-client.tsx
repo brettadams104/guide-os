@@ -208,7 +208,7 @@ export function CalendarClient({ events, guideEvents = [] }: { events: TripEvent
             </div>
 
             <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 rounded-b-2xl">
-              <Link href="/trips?tab=schedule" onClick={() => setSelectedDate(null)} className="block text-center text-sm text-sky-500 hover:text-sky-400 font-medium">
+              <Link href={`/trips?tab=schedule&date=${selectedDate}`} onClick={() => setSelectedDate(null)} className="block text-center text-sm text-sky-500 hover:text-sky-400 font-medium">
                 + Schedule a trip for this day
               </Link>
             </div>

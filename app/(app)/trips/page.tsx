@@ -338,7 +338,7 @@ function ScheduleTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Date</label>
-            <input name="trip_date" type="date" required defaultValue={localDateStr()} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            <input name="trip_date" type="date" required defaultValue={searchParams.get('date') || localDateStr()} className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
