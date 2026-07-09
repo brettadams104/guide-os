@@ -1,0 +1,22 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Run every 5 days at midnight UTC to keep Supabase project active
+    - cron: '0 0 */5 * *'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          curl -s -X POST "$SUPABASE_URL/rest/v1/rpc/now" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            -o /dev/null && echo "✓ Supabase project kept active" || echo "✗ Keep-alive check failed"
