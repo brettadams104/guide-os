@@ -147,6 +147,7 @@ function UpcomingTab() {
 
 function ScheduleTab() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
