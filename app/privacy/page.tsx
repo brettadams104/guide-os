@@ -26,27 +26,43 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-white font-bold text-base mb-3">2. Information We Collect</h2>
-            <p className="mb-3">We collect information you provide directly when creating an account or using the app:</p>
+            <p className="mb-3">We collect the following information when you use GuideStride:</p>
             <ul className="list-disc pl-5 space-y-1.5">
-              <li><strong className="text-white">Account information</strong> — your name, email address, and password</li>
-              <li><strong className="text-white">Business information</strong> — business name, phone number, address, and weather location preferences</li>
+              <li><strong className="text-white">Contact Information</strong> — your name, email address, phone number, and physical address</li>
+              <li><strong className="text-white">Account information</strong> — password and user ID for authentication</li>
+              <li><strong className="text-white">Financial Information</strong> — payment information, trip pricing, and payment records</li>
               <li><strong className="text-white">Trip data</strong> — trip dates, locations, notes, pricing, and payment records</li>
               <li><strong className="text-white">Client data</strong> — names, contact information, and trip history for clients you manage</li>
               <li><strong className="text-white">Catch data</strong> — fish species, counts, lures, and photos logged during trips</li>
-              <li><strong className="text-white">Location</strong> — only when you use the weather or conditions features, and only with your permission</li>
+              <li><strong className="text-white">Location</strong> — coarse location (city/region level) when you use weather or conditions features</li>
+              <li><strong className="text-white">Usage data</strong> — information about how you interact with the app (launches, taps, feature usage)</li>
+              <li><strong className="text-white">Diagnostic data</strong> — crash logs, performance data, and technical diagnostics</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-white font-bold text-base mb-3">3. How We Use Your Information</h2>
-            <ul className="list-disc pl-5 space-y-1.5">
-              <li>To provide and operate the GuideStride app and its features</li>
-              <li>To show you your trip history, analytics, and financial summaries</li>
-              <li>To send transactional emails such as account verification</li>
-              <li>To respond to feedback and support requests you submit</li>
-              <li>To improve and develop the product based on usage patterns</li>
+            <p className="mb-3"><strong className="text-white">App Functionality</strong> — We use your information to:</p>
+            <ul className="list-disc pl-5 space-y-1.5 mb-3">
+              <li>Authenticate your account and enable app features</li>
+              <li>Provide trip management, client management, and payment tracking</li>
+              <li>Show you your trip history, analytics, and financial summaries</li>
+              <li>Prevent fraud and maintain security</li>
+              <li>Respond to customer support and feedback requests</li>
+              <li>Deliver transactional emails (account verification, password reset)</li>
             </ul>
-            <p className="mt-3">We do not sell your data to third parties. We do not use your data for advertising.</p>
+            <p className="mb-3"><strong className="text-white">Analytics</strong> — We use usage and diagnostic data to:</p>
+            <ul className="list-disc pl-5 space-y-1.5 mb-3">
+              <li>Understand how you use the app and which features are most valuable</li>
+              <li>Measure app performance, crash rates, and technical stability</li>
+              <li>Plan new features and improvements based on user behavior</li>
+            </ul>
+            <p className="mb-3"><strong className="text-white">Developer Marketing</strong> — We may use your email address to:</p>
+            <ul className="list-disc pl-5 space-y-1.5">
+              <li>Send you announcements about new features and product updates</li>
+              <li>Share tips and best practices for using GuideStride</li>
+            </ul>
+            <p className="mt-3">We do not sell your data to third parties. We do not use your data for third-party advertising or share your data with data brokers.</p>
           </section>
 
           <section>
@@ -58,12 +74,13 @@ export default function PrivacyPage() {
             <h2 className="text-white font-bold text-base mb-3">5. Third-Party Services</h2>
             <p className="mb-3">GuideStride uses the following third-party services to operate:</p>
             <ul className="list-disc pl-5 space-y-1.5">
-              <li><strong className="text-white">Supabase</strong> — database, authentication, and file storage</li>
-              <li><strong className="text-white">Vercel</strong> — app hosting and deployment</li>
-              <li><strong className="text-white">Resend</strong> — transactional email delivery</li>
-              <li><strong className="text-white">Open-Meteo</strong> — weather forecast data (no personal data shared)</li>
-              <li><strong className="text-white">USGS Water Services</strong> — river flow data (no personal data shared)</li>
+              <li><strong className="text-white">Supabase</strong> — database, authentication, and file storage; stores your account data, trips, clients, and photos</li>
+              <li><strong className="text-white">Vercel</strong> — app hosting, deployment, and analytics; collects crash logs and performance diagnostics</li>
+              <li><strong className="text-white">Resend</strong> — email delivery for transactional and feature announcement emails</li>
+              <li><strong className="text-white">Open-Meteo</strong> — weather forecast data (receives only your location query, no personal data)</li>
+              <li><strong className="text-white">USGS Water Services</strong> — river flow data (receives only your location query, no personal data)</li>
             </ul>
+            <p className="mt-3">Each third-party service has its own privacy policy. We recommend reviewing them to understand how they handle data.</p>
           </section>
 
           <section>
